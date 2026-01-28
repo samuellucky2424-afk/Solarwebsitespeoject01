@@ -53,7 +53,7 @@ export const CartDrawer: React.FC = () => {
                  <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <h4 className="font-bold text-sm text-forest dark:text-white line-clamp-2">{item.name}</h4>
-                      <p className="text-xs text-primary font-bold mt-1">${item.price.toFixed(2)}</p>
+                      <p className="text-xs text-primary font-bold mt-1">₦{item.price.toLocaleString()}</p>
                     </div>
                     <div className="flex items-center justify-between mt-2">
                        <div className="flex items-center gap-3 bg-white dark:bg-black/20 rounded-lg px-2 py-1 border border-gray-200 dark:border-white/10">
@@ -75,7 +75,7 @@ export const CartDrawer: React.FC = () => {
           <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20">
             <div className="flex items-center justify-between mb-4">
               <span className="text-forest dark:text-white font-medium">Subtotal</span>
-              <span className="text-xl font-bold text-forest dark:text-white">${totalPrice.toFixed(2)}</span>
+              <span className="text-xl font-bold text-forest dark:text-white">₦{totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <button className="w-full bg-primary text-forest font-bold py-4 rounded-xl hover:brightness-105 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
               Checkout Now <span className="material-symbols-outlined">arrow_forward</span>
@@ -146,7 +146,8 @@ export const PublicHeader: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-forest/10 dark:border-white/10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md">
-        <div className="max-w-[1280px] mx-auto px-6 lg:px-10 py-4 flex items-center justify-between">
+        {/* Increased max-width to 1600px for wider fit */}
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 relative z-50">
             <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-forest">
               <span className="material-symbols-outlined font-bold">solar_power</span>
@@ -259,7 +260,8 @@ export const PublicHeader: React.FC = () => {
 
 export const PublicFooter: React.FC = () => (
   <footer className="bg-background-light dark:bg-black py-20 border-t border-forest/5 dark:border-white/5">
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+    {/* Increased Width */}
+    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
           <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-forest">
@@ -304,7 +306,7 @@ export const PublicFooter: React.FC = () => (
         </ul>
       </div>
     </div>
-    <div className="max-w-[1280px] mx-auto px-6 lg:px-10 mt-20 pt-8 border-t border-forest/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 mt-20 pt-8 border-t border-forest/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
       <p className="text-forest/40 dark:text-white/40 text-sm">© 2024 Greenlife Solar Solutions LTD. All rights reserved.</p>
     </div>
   </footer>
