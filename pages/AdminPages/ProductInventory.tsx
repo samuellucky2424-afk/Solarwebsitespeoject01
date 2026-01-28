@@ -24,6 +24,10 @@ const ProductInventory: React.FC = () => {
                 <span className="material-symbols-outlined">inventory_2</span>
                 <span className="text-sm">Product Management</span>
              </Link>
+             <Link to="/admin/gallery" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <span className="material-symbols-outlined">photo_library</span>
+                <span className="text-sm font-medium">Gallery</span>
+             </Link>
              <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <span className="material-symbols-outlined">group</span>
                 <span className="text-sm font-medium">Users</span>

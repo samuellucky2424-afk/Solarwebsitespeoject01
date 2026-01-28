@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { PublicHeader, PublicFooter } from '../../components/SharedComponents';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const ConsultationForm: React.FC = () => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleNext = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -24,6 +27,21 @@ const ConsultationForm: React.FC = () => {
       handleNext();
     }, 1500);
   };
+
+  useGSAP(() => {
+     // Animate the step content entrance whenever step changes
+     gsap.fromTo(".step-content", 
+       { opacity: 0, x: 20 },
+       { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" }
+     );
+     
+     // Animate progress bar fill
+     gsap.to(".progress-fill", {
+        width: step === 1 ? '33%' : step === 2 ? '66%' : '100%',
+        duration: 0.5,
+        ease: "power2.inOut"
+     });
+  }, { scope: containerRef, dependencies: [step] });
 
   const renderProgressBar = () => {
     let progress = 33;
@@ -53,7 +71,7 @@ const ConsultationForm: React.FC = () => {
             <p className="text-[#0d1b0f] dark:text-white text-sm font-medium leading-normal">{progress}% Complete</p>
           </div>
           <div className="rounded-full bg-[#cfe7d1] dark:bg-[#1a351c] h-2.5 overflow-hidden">
-            <div className="h-full bg-primary transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
+            <div className="progress-fill h-full bg-primary" style={{ width: `33%` }}></div>
           </div>
           <p className="text-[#4c9a52] dark:text-[#7ed484] text-sm font-normal leading-normal italic flex items-center gap-1">
             <span className="material-symbols-outlined text-sm">schedule</span> {nextLabel}
@@ -64,7 +82,7 @@ const ConsultationForm: React.FC = () => {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-[#0d1b0f] dark:text-white min-h-screen flex flex-col font-body">
+    <div ref={containerRef} className="bg-background-light dark:bg-background-dark text-[#0d1b0f] dark:text-white min-h-screen flex flex-col font-body overflow-x-hidden">
       <PublicHeader />
       <main className="flex-grow flex flex-col">
         <div className="max-w-[1200px] mx-auto w-full px-6 py-12">
@@ -84,7 +102,7 @@ const ConsultationForm: React.FC = () => {
                 
                 {/* Step 1: Property Details */}
                 {step === 1 && (
-                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="step-content">
                     <div className="p-8">
                       <div className="flex items-center gap-2 mb-6">
                         <h3 className="text-[#0d1b0f] dark:text-white tracking-tight text-2xl font-bold leading-tight">Property Details</h3>
@@ -136,7 +154,7 @@ const ConsultationForm: React.FC = () => {
 
                 {/* Step 2: Energy Analysis */}
                 {step === 2 && (
-                  <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="step-content">
                     <div className="p-8">
                       <div className="flex items-center gap-2 mb-6">
                         <h3 className="text-[#0d1b0f] dark:text-white tracking-tight text-2xl font-bold leading-tight">Energy Analysis</h3>
@@ -195,7 +213,7 @@ const ConsultationForm: React.FC = () => {
 
                 {/* Step 3: Contact Info */}
                 {step === 3 && (
-                   <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                   <div className="step-content">
                     <div className="p-8">
                       <div className="flex items-center gap-2 mb-6">
                         <h3 className="text-[#0d1b0f] dark:text-white tracking-tight text-2xl font-bold leading-tight">Final Details</h3>
@@ -234,7 +252,7 @@ const ConsultationForm: React.FC = () => {
 
                 {/* Step 4: Success */}
                 {step === 4 && (
-                   <div className="animate-in zoom-in duration-500 flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
+                   <div className="step-content flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
                       <div className="size-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
                          <span className="material-symbols-outlined text-5xl">check_circle</span>
                       </div>
@@ -242,7 +260,7 @@ const ConsultationForm: React.FC = () => {
                       <p className="text-lg text-gray-600 dark:text-gray-300 max-w-lg mb-8">
                          Thank you for trusting Greenlife Solar. Our engineering team is reviewing your property details. You will receive your personalized report within 24 hours.
                       </p>
-                      <button onClick={() => window.location.href = '/'} className="bg-primary text-forest px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform">
+                      <button onClick={() => window.location.href = '/'} className="bg-primary text-forest px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform active:scale-95">
                          Return to Home
                       </button>
                    </div>
@@ -260,11 +278,11 @@ const ConsultationForm: React.FC = () => {
                     </button>
                     
                     {step < 3 ? (
-                      <button onClick={handleNext} className="bg-primary text-forest px-10 py-3 rounded-lg font-bold hover:bg-opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                      <button onClick={handleNext} className="bg-primary text-forest px-10 py-3 rounded-lg font-bold hover:bg-opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2 active:scale-95">
                         Next Step <span className="material-symbols-outlined">arrow_forward</span>
                       </button>
                     ) : (
-                      <button onClick={handleSubmit} disabled={isSubmitting} className="bg-forest text-white px-10 py-3 rounded-lg font-bold hover:bg-opacity-90 shadow-lg transition-all flex items-center gap-2">
+                      <button onClick={handleSubmit} disabled={isSubmitting} className="bg-forest text-white px-10 py-3 rounded-lg font-bold hover:bg-opacity-90 shadow-lg transition-all flex items-center gap-2 active:scale-95">
                         {isSubmitting ? (
                           <span className="animate-spin material-symbols-outlined">progress_activity</span>
                         ) : (
