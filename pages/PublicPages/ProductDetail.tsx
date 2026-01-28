@@ -103,7 +103,7 @@ const ProductDetail: React.FC = () => {
             </div>
             
             <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-primary-dark">${product.price.toFixed(2)}</span>
+              <span className="text-3xl font-bold text-primary-dark">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             
             <p className="text-lg leading-relaxed opacity-80">

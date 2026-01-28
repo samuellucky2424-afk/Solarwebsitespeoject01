@@ -164,12 +164,12 @@ const ConsultationForm: React.FC = () => {
                         <div className="flex flex-col gap-2">
                           <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal flex justify-between">
                             <span>Average Monthly Electric Bill</span>
-                            <span className="text-primary font-bold">$250</span>
+                            <span className="text-primary font-bold">₦250</span>
                           </label>
                           <input type="range" min="50" max="1000" defaultValue="250" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary" />
                           <div className="flex justify-between text-xs text-gray-500 font-medium">
-                            <span>$50</span>
-                            <span>$1000+</span>
+                            <span>₦50</span>
+                            <span>₦1000+</span>
                           </div>
                         </div>
 

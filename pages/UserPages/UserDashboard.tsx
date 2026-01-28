@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Toast } from '../../components/SharedComponents';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Types ---
 interface ServiceRequest {
@@ -52,6 +53,7 @@ const SidebarLink: React.FC<{ to: string, icon: string, label: string, active?: 
 
 const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   // --- State ---
   const [user] = useState<UserProfile>({
@@ -83,6 +85,12 @@ const UserDashboard: React.FC = () => {
 
   const handleBookService = () => {
     setIsServiceModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      logout();
+    }
   };
 
   const handleServiceOption = (option: number) => {
@@ -223,9 +231,16 @@ const UserDashboard: React.FC = () => {
               <SidebarLink to="/dashboard" icon="person" label="Profile" />
             </nav>
             <div className="mt-auto pt-6 border-t border-[#e7f3eb] dark:border-white/10">
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 py-3 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors mb-6"
+              >
+                <span className="material-symbols-outlined text-lg">logout</span> Log Out
+              </button>
+
               <div className="bg-primary/10 rounded-xl p-4 mb-4">
                 <p className="text-xs text-[#0d1b12] dark:text-white font-bold mb-2 uppercase tracking-wider">Referral Program</p>
-                <p className="text-xs text-[#4c9a66] dark:text-gray-400 mb-3">Earn $100 for every friend who goes solar.</p>
+                <p className="text-xs text-[#4c9a66] dark:text-gray-400 mb-3">Earn ₦100,000 for every friend who goes solar.</p>
                 <button onClick={handleReferral} className="w-full bg-primary text-[#0d1b12] py-2 rounded-lg text-sm font-bold hover:opacity-90 transition-opacity">Refer a Friend</button>
               </div>
               <div className="flex items-center gap-3">
@@ -383,7 +398,7 @@ const UserDashboard: React.FC = () => {
                               <td className="py-4">
                                 <span className={`text-xs ${getStatusColor(order.status)}`}>{order.status}</span>
                               </td>
-                              <td className="py-4 pr-2 text-right font-bold text-[#0d1b12] dark:text-white">${order.amount.toFixed(2)}</td>
+                              <td className="py-4 pr-2 text-right font-bold text-[#0d1b12] dark:text-white">₦{order.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                           ))
                         ) : (

@@ -1,7 +1,9 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { GalleryProvider } from './context/GalleryContext';
+import { AdminProvider } from './context/AdminContext';
+import { AuthProvider } from './context/AuthContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
 
 // Lazy load components to improve initial load performance and handle refreshes gracefully
@@ -24,19 +26,6 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  return null;
-};
-
-// Component to force redirect to home on initial load/refresh
-const ForceHomeRedirect = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    // Navigate to root on mount if not already there.
-    // This ensures that refreshing the page always brings the user back to the homepage.
-    if (window.location.hash !== '#/') {
-      navigate('/');
-    }
-  }, [navigate]);
   return null;
 };
 
@@ -67,38 +56,41 @@ const PageLoader = () => (
 const App: React.FC = () => {
   return (
     <GalleryProvider>
-      <CartProvider>
-        <HashRouter>
-          <ScrollToTop />
-          <ForceHomeRedirect />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/products" element={<ProductCatalog />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/consultation" element={<ConsultationForm />} />
-              <Route path="/contact" element={<ContactPage />} />
-              
-              {/* Auth Routes */}
-              <Route path="/login" element={<UserLogin />} />
-              <Route path="/admin" element={<AdminLogin />} />
+      <AdminProvider>
+        <CartProvider>
+          <HashRouter>
+            <AuthProvider>
+              <ScrollToTop />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/products" element={<ProductCatalog />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/consultation" element={<ConsultationForm />} />
+                  <Route path="/contact" element={<ContactPage />} />
+                  
+                  {/* Auth Routes */}
+                  <Route path="/login" element={<UserLogin />} />
+                  <Route path="/admin" element={<AdminLogin />} />
 
-              {/* User Protected Routes */}
-              <Route path="/dashboard" element={<UserDashboard />} />
-              <Route path="/requests" element={<UserRequests />} />
-              <Route path="/service-request" element={<ServiceRequestForm />} />
+                  {/* User Protected Routes */}
+                  <Route path="/dashboard" element={<UserDashboard />} />
+                  <Route path="/requests" element={<UserRequests />} />
+                  <Route path="/service-request" element={<ServiceRequestForm />} />
 
-              {/* Admin Protected Routes */}
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/inventory" element={<ProductInventory />} />
-              <Route path="/admin/gallery" element={<AdminGallery />} />
-            </Routes>
-          </Suspense>
-          <CartDrawer />
-          <FloatingCartButton />
-        </HashRouter>
-      </CartProvider>
+                  {/* Admin Protected Routes */}
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route path="/admin/inventory" element={<ProductInventory />} />
+                  <Route path="/admin/gallery" element={<AdminGallery />} />
+                </Routes>
+              </Suspense>
+              <CartDrawer />
+              <FloatingCartButton />
+            </AuthProvider>
+          </HashRouter>
+        </CartProvider>
+      </AdminProvider>
     </GalleryProvider>
   );
 };

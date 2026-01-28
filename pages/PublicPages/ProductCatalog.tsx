@@ -18,7 +18,7 @@ const ProductCatalog: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const { addToCart } = useCart();
-  const itemsPerPage = 20; // Increased to accommodate denser grid
+  const itemsPerPage = 20; 
   const containerRef = useRef<HTMLDivElement>(null);
 
   // --- Handlers ---
@@ -83,17 +83,25 @@ const ProductCatalog: React.FC = () => {
 
   // --- GSAP Animations ---
   useGSAP(() => {
+    // Force items to be visible first to avoid them getting stuck
+    gsap.set(".product-item", { opacity: 0, y: 30 });
+    
     // Animate grid items whenever paginatedProducts changes
-    gsap.fromTo(".product-item", 
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" }
-    );
+    gsap.to(".product-item", {
+      opacity: 1, 
+      y: 0, 
+      duration: 0.5, 
+      stagger: 0.05, 
+      ease: "power2.out",
+      clearProps: "transform" // Clean up transform to prevent blurriness
+    });
   }, { scope: containerRef, dependencies: [paginatedProducts] });
 
   useGSAP(() => {
-     gsap.from(".filter-sidebar > *", {
-       opacity: 0, x: -20, duration: 0.6, stagger: 0.05, ease: "power2.out"
-     });
+     gsap.fromTo(".filter-sidebar > *", 
+       { opacity: 0, x: -20 },
+       { opacity: 1, x: 0, duration: 0.6, stagger: 0.05, ease: "power2.out" }
+     );
   }, { scope: containerRef });
 
   return (
@@ -101,7 +109,8 @@ const ProductCatalog: React.FC = () => {
       <PublicHeader />
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
       
-      <main className="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 flex-1 w-full">
+      {/* Full width container */}
+      <main className="w-full max-w-[1920px] mx-auto px-4 lg:px-12 py-8 flex-1">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 mb-8 text-sm">
           <Link to="/" className="text-primary-dark hover:underline">Home</Link>
@@ -122,7 +131,7 @@ const ProductCatalog: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <aside className={`filter-sidebar ${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300 lg:animate-none`}>
+          <aside className={`filter-sidebar ${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-72 shrink-0 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300 lg:animate-none`}>
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg flex items-center gap-2 text-forest dark:text-white">
                 <span className="material-symbols-outlined text-primary-dark">filter_list</span>
@@ -166,7 +175,7 @@ const ProductCatalog: React.FC = () => {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                  <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Max Price</h3>
-                 <span className="text-xs font-bold text-primary-dark">${priceMax}</span>
+                 <span className="text-xs font-bold text-primary-dark">₦{priceMax.toLocaleString()}</span>
               </div>
               <div className="relative pt-1 px-2">
                 <input 
@@ -182,8 +191,8 @@ const ProductCatalog: React.FC = () => {
                   className="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary-dark"
                 />
                 <div className="flex justify-between mt-2 text-xs font-medium text-slate-600 dark:text-gray-400">
-                  <span>$0</span>
-                  <span>$5,000+</span>
+                  <span>₦0</span>
+                  <span>₦5,000+</span>
                 </div>
               </div>
             </div>
@@ -233,9 +242,9 @@ const ProductCatalog: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Grid - 3 cols mobile, 4 cols tablet, 5 cols desktop */}
+            {/* Product Grid - Responsive Columns */}
             {paginatedProducts.length > 0 ? (
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-6">
                 {paginatedProducts.map((product) => (
                   <div key={product.id} className="product-item group bg-white dark:bg-white/5 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 hover:border-primary-dark/50 transition-all hover:shadow-xl flex flex-col">
                     <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
@@ -268,7 +277,7 @@ const ProductCatalog: React.FC = () => {
                       </div>
 
                       <div className="flex items-center justify-between pt-2 md:pt-4 border-t border-slate-50 dark:border-white/5 mt-2 md:mt-4">
-                        <div className="text-sm md:text-xl font-bold text-forest dark:text-white">${product.price.toFixed(2)}</div>
+                        <div className="text-sm md:text-xl font-bold text-forest dark:text-white">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                         <button 
                           onClick={() => handleAddToCart(product)}
                           className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-1.5 md:p-2 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"

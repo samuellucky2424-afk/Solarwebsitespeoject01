@@ -1,15 +1,16 @@
 import React, { useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { useAuth } from '../../context/AuthContext';
 
 const UserLogin: React.FC = () => {
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    login();
   };
 
   useGSAP(() => {
