@@ -1,18 +1,41 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     navigate('/dashboard');
   };
 
+  useGSAP(() => {
+    // Animate Left Panel
+    gsap.from(".visual-panel", {
+       x: -100,
+       opacity: 0,
+       duration: 1,
+       ease: "power3.out"
+    });
+
+    // Animate Right Panel Content
+    gsap.from(".auth-content > *", {
+       y: 20,
+       opacity: 0,
+       duration: 0.8,
+       stagger: 0.1,
+       ease: "power2.out",
+       delay: 0.2
+    });
+  }, { scope: containerRef });
+
   return (
-    <div className="flex min-h-screen bg-background-light dark:bg-background-dark text-forest dark:text-white">
+    <div ref={containerRef} className="flex min-h-screen bg-background-light dark:bg-background-dark text-forest dark:text-white overflow-x-hidden">
       {/* Visual Panel (Left) */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-background-dark">
+      <div className="visual-panel hidden lg:flex lg:w-1/2 relative overflow-hidden bg-background-dark">
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-background-dark/80 via-background-dark/20 to-transparent"></div>
         <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDywjTY-ACoD5T274KEVbpjZpt1UsEACtIVbJMHCRFz6yvYkav1NDLgGVB_12KHvz-YIZHvQUer2FW__NQSlJOCK6aBQToLrM1_jTtkSfTu3dzqCouMKKe34n-UORwMKpwM_DqoWczq5GQZ_mTkp3jJIYcvRpXWs79XAgX29VkaUNEqffEILxgiOYXS2Ly14ndhnImJeE65WQdbkLJxGkoe6e68SEVHC_hPpQssIcTjsuT8vbXHWHITKEwrs4a-xvJ_6MXOM352ob4')" }}></div>
         <div className="relative z-20 flex flex-col justify-between p-16 w-full">
@@ -40,7 +63,7 @@ const UserLogin: React.FC = () => {
       </div>
       {/* Authentication Panel (Right) */}
       <div className="w-full lg:w-1/2 flex flex-col px-6 sm:px-12 lg:px-24 justify-center">
-        <div className="mx-auto w-full max-w-[440px]">
+        <div className="auth-content mx-auto w-full max-w-[440px]">
           <div className="mb-8">
             <h2 className="text-3xl font-black tracking-tight">Welcome back</h2>
             <p className="text-primary-dark dark:text-green-300 mt-2">Enter your details to access your dashboard</p>
@@ -96,7 +119,7 @@ const UserLogin: React.FC = () => {
               <input className="size-4 rounded border-gray-300 text-primary focus:ring-primary" id="remember" type="checkbox" />
               <label className="text-sm text-gray-500 dark:text-gray-400" htmlFor="remember">Remember me for 30 days</label>
             </div>
-            <button className="w-full bg-primary hover:bg-opacity-90 text-forest font-black h-14 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2" type="submit">
+            <button className="w-full bg-primary hover:bg-opacity-90 text-forest font-black h-14 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95" type="submit">
               <span>Sign In to Dashboard</span>
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>

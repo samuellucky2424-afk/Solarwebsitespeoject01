@@ -1,8 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
 import { productsData, Product } from '../../data/products';
 import { useCart } from '../../context/CartContext';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const ProductCatalog: React.FC = () => {
   // --- State Management ---
@@ -16,8 +18,8 @@ const ProductCatalog: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const { addToCart } = useCart();
-
   const itemsPerPage = 6;
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // --- Handlers ---
   const toggleCategory = (cat: string) => {
@@ -79,8 +81,23 @@ const ProductCatalog: React.FC = () => {
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
+  // --- GSAP Animations ---
+  useGSAP(() => {
+    // Animate grid items whenever paginatedProducts changes
+    gsap.fromTo(".product-item", 
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+    );
+  }, { scope: containerRef, dependencies: [paginatedProducts] });
+
+  useGSAP(() => {
+     gsap.from(".filter-sidebar > *", {
+       opacity: 0, x: -20, duration: 0.6, stagger: 0.05, ease: "power2.out"
+     });
+  }, { scope: containerRef });
+
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-body">
+    <div ref={containerRef} className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-body overflow-x-hidden">
       <PublicHeader />
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
       
@@ -105,7 +122,7 @@ const ProductCatalog: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <aside className={`${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300 lg:animate-none`}>
+          <aside className={`filter-sidebar ${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300 lg:animate-none`}>
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-lg flex items-center gap-2 text-forest dark:text-white">
                 <span className="material-symbols-outlined text-primary-dark">filter_list</span>
@@ -220,7 +237,7 @@ const ProductCatalog: React.FC = () => {
             {paginatedProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {paginatedProducts.map((product) => (
-                  <div key={product.id} className="group bg-white dark:bg-white/5 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 hover:border-primary-dark/50 transition-all hover:shadow-xl flex flex-col">
+                  <div key={product.id} className="product-item group bg-white dark:bg-white/5 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 hover:border-primary-dark/50 transition-all hover:shadow-xl flex flex-col">
                     <div className="relative h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={product.img} alt={product.name} />
                       {product.tag && (
@@ -251,7 +268,7 @@ const ProductCatalog: React.FC = () => {
                         <div className="text-2xl font-bold text-forest dark:text-white">${product.price.toFixed(2)}</div>
                         <button 
                           onClick={() => handleAddToCart(product)}
-                          className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-2 rounded-lg transition-all flex items-center justify-center"
+                          className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-2 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"
                         >
                           <span className="material-symbols-outlined">add_shopping_cart</span>
                         </button>

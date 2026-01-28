@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
 import { productsData } from '../../data/products';
 import { useCart } from '../../context/CartContext';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -10,12 +12,36 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [toast, setToast] = useState<{ msg: string } | null>(null);
   const { addToCart } = useCart();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const found = productsData.find(p => p.id === Number(id));
     if (found) setProduct(found);
   }, [id]);
+
+  useGSAP(() => {
+    if (!product) return;
+    
+    // Image enters from left
+    gsap.from(".product-image-container", {
+      x: -50,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power3.out"
+    });
+
+    // Details enter from right with stagger
+    gsap.from(".product-details > *", {
+      x: 30,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: "power3.out",
+      delay: 0.1
+    });
+
+  }, { scope: containerRef, dependencies: [product] });
 
   if (!product) {
     return (
@@ -41,7 +67,7 @@ const ProductDetail: React.FC = () => {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-forest dark:text-[#f8fcf8] min-h-screen">
+    <div ref={containerRef} className="bg-background-light dark:bg-background-dark font-display text-forest dark:text-[#f8fcf8] min-h-screen overflow-x-hidden">
       <PublicHeader />
       {toast && <Toast message={toast.msg} onClose={() => setToast(null)} />}
       
@@ -56,7 +82,7 @@ const ProductDetail: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
           {/* Left Column: Gallery */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className="lg:col-span-7 space-y-4 product-image-container">
             <div className="rounded-xl overflow-hidden bg-white dark:bg-[#1a2e1c] border border-[#e7f3e8] dark:border-[#2a3a2c] aspect-[4/3] relative group">
               <div className="w-full h-full bg-center bg-no-repeat bg-cover transition-transform duration-500 group-hover:scale-105" style={{ backgroundImage: `url('${product.img}')` }}></div>
               {product.badge && <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/50 backdrop-blur px-3 py-1 rounded-lg text-xs font-bold">{product.badge}</div>}
@@ -64,7 +90,7 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Right Column: Details */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
+          <div className="lg:col-span-5 flex flex-col gap-6 product-details">
             <div>
               <span className="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-bold uppercase tracking-wider mb-2">{product.series}</span>
               <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight mb-2">{product.name}</h1>
@@ -117,7 +143,7 @@ const ProductDetail: React.FC = () => {
                 </div>
                 <button 
                   onClick={handleAddToCart}
-                  className="flex-1 bg-primary text-forest font-bold py-4 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                  className="flex-1 bg-primary text-forest font-bold py-4 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95"
                 >
                   <span className="material-symbols-outlined">shopping_cart</span>
                   Add to Cart
@@ -125,7 +151,7 @@ const ProductDetail: React.FC = () => {
               </div>
               <button 
                 onClick={handleRequestQuote}
-                className="w-full border-2 border-primary text-primary font-bold py-4 rounded-lg hover:bg-primary hover:text-forest transition-all flex items-center justify-center gap-2"
+                className="w-full border-2 border-primary text-primary font-bold py-4 rounded-lg hover:bg-primary hover:text-forest transition-all flex items-center justify-center gap-2 active:scale-95"
               >
                 <span className="material-symbols-outlined">request_quote</span>
                 Request Installation Quote

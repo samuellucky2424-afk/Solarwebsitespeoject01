@@ -26,6 +26,10 @@ const AdminDashboard: React.FC = () => {
             <span className="material-symbols-outlined">inventory_2</span>
             <span className="text-sm">Products</span>
           </Link>
+          <Link to="/admin/gallery" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f] transition-colors">
+            <span className="material-symbols-outlined">photo_library</span>
+            <span className="text-sm">Gallery</span>
+          </Link>
           <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f] transition-colors">
             <span className="material-symbols-outlined">request_quote</span>
             <span className="text-sm">Quotation Requests</span>

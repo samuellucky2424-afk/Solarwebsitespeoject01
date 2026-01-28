@@ -1,6 +1,7 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { GalleryProvider } from './context/GalleryContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
 
 // Lazy load components to improve initial load performance and handle refreshes gracefully
@@ -14,6 +15,7 @@ const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
 const UserRequests = lazy(() => import('./pages/UserPages/UserRequests'));
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));
 const ProductInventory = lazy(() => import('./pages/AdminPages/ProductInventory'));
+const AdminGallery = lazy(() => import('./pages/AdminPages/AdminGallery'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -49,34 +51,37 @@ const PageLoader = () => (
 
 const App: React.FC = () => {
   return (
-    <CartProvider>
-      <HashRouter>
-        <ScrollToTop />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/products" element={<ProductCatalog />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/consultation" element={<ConsultationForm />} />
-            
-            {/* Auth Routes */}
-            <Route path="/login" element={<UserLogin />} />
-            <Route path="/admin" element={<AdminLogin />} />
+    <GalleryProvider>
+      <CartProvider>
+        <HashRouter>
+          <ScrollToTop />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/products" element={<ProductCatalog />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/consultation" element={<ConsultationForm />} />
+              
+              {/* Auth Routes */}
+              <Route path="/login" element={<UserLogin />} />
+              <Route path="/admin" element={<AdminLogin />} />
 
-            {/* User Protected Routes */}
-            <Route path="/dashboard" element={<UserDashboard />} />
-            <Route path="/requests" element={<UserRequests />} />
+              {/* User Protected Routes */}
+              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/requests" element={<UserRequests />} />
 
-            {/* Admin Protected Routes */}
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/inventory" element={<ProductInventory />} />
-          </Routes>
-        </Suspense>
-        <CartDrawer />
-        <FloatingCartButton />
-      </HashRouter>
-    </CartProvider>
+              {/* Admin Protected Routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/inventory" element={<ProductInventory />} />
+              <Route path="/admin/gallery" element={<AdminGallery />} />
+            </Routes>
+          </Suspense>
+          <CartDrawer />
+          <FloatingCartButton />
+        </HashRouter>
+      </CartProvider>
+    </GalleryProvider>
   );
 };
 
