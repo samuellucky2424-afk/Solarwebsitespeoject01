@@ -68,7 +68,7 @@ const AdminLogin: React.FC = () => {
                   <span className="material-symbols-outlined text-primary">cell_tower</span>
                   <div>
                     <p className="text-white text-xs font-bold">Two-Factor Authentication</p>
-                    <p class="text-gray-400 text-[11px]">Prompt will be triggered upon credential verification.</p>
+                    <p className="text-gray-400 text-[11px]">Prompt will be triggered upon credential verification.</p>
                   </div>
                 </div>
               </div>
@@ -92,11 +92,11 @@ const AdminLogin: React.FC = () => {
             <div className="flex gap-4">
               <div className="flex items-center gap-1 text-[#4c9a66]">
                 <span className="material-symbols-outlined text-[16px]">verified_user</span>
-                <span class="text-[10px] font-bold">256-BIT SSL</span>
+                <span className="text-[10px] font-bold">256-BIT SSL</span>
               </div>
               <div className="flex items-center gap-1 text-[#4c9a66]">
                 <span className="material-symbols-outlined text-[16px]">security</span>
-                <span class="text-[10px] font-bold">SOC2 COMPLIANT</span>
+                <span className="text-[10px] font-bold">SOC2 COMPLIANT</span>
               </div>
             </div>
           </div>
