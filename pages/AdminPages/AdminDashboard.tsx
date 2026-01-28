@@ -1,7 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard: React.FC = () => {
+  const [newRequests, setNewRequests] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Simulate fetching new requests from "Backend" (Local Storage)
+    const stored = localStorage.getItem('greenlife_requests');
+    if (stored) {
+      setNewRequests(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleDismiss = (id: string) => {
+    // In a real app, delete from DB. Here, just filter from state and update LS
+    const updated = newRequests.filter(req => req.id !== id);
+    setNewRequests(updated);
+    localStorage.setItem('greenlife_requests', JSON.stringify(updated));
+  };
+
   return (
     <div className="bg-background-light dark:bg-background-dark text-[#0d1b0f] dark:text-white font-display flex h-screen overflow-hidden">
       {/* Sidebar */}
@@ -75,7 +92,34 @@ const AdminDashboard: React.FC = () => {
               </h2>
               <button className="text-sm text-primary font-medium hover:underline">View all alerts</button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+               {/* Incoming Dynamic Requests */}
+               {newRequests.length > 0 && newRequests.map((req) => (
+                 <div key={req.id} className="flex gap-4 p-5 bg-white dark:bg-[#152a17] border border-[#cfe7d1] dark:border-[#2a3d2c] rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <div className="size-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-blue-600">
+                        {req.type === 'Maintenance' ? 'build' : 'assignment'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col gap-1 flex-1">
+                      <div className="flex justify-between items-start">
+                         <h3 className="text-lg font-bold">{req.title}</h3>
+                         <span className="text-[10px] font-bold bg-blue-100 dark:bg-blue-900/30 text-blue-600 px-2 py-0.5 rounded uppercase">{req.type}</span>
+                      </div>
+                      <p className="text-sm font-bold text-forest dark:text-white">{req.customer}</p>
+                      <p className="text-[#4c9a52] text-xs leading-relaxed line-clamp-2">{req.description || `Request from ${req.address}`}</p>
+                      <p className="text-xs text-gray-500 mt-1">Scheduled: {req.scheduledDate}</p>
+                      <div className="mt-4 flex gap-3">
+                        <button className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700">Approve</button>
+                        <button onClick={() => handleDismiss(req.id)} className="px-4 py-1.5 border border-[#cfe7d1] text-[#4c9a52] text-xs font-bold rounded-lg hover:bg-background-light">Dismiss</button>
+                      </div>
+                    </div>
+                 </div>
+               ))}
+
+               {/* Hardcoded Sample Alert 1 */}
                <div className="flex gap-4 p-5 bg-white dark:bg-[#152a17] border border-[#cfe7d1] dark:border-[#2a3d2c] rounded-xl shadow-sm hover:shadow-md transition-shadow">
                   <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-primary">schedule</span>
@@ -89,6 +133,8 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                </div>
+               
+               {/* Hardcoded Sample Alert 2 */}
                <div className="flex gap-4 p-5 bg-white dark:bg-[#152a17] border border-[#cfe7d1] dark:border-[#2a3d2c] rounded-xl shadow-sm hover:shadow-md transition-shadow">
                   <div className="size-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-red-600">warning</span>

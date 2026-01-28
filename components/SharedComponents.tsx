@@ -270,6 +270,14 @@ export const PublicFooter: React.FC = () => (
         <p className="text-forest/60 dark:text-white/60">
           Leading the transition to sustainable energy since 2012. Professional solutions for a brighter, cleaner future.
         </p>
+        <div className="flex gap-4">
+           <a href="https://www.facebook.com/GreenlifeSolarsolution" target="_blank" rel="noopener noreferrer" className="size-10 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-forest dark:text-white">
+             <img src="https://cdn.simpleicons.org/facebook" className="w-4 h-4 opacity-60 hover:opacity-100 dark:invert" alt="facebook" />
+           </a>
+           <a href="https://www.instagram.com/greenlife_solarsolution?igsh=YjFiZHk0ajc3b2Yx" target="_blank" rel="noopener noreferrer" className="size-10 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-forest dark:text-white">
+             <img src="https://cdn.simpleicons.org/instagram" className="w-4 h-4 opacity-60 hover:opacity-100 dark:invert" alt="instagram" />
+           </a>
+        </div>
       </div>
       <div>
         <h4 className="font-bold text-lg mb-6 text-forest dark:text-white">Services</h4>
@@ -290,8 +298,9 @@ export const PublicFooter: React.FC = () => (
       <div>
         <h4 className="font-bold text-lg mb-6 text-forest dark:text-white">Contact</h4>
         <ul className="flex flex-col gap-4 text-forest/60 dark:text-white/60 text-sm">
-          <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">location_on</span>123 Solar Way, Eco Park</li>
-          <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">phone</span>+1 (555) 000-GREEN</li>
+          <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">location_on</span>Total plaza, 78 Old Lagos -Asaba Rd, Delta</li>
+          <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">phone</span>0903 657 0294</li>
+          <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">mail</span>infogreenlifetechnology@gmail.com</li>
         </ul>
       </div>
     </div>

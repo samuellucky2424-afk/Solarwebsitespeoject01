@@ -1,17 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Toast } from '../../components/SharedComponents';
 
 // --- Types ---
-interface SystemStat {
-  id: number;
-  label: string;
-  value: string;
-  perc: string;
-  sub: string;
-  trend: 'up' | 'down';
-}
-
 interface ServiceRequest {
   id: string;
   title: string;
@@ -28,43 +19,28 @@ interface Order {
   amount: number;
 }
 
-interface Recommendation {
-  id: number;
-  title: string;
-  sub: string;
-  img: string;
-  badge?: string;
-}
-
 interface UserProfile {
   firstName: string;
   fullName: string;
   plan: string;
   systemName: string;
+  installDate: string;
+  systemStatus: 'Operational' | 'Maintenance' | 'Offline';
   avatar: string;
+  address: string;
 }
 
 // --- Initial Data (Simulated Backend Response) ---
-const INITIAL_STATS: SystemStat[] = [
-  { id: 1, label: "Current Output", value: "4.2 kW", perc: "5.2%", sub: "Real-time solar collection", trend: 'up' },
-  { id: 2, label: "Daily Generation", value: "28.5 kWh", perc: "2.1%", sub: "Total for Today", trend: 'up' },
-  { id: 3, label: "Total CO2 Saved", value: "1.2 Tons", perc: "0.8%", sub: "Equivalent to 45 trees planted", trend: 'up' }
-];
-
 const INITIAL_SERVICES: ServiceRequest[] = [
   { id: "#GS-9921", title: "Annual Maintenance", date: "July 30, 2024", status: "In Progress", type: "Maintenance" },
-  { id: "#GS-9922", title: "Battery Expansion", date: "Aug 15, 2024", status: "Pending Review", type: "Upgrade" }
+  { id: "#GS-9922", title: "Battery Expansion Consultation", date: "Aug 15, 2024", status: "Pending Review", type: "Upgrade" },
+  { id: "#GS-8842", title: "Site Survey Request", date: "Sep 15, 2023", status: "Completed", type: "Survey" }
 ];
 
 const INITIAL_ORDERS: Order[] = [
   { id: "ORD-001", product: "Smart Inverter Pro", date: "Jun 12, 2024", status: "Shipped", amount: 1299.00 },
   { id: "ORD-002", product: "Solar Cleaning Kit", date: "May 20, 2024", status: "Delivered", amount: 89.50 },
   { id: "ORD-003", product: "Panel Mount Rack (x4)", date: "Apr 05, 2024", status: "Delivered", amount: 450.00 }
-];
-
-const RECOMMENDATIONS: Recommendation[] = [
-  { id: 1, title: "EcoVault 10kWh Battery", sub: "Backup power for 24 hours.", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuD45N8JdcJREqjSdTUMp62EwFiMv1iMK5764PhVjEs5_cxnJwMlnWndup6-VQE8EQu7Eg08g8KK6LloJ1Gppr8TaOLeHr-0E8Z1D_Ztlp13B80DeT_xtz95osWwKJShdmen17Fiy0KOG4fW_YUduOQGfVz_ocgsn-cddK8zA8iqS0rOXziIRosbe6mah4VJ0t1rkRFjys8e7A_brOhln_4moDaWnsJrr-MvwauRGkjXBbZZ_pxZWJSqkvKxk5Xe73H-UmVVq4Twe-M", badge: "SALE -20%" },
-  { id: 2, title: "Additional Panel XL", sub: "Boost generation by 15%.", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-pH4cTSTGj2MMn0_CDbMnLqRdxh37YxSy88LrkhvPeRyo0NsBTAAo_n5kEdUlUPBu6PJfqkRBsjrxvm7FMOqGgPbs2eYeEPfCvDreuvnal7yKxJisvzNQbDZO3IU7T5kxXDqO3IEE-eHkXxPeUrd3Ik1kLLW8tNqn_TLZcaEf6UUb-j7dxOyZKjCbN5geIpqEFXuWY4IfAXozzhQ93XntDGfd_bw7ylfWo1rmtoOB_a1jsDF6flyFnT5A-Uyv-akGbJ1LVWQqb8Y" }
 ];
 
 const SidebarLink: React.FC<{ to: string, icon: string, label: string, active?: boolean }> = ({ to, icon, label, active }) => (
@@ -78,21 +54,23 @@ const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // --- State ---
-  // User Profile State (Replaces hardcoded JSX)
   const [user] = useState<UserProfile>({
     firstName: "Alex",
     fullName: "Alex Johnson",
-    plan: "Standard Plan",
-    systemName: "5kW Residential System",
+    plan: "Gold Maintenance Plan",
+    systemName: "5kW Hybrid Residential System",
+    installDate: "March 12, 2023",
+    systemStatus: "Operational",
+    address: "123 Solar Blvd, Sunnyville, CA",
     avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw"
   });
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [services, setServices] = useState<ServiceRequest[]>(INITIAL_SERVICES);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [stats] = useState<SystemStat[]>(INITIAL_STATS);
+  const [services] = useState<ServiceRequest[]>(INITIAL_SERVICES);
+  const [orders] = useState<Order[]>(INITIAL_ORDERS);
   const [notifications, setNotifications] = useState(3);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   
   // Theme State
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
@@ -104,13 +82,18 @@ const UserDashboard: React.FC = () => {
   };
 
   const handleBookService = () => {
-    // Navigate to the booking/consultation page
-    navigate('/consultation');
+    setIsServiceModalOpen(true);
   };
 
-  const handleScheduleNew = () => {
-    // Navigate to the schedule/consultation page
-    navigate('/consultation');
+  const handleServiceOption = (option: number) => {
+    setIsServiceModalOpen(false);
+    if (option === 1) {
+      navigate('/service-request?type=maintenance');
+    } else if (option === 2) {
+      navigate('/consultation');
+    } else if (option === 3) {
+      navigate('/service-request?type=survey');
+    }
   };
 
   const toggleTheme = () => {
@@ -153,8 +136,9 @@ const UserDashboard: React.FC = () => {
   const getServiceStatusStyles = (status: string) => {
     switch(status) {
       case 'In Progress': return 'bg-primary/20 text-[#0d1b12] dark:text-primary';
-      case 'Pending Review': return 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400';
+      case 'Pending Review': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
       case 'Scheduled': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+      case 'Completed': return 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
       default: return 'bg-gray-100 text-gray-500';
     }
   };
@@ -163,6 +147,61 @@ const UserDashboard: React.FC = () => {
     <div className="bg-background-light dark:bg-background-dark text-[#0d1b12] dark:text-white transition-colors duration-200 font-display">
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
       
+      {/* Service Selection Modal */}
+      {isServiceModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsServiceModalOpen(false)}></div>
+          <div className="relative bg-white dark:bg-[#152a17] rounded-3xl p-8 max-w-4xl w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setIsServiceModalOpen(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-black text-forest dark:text-white mb-2">Select a Service</h2>
+              <p className="text-[#4c9a66] dark:text-gray-300">Choose the type of assistance you need today.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <button 
+                onClick={() => handleServiceOption(1)}
+                className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-[#e7f3eb] dark:border-white/10 hover:border-primary hover:bg-primary/5 transition-all hover:-translate-y-1"
+              >
+                <div className="size-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">build_circle</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">Maintenance Request</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Report issues with inverters, batteries, or cameras. Schedule repairs.</p>
+              </button>
+
+              <button 
+                onClick={() => handleServiceOption(2)}
+                className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-[#e7f3eb] dark:border-white/10 hover:border-primary hover:bg-primary/5 transition-all hover:-translate-y-1"
+              >
+                <div className="size-16 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">support_agent</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">Consultation Request</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Speak with an expert about upgrades, savings reports, or general advice.</p>
+              </button>
+
+              <button 
+                onClick={() => handleServiceOption(3)}
+                className="group flex flex-col items-center text-center p-6 rounded-2xl border-2 border-[#e7f3eb] dark:border-white/10 hover:border-primary hover:bg-primary/5 transition-all hover:-translate-y-1"
+              >
+                <div className="size-16 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="material-symbols-outlined text-3xl">home_work</span>
+                </div>
+                <h3 className="text-xl font-bold mb-2">House & Load Survey</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Apply for an on-site professional assessment of your property.</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="w-72 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-screen sticky top-0 hidden lg:flex">
@@ -211,7 +250,7 @@ const UserDashboard: React.FC = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full bg-background-light dark:bg-background-dark border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary transition-all text-forest dark:text-white placeholder:text-gray-400" 
-                  placeholder="Search orders, services, or products..." 
+                  placeholder="Search..." 
                   type="text" 
                 />
               </div>
@@ -237,7 +276,7 @@ const UserDashboard: React.FC = () => {
             <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
                 <h1 className="text-4xl font-black tracking-tight mb-2">Welcome back, {user.firstName}!</h1>
-                <p className="text-[#4c9a66] text-lg">Your system is performing optimally. Here is your energy overview today.</p>
+                <p className="text-[#4c9a66] text-lg">Manage your solar system, orders, and service requests.</p>
               </div>
               <button 
                 onClick={handleBookService}
@@ -247,143 +286,116 @@ const UserDashboard: React.FC = () => {
               </button>
             </section>
             
-            {/* Stats Grid */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.map((stat) => (
-                <div key={stat.id} className="bg-white dark:bg-[#1a2e21] p-6 rounded-xl border border-[#cfe7d7] dark:border-white/5 flex flex-col gap-1 shadow-sm hover:shadow-md transition-shadow">
-                  <p className="text-[#4c9a66] text-sm font-medium uppercase tracking-wider">{stat.label}</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold tracking-tight">{stat.value}</span>
-                    <span className={`text-xs font-bold ${stat.trend === 'up' ? 'text-green-500' : 'text-red-500'} flex items-center gap-0.5`}>
-                      <span className="material-symbols-outlined text-sm">{stat.trend === 'up' ? 'trending_up' : 'trending_down'}</span> {stat.perc}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#4c9a66] mt-2 italic">{stat.sub}</p>
+            {/* Feature 1: System Information */}
+            <section className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-8 shadow-sm">
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                    <div className="size-24 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-5xl text-primary">solar_power</span>
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                             <h2 className="text-2xl font-bold">{user.systemName}</h2>
+                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${user.systemStatus === 'Operational' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-600'}`}>
+                                {user.systemStatus}
+                             </span>
+                        </div>
+                        <p className="text-[#4c9a66] dark:text-gray-400 text-lg mb-4">{user.address}</p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 bg-background-light dark:bg-white/5 rounded-lg border border-[#e7f3eb] dark:border-white/5">
+                                <p className="text-xs text-[#4c9a66] uppercase font-bold mb-1">Installation Date</p>
+                                <p className="font-semibold">{user.installDate}</p>
+                            </div>
+                            <div className="p-4 bg-background-light dark:bg-white/5 rounded-lg border border-[#e7f3eb] dark:border-white/5">
+                                <p className="text-xs text-[#4c9a66] uppercase font-bold mb-1">Service Plan</p>
+                                <p className="font-semibold">{user.plan}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              ))}
             </section>
 
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Service Status Column */}
-              <div className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-6 shadow-sm flex flex-col">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Feature 2: Request List */}
+              <section className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-6 shadow-sm flex flex-col h-full">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold">Service Status</h3>
-                  <span className="text-xs font-bold text-[#4c9a66] bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                    {filteredServices.length} Active
-                  </span>
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                     <span className="material-symbols-outlined text-primary">support_agent</span> My Requests
+                  </h3>
+                  <button onClick={handleBookService} className="text-xs font-bold text-primary hover:underline">New Request</button>
                 </div>
                 
-                <div className="space-y-6 flex-1 overflow-y-auto max-h-[400px]">
+                <div className="space-y-4 flex-1 overflow-y-auto max-h-[400px]">
                   {filteredServices.length > 0 ? (
                     filteredServices.map((service) => (
-                      <div key={service.id} className="relative pl-8 border-l-2 border-[#e7f3eb] dark:border-white/10 group">
-                        <div className={`absolute -left-[9px] top-0 size-4 rounded-full border-2 border-white dark:border-[#1a2e21] ${service.status === 'In Progress' ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-                        <div className="flex flex-col gap-1">
-                          <p className="text-sm font-bold group-hover:text-primary transition-colors">{service.title}</p>
-                          <p className="text-xs text-[#4c9a66]">ID: {service.id} • {service.date}</p>
-                          <span className={`inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded uppercase w-fit ${getServiceStatusStyles(service.status)}`}>
-                            {service.status}
-                          </span>
+                      <div key={service.id} className="p-4 rounded-xl bg-background-light dark:bg-white/5 border border-[#e7f3eb] dark:border-white/5 hover:border-primary/30 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                           <div>
+                              <p className="font-bold text-lg">{service.title}</p>
+                              <p className="text-xs text-[#4c9a66] font-mono">{service.id}</p>
+                           </div>
+                           <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getServiceStatusStyles(service.status)}`}>
+                             {service.status}
+                           </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-[#4c9a66]">
+                           <span className="material-symbols-outlined text-sm">event</span>
+                           <span>{service.date}</span>
+                           <span className="mx-1">•</span>
+                           <span>{service.type}</span>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8 text-gray-400 text-sm">No services found matching "{searchTerm}"</div>
+                    <div className="text-center py-8 text-gray-400 text-sm">No service requests found.</div>
                   )}
                 </div>
-                
-                <button 
-                  onClick={handleScheduleNew}
-                  className="w-full mt-4 flex items-center justify-center gap-2 py-3 border border-[#cfe7d7] dark:border-white/10 rounded-lg text-sm font-bold hover:bg-background-light dark:hover:bg-white/5 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-sm">calendar_add_on</span> Schedule New
-                </button>
-              </div>
+              </section>
 
-              {/* Order History Column */}
-              <div className="lg:col-span-2 bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-6 shadow-sm flex flex-col">
+              {/* Feature 3: Order History */}
+              <section className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-6 shadow-sm flex flex-col h-full">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold">Order History</h3>
-                  <Link to="/requests" className="text-primary text-sm font-bold hover:underline">View All</Link>
+                  <h3 className="text-xl font-bold flex items-center gap-2">
+                     <span className="material-symbols-outlined text-primary">shopping_bag</span> Order History
+                  </h3>
+                  <Link to="/products" className="text-xs font-bold text-primary hover:underline">Shop Now</Link>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                      <thead className="border-b border-[#e7f3eb] dark:border-white/5">
                         <tr className="text-xs text-[#4c9a66] font-bold uppercase tracking-wider">
-                           <th className="pb-3">Order ID</th>
-                           <th className="pb-3">Product</th>
+                           <th className="pb-3 pl-2">Product</th>
                            <th className="pb-3">Date</th>
                            <th className="pb-3">Status</th>
-                           <th className="pb-3 text-right">Amount</th>
+                           <th className="pb-3 text-right pr-2">Total</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-[#e7f3eb] dark:divide-white/5">
                         {filteredOrders.length > 0 ? (
                           filteredOrders.map(order => (
                             <tr key={order.id} className="text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                              <td className="py-4 font-mono text-xs opacity-70">{order.id}</td>
-                              <td className="py-4 font-medium">{order.product}</td>
-                              <td className="py-4 text-[#4c9a66]">{order.date}</td>
-                              <td className="py-4">
-                                <span className={getStatusColor(order.status)}>{order.status}</span>
+                              <td className="py-4 pl-2 font-medium">
+                                 <div>{order.product}</div>
+                                 <div className="text-xs text-[#4c9a66] opacity-70 font-mono">{order.id}</div>
                               </td>
-                              <td className="py-4 text-right font-bold">${order.amount.toFixed(2)}</td>
+                              <td className="py-4 text-[#4c9a66] text-xs">{order.date}</td>
+                              <td className="py-4">
+                                <span className={`text-xs ${getStatusColor(order.status)}`}>{order.status}</span>
+                              </td>
+                              <td className="py-4 pr-2 text-right font-bold text-[#0d1b12] dark:text-white">${order.amount.toFixed(2)}</td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={5} className="py-8 text-center text-gray-400">No orders found matching "{searchTerm}"</td>
+                            <td colSpan={4} className="py-8 text-center text-gray-400">No orders found.</td>
                           </tr>
                         )}
                      </tbody>
                   </table>
                 </div>
-              </div>
-            </section>
-            
-            {/* Recommendations Section */}
-            <section className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-6 shadow-sm">
-               <div className="flex items-center justify-between mb-6">
-                 <div>
-                    <h3 className="text-lg font-bold">Recommended for Your Setup</h3>
-                    <p className="text-xs text-[#4c9a66]">Personalized based on your {user.systemName}</p>
-                 </div>
-                 <div className="flex gap-2">
-                   <button className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded"><span className="material-symbols-outlined">chevron_left</span></button>
-                   <button className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded"><span className="material-symbols-outlined">chevron_right</span></button>
-                 </div>
-               </div>
-               
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {RECOMMENDATIONS.map((rec) => (
-                    <div key={rec.id} className="group cursor-pointer flex gap-4 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                       <div className="relative w-32 aspect-video rounded-lg overflow-hidden shrink-0">
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-                          {rec.badge && <div className="absolute bottom-1 left-1 bg-primary px-1.5 py-0.5 rounded text-[8px] font-bold text-[#0d1b12]">{rec.badge}</div>}
-                          <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url('${rec.img}')` }}></div>
-                       </div>
-                       <div className="flex flex-col justify-center">
-                          <h4 className="text-sm font-bold group-hover:text-primary transition-colors">{rec.title}</h4>
-                          <p className="text-xs text-[#4c9a66] mb-2">{rec.sub}</p>
-                          <button className="text-xs font-bold text-[#0d1b12] dark:text-white underline decoration-primary hover:text-primary w-fit">View Details</button>
-                       </div>
-                    </div>
-                  ))}
-               </div>
-               
-               <div className="mt-6 p-4 bg-background-light dark:bg-white/5 rounded-lg flex items-center justify-between border border-[#e7f3eb] dark:border-white/5">
-                  <div className="flex items-center gap-3">
-                     <div className="p-2 bg-primary/20 rounded-lg text-primary">
-                       <span className="material-symbols-outlined">smart_toy</span>
-                     </div>
-                     <div>
-                       <p className="text-xs font-bold uppercase tracking-widest text-[#4c9a66]">Premium Upgrade</p>
-                       <p className="text-sm font-medium">Smart Home Integration Pack</p>
-                     </div>
-                  </div>
-                  <button className="bg-[#0d1b12] dark:bg-primary text-white dark:text-[#0d1b12] px-4 py-2 rounded text-xs font-bold hover:opacity-90 transition-opacity">Learn More</button>
-               </div>
-            </section>
+              </section>
+            </div>
           </div>
         </main>
       </div>
