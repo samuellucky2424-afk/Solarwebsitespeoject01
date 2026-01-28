@@ -18,7 +18,7 @@ const ProductCatalog: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const { addToCart } = useCart();
-  const itemsPerPage = 6;
+  const itemsPerPage = 20; // Increased to accommodate denser grid
   const containerRef = useRef<HTMLDivElement>(null);
 
   // --- Handlers ---
@@ -86,7 +86,7 @@ const ProductCatalog: React.FC = () => {
     // Animate grid items whenever paginatedProducts changes
     gsap.fromTo(".product-item", 
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: "power2.out" }
+      { opacity: 1, y: 0, duration: 0.5, stagger: 0.05, ease: "power2.out" }
     );
   }, { scope: containerRef, dependencies: [paginatedProducts] });
 
@@ -101,7 +101,7 @@ const ProductCatalog: React.FC = () => {
       <PublicHeader />
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
       
-      <main className="max-w-[1440px] mx-auto px-6 lg:px-12 py-8 flex-1 w-full">
+      <main className="max-w-[1600px] mx-auto px-4 lg:px-8 py-8 flex-1 w-full">
         {/* Breadcrumbs */}
         <div className="flex items-center gap-2 mb-8 text-sm">
           <Link to="/" className="text-primary-dark hover:underline">Home</Link>
@@ -233,44 +233,47 @@ const ProductCatalog: React.FC = () => {
               </div>
             </div>
 
-            {/* Product Grid */}
+            {/* Product Grid - 3 cols mobile, 4 cols tablet, 5 cols desktop */}
             {paginatedProducts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
                 {paginatedProducts.map((product) => (
                   <div key={product.id} className="product-item group bg-white dark:bg-white/5 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 hover:border-primary-dark/50 transition-all hover:shadow-xl flex flex-col">
-                    <div className="relative h-64 bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                    <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={product.img} alt={product.name} />
                       {product.tag && (
-                        <div className="absolute top-4 left-4">
-                          <span className="bg-primary-dark text-forest text-[10px] font-bold uppercase px-2 py-1 rounded">{product.tag}</span>
+                        <div className="absolute top-2 left-2 md:top-4 md:left-4">
+                          <span className="bg-primary-dark text-forest text-[8px] md:text-[10px] font-bold uppercase px-1.5 py-0.5 md:px-2 md:py-1 rounded">{product.tag}</span>
                         </div>
                       )}
                       {product.badge && (
-                        <div className="absolute top-4 right-4">
-                          <span className="bg-white/90 dark:bg-background-dark/90 backdrop-blur-sm text-xs font-bold px-2 py-1 rounded-lg text-forest dark:text-white">{product.badge}</span>
+                        <div className="absolute top-2 right-2 md:top-4 md:right-4">
+                          <span className="bg-white/90 dark:bg-background-dark/90 backdrop-blur-sm text-[8px] md:text-xs font-bold px-1.5 py-0.5 md:px-2 md:py-1 rounded-lg text-forest dark:text-white">{product.badge}</span>
                         </div>
                       )}
                     </div>
-                    <div className="p-5 flex flex-col flex-1">
-                      <div className="text-primary-dark text-xs font-bold uppercase mb-1">{product.series}</div>
-                      <Link to={`/product/${product.id}`} className="text-lg font-bold mb-2 group-hover:text-primary-dark transition-colors text-forest dark:text-white leading-tight">{product.name}</Link>
-                      <div className="flex gap-4 mb-4 mt-auto">
-                        <div className="text-[11px] text-slate-500">
-                          <span className="block font-bold text-slate-800 dark:text-slate-200">{product.eff}</span>
-                          Efficiency
+                    <div className="p-3 md:p-4 flex flex-col flex-1">
+                      <div className="text-primary-dark text-[10px] md:text-xs font-bold uppercase mb-1 truncate">{product.series}</div>
+                      <Link to={`/product/${product.id}`} className="text-xs md:text-sm lg:text-base font-bold mb-2 group-hover:text-primary-dark transition-colors text-forest dark:text-white leading-tight line-clamp-2" title={product.name}>{product.name}</Link>
+                      
+                      <div className="flex gap-2 md:gap-4 mb-2 md:mb-4 mt-auto">
+                        <div className="text-[10px] md:text-[11px] text-slate-500 flex-1 min-w-0">
+                          <span className="block font-bold text-slate-800 dark:text-slate-200 truncate">{product.eff}</span>
+                          <span className="hidden sm:inline">Efficiency</span>
+                          <span className="sm:hidden">Eff</span>
                         </div>
-                        <div className="text-[11px] text-slate-500 border-l border-slate-200 dark:border-white/10 pl-4">
-                          <span className="block font-bold text-slate-800 dark:text-slate-200">{product.spec}</span>
+                        <div className="text-[10px] md:text-[11px] text-slate-500 border-l border-slate-200 dark:border-white/10 pl-2 md:pl-4 flex-1 min-w-0">
+                          <span className="block font-bold text-slate-800 dark:text-slate-200 truncate">{product.spec}</span>
                           Specs
                         </div>
                       </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-white/5 mt-4">
-                        <div className="text-2xl font-bold text-forest dark:text-white">${product.price.toFixed(2)}</div>
+
+                      <div className="flex items-center justify-between pt-2 md:pt-4 border-t border-slate-50 dark:border-white/5 mt-2 md:mt-4">
+                        <div className="text-sm md:text-xl font-bold text-forest dark:text-white">${product.price.toFixed(2)}</div>
                         <button 
                           onClick={() => handleAddToCart(product)}
-                          className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-2 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"
+                          className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-1.5 md:p-2 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"
                         >
-                          <span className="material-symbols-outlined">add_shopping_cart</span>
+                          <span className="material-symbols-outlined text-base md:text-xl">add_shopping_cart</span>
                         </button>
                       </div>
                     </div>

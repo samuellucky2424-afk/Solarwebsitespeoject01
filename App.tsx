@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
@@ -9,10 +9,12 @@ const LandingPage = lazy(() => import('./pages/PublicPages/LandingPage'));
 const ProductCatalog = lazy(() => import('./pages/PublicPages/ProductCatalog'));
 const ProductDetail = lazy(() => import('./pages/PublicPages/ProductDetail'));
 const ConsultationForm = lazy(() => import('./pages/PublicPages/ConsultationForm'));
+const ContactPage = lazy(() => import('./pages/PublicPages/ContactPage'));
 const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
 const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
 const UserRequests = lazy(() => import('./pages/UserPages/UserRequests'));
+const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestForm'));
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));
 const ProductInventory = lazy(() => import('./pages/AdminPages/ProductInventory'));
 const AdminGallery = lazy(() => import('./pages/AdminPages/AdminGallery'));
@@ -22,6 +24,19 @@ const ScrollToTop = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+  return null;
+};
+
+// Component to force redirect to home on initial load/refresh
+const ForceHomeRedirect = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Navigate to root on mount if not already there.
+    // This ensures that refreshing the page always brings the user back to the homepage.
+    if (window.location.hash !== '#/') {
+      navigate('/');
+    }
+  }, [navigate]);
   return null;
 };
 
@@ -55,6 +70,7 @@ const App: React.FC = () => {
       <CartProvider>
         <HashRouter>
           <ScrollToTop />
+          <ForceHomeRedirect />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Public Routes */}
@@ -62,6 +78,7 @@ const App: React.FC = () => {
               <Route path="/products" element={<ProductCatalog />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/consultation" element={<ConsultationForm />} />
+              <Route path="/contact" element={<ContactPage />} />
               
               {/* Auth Routes */}
               <Route path="/login" element={<UserLogin />} />
@@ -70,6 +87,7 @@ const App: React.FC = () => {
               {/* User Protected Routes */}
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/requests" element={<UserRequests />} />
+              <Route path="/service-request" element={<ServiceRequestForm />} />
 
               {/* Admin Protected Routes */}
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
