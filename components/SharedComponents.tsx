@@ -158,6 +158,7 @@ export const PublicHeader: React.FC = () => {
           <nav className="hidden md:flex items-center gap-10">
             <Link to="/products" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Products</Link>
             <Link to="/consultation" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Solutions</Link>
+            <Link to="/gallery" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Gallery</Link>
             <Link to="/requests" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Support</Link>
             <Link to="/admin" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Admin</Link>
           </nav>
@@ -214,6 +215,7 @@ export const PublicHeader: React.FC = () => {
             {[
               { to: "/products", label: "Products", icon: "inventory_2" },
               { to: "/consultation", label: "Solutions", icon: "solar_power" },
+              { to: "/gallery", label: "Our Gallery", icon: "photo_library" },
               { to: "/requests", label: "Support", icon: "support_agent" },
               { to: "/admin", label: "Admin Portal", icon: "admin_panel_settings" },
             ].map((link) => (
@@ -292,6 +294,7 @@ export const PublicFooter: React.FC = () => (
       <div>
         <h4 className="font-bold text-lg mb-6 text-forest dark:text-white">Resources</h4>
         <ul className="flex flex-col gap-4 text-forest/60 dark:text-white/60 text-sm">
+          <li><Link to="/gallery" className="hover:text-primary transition-colors">Gallery</Link></li>
           <li><Link to="/requests" className="hover:text-primary transition-colors">Support Center</Link></li>
           <li><Link to="/consultation" className="hover:text-primary transition-colors">Get a Quote</Link></li>
           <li><Link to="/login" className="hover:text-primary transition-colors">Customer Portal</Link></li>

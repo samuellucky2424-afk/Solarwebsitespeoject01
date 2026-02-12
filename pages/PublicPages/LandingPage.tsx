@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGallery } from '../../context/GalleryContext';
+import { useAuth } from '../../context/AuthContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,21 +13,25 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const container = useRef<HTMLDivElement>(null);
   const { images } = useGallery();
+  const { isAuthenticated } = useAuth();
   
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
-  const slideDuration = 8; // seconds for slow motion feel
-
+  const [currentSlide, setCurrentSlide] = useState(0); 
+  
+  // Gallery Carousel State
+  const [galleryIndex, setGalleryIndex] = useState(0);
+  const galleryTrackRef = useRef<HTMLDivElement>(null);
+  const galleryAutoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
   // Testimonials Carousel State
   const [testiIndex, setTestiIndex] = useState(0);
   const swipeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const nextSlide = () => {
-    setCurrentSlide(prev => (prev + 1) % images.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide(prev => (prev - 1 + images.length) % images.length);
+  const handleMaintenanceClick = () => {
+    if (isAuthenticated) {
+      navigate('/service-request?type=maintenance');
+    } else {
+      navigate('/login', { state: { from: '/service-request?type=maintenance' } });
+    }
   };
 
   // Testimonials Data
@@ -37,32 +42,86 @@ const LandingPage: React.FC = () => {
     { name: "David Okonkwo", role: "Small Business Owner", quote: "The best investment for my factory. Consistent power supply has improved our productivity by 40%.", rating: 5 }
   ];
 
+  // --- Hero Slider Logic ---
   // Auto-advance slider with GSAP synchronization
   useEffect(() => {
     if (images.length === 0) return;
 
     const ctx = gsap.context(() => {
-      if (!isHovering) {
         // Reset progress
         gsap.set(".progress-ring-circle", { strokeDashoffset: 126 }); // 2 * PI * r (approx r=20)
         
         // Animate progress
         gsap.to(".progress-ring-circle", {
           strokeDashoffset: 0,
-          duration: slideDuration,
+          duration: 8,
           ease: "none",
-          onComplete: nextSlide
+          onComplete: () => setCurrentSlide(prev => (prev + 1) % images.length)
         });
-      } else {
-        gsap.killTweensOf(".progress-ring-circle");
-        gsap.to(".progress-ring-circle", { strokeDashoffset: 126, duration: 0.3 });
-      }
     });
 
     return () => ctx.revert();
-  }, [currentSlide, isHovering, images.length]);
+  }, [currentSlide, images.length]);
 
-  // Testimonial Auto Swipe Logic
+  const nextSlide = () => {
+    setCurrentSlide(prev => (prev + 1) % images.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide(prev => (prev - 1 + images.length) % images.length);
+  };
+
+
+  // --- Gallery Carousel Logic ---
+  const startGalleryAutoPlay = () => {
+    if (galleryAutoPlayRef.current) clearInterval(galleryAutoPlayRef.current);
+    galleryAutoPlayRef.current = setInterval(() => {
+      setGalleryIndex(prev => (prev + 1) % Math.max(1, images.length));
+    }, 5000); // 5 seconds per slide
+  };
+
+  const stopGalleryAutoPlay = () => {
+    if (galleryAutoPlayRef.current) clearInterval(galleryAutoPlayRef.current);
+  };
+
+  useEffect(() => {
+    startGalleryAutoPlay();
+    return () => stopGalleryAutoPlay();
+  }, [images.length]);
+
+  const handleGalleryNav = (direction: 'prev' | 'next') => {
+    stopGalleryAutoPlay();
+    if (direction === 'next') {
+      setGalleryIndex(prev => (prev + 1) % images.length);
+    } else {
+      setGalleryIndex(prev => (prev - 1 + images.length) % images.length);
+    }
+    startGalleryAutoPlay();
+  };
+
+  useGSAP(() => {
+    if (!galleryTrackRef.current || images.length === 0) return;
+    
+    // Calculate movement based on card width + gap
+    // Assuming card min-width is set in CSS. 
+    // We can use percentage or relative units for smoother response.
+    // However, specifically targeting child width is more precise.
+    const firstCard = galleryTrackRef.current.children[0] as HTMLElement;
+    if (!firstCard) return;
+
+    const cardWidth = firstCard.offsetWidth;
+    const gap = 32; // gap-8 is 2rem = 32px
+    const moveX = -(galleryIndex * (cardWidth + gap));
+
+    gsap.to(galleryTrackRef.current, {
+      x: moveX,
+      duration: 1.5, // Slow motion feel
+      ease: "power3.inOut"
+    });
+  }, { dependencies: [galleryIndex, images] });
+
+
+  // --- Testimonials Logic ---
   useEffect(() => {
     startTestiTimer();
     return () => stopTestiTimer();
@@ -72,7 +131,7 @@ const LandingPage: React.FC = () => {
     stopTestiTimer();
     swipeTimer.current = setInterval(() => {
       setTestiIndex(prev => (prev + 1) % testimonials.length);
-    }, 5000); // 5 seconds interval
+    }, 5000);
   };
 
   const stopTestiTimer = () => {
@@ -91,14 +150,14 @@ const LandingPage: React.FC = () => {
 
 
   useGSAP(() => {
-    // Hero Animation - Use fromTo for stability
+    // Hero Animation
     const tl = gsap.timeline();
     tl.fromTo(".hero-badge", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" })
       .fromTo(".hero-title", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.4")
       .fromTo(".hero-desc", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.6")
       .fromTo(".hero-actions > button", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4");
 
-    // Stats Bar Animation - Use scrollTrigger safely
+    // Stats Bar Animation
     gsap.fromTo(".stats-item", 
       { y: 30, opacity: 0 },
       {
@@ -109,7 +168,7 @@ const LandingPage: React.FC = () => {
         ease: "back.out(1.7)",
         scrollTrigger: {
           trigger: ".stats-section",
-          start: "top 85%", // Trigger slightly earlier
+          start: "top 85%",
         }
       }
     );
@@ -130,42 +189,12 @@ const LandingPage: React.FC = () => {
       }
     );
 
-    // Engineer Section Animation
-    gsap.fromTo(".engineer-card", 
-      { scale: 0.95, opacity: 0 },
+    // Gallery Entrance (Track Fade In)
+    gsap.fromTo(".gallery-track-container", 
+      { opacity: 0, y: 30 },
       {
-        scale: 1,
         opacity: 1,
-        duration: 1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".engineer-section",
-          start: "top 80%",
-        }
-      }
-    );
-
-    // Testimonials Animation
-    gsap.fromTo(".testimonials-content", 
-      { y: 40, opacity: 0 },
-      {
         y: 0,
-        opacity: 1,
-        duration: 0.8,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: ".testimonials-section",
-          start: "top 80%",
-        }
-      }
-    );
-
-    // Gallery Entrance
-    gsap.fromTo(".gallery-container", 
-      { y: 50, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
         duration: 1,
         ease: "power2.out",
         scrollTrigger: {
@@ -208,23 +237,20 @@ const LandingPage: React.FC = () => {
 
   }, { scope: container });
 
-  // Animation for slide change
+  // Animation for Hero Slide Change
   useGSAP(() => {
     if (images.length > 0) {
-      // Animate the image (Ken Burns effect) - smooth slow motion
       gsap.fromTo(`.slide-img-${currentSlide}`, 
         { scale: 1.15 },
         { scale: 1, duration: 10, ease: "power1.out", overwrite: true }
       );
       
-      // Animate content entrance with a staggered reveal
       const tl = gsap.timeline();
       tl.fromTo(`.slide-content-${currentSlide}`,
         { y: 40, opacity: 0 },
         { y: 0, opacity: 1, duration: 1.2, ease: "power3.out", delay: 0.2 }
       );
       
-      // Parallax effect on text elements inside
       tl.fromTo(`.slide-title-${currentSlide}`,
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.8, ease: "back.out(1.2)" },
@@ -237,7 +263,7 @@ const LandingPage: React.FC = () => {
     <div ref={container} className="min-h-screen flex flex-col overflow-x-hidden">
       <PublicHeader />
       <main>
-        {/* Hero Section - Widened */}
+        {/* Hero Section */}
         <section className="relative w-full px-4 lg:px-8 py-6 max-w-[1920px] mx-auto">
           <div className="relative overflow-hidden rounded-[2rem] min-h-[70vh] flex items-center shadow-2xl">
             <div className="absolute inset-0 z-0">
@@ -258,7 +284,7 @@ const LandingPage: React.FC = () => {
                 <button onClick={() => navigate('/consultation')} className="bg-primary hover:bg-primary/90 text-forest px-10 py-5 rounded-xl text-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
                   Get a Free Quote <span className="material-symbols-outlined">arrow_forward</span>
                 </button>
-                <button onClick={() => navigate('/products')} className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-10 py-5 rounded-xl text-xl font-bold transition-all hover:scale-105 active:scale-95">
+                <button onClick={() => navigate('/gallery')} className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-10 py-5 rounded-xl text-xl font-bold transition-all hover:scale-105 active:scale-95">
                   View Our Work
                 </button>
               </div>
@@ -266,7 +292,7 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Stats Bar - Widened */}
+        {/* Stats Bar */}
         <section className="stats-section max-w-[1600px] mx-auto px-6 lg:px-12 -mt-16 relative z-30 mb-20">
           <div className="bg-white dark:bg-forest border border-forest/10 dark:border-white/10 rounded-2xl p-8 grid grid-cols-2 md:grid-cols-4 gap-8 shadow-xl shadow-forest/5 backdrop-blur-lg">
             {[
@@ -296,13 +322,40 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: "solar_power", title: "Expert Installation", text: "Precision residential and commercial solar panel installation by certified technicians.", bg: "bg-primary/10", textCol: "text-primary" },
-              { icon: "shopping_cart", title: "Premium Products", text: "High-efficiency Tier 1 panels, smart inverters, and lithium-ion battery storage.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow" },
-              { icon: "build", title: "Maintenance", text: "Proactive monitoring and maintenance to ensure your system performs at peak efficiency.", bg: "bg-primary/10", textCol: "text-primary" },
-              { icon: "query_stats", title: "Energy Audits", text: "Detailed analysis of your energy usage to design the perfect custom roadmap for savings.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow" }
+              { 
+                icon: "solar_power", 
+                title: "Expert Installation", 
+                text: "Precision residential and commercial solar panel installation by certified technicians.", 
+                bg: "bg-primary/10", 
+                textCol: "text-primary",
+                onClick: () => navigate('/installers') 
+              },
+              { 
+                icon: "shopping_cart", 
+                title: "Premium Products", 
+                text: "High-efficiency Tier 1 panels, smart inverters, and lithium-ion battery storage.", 
+                bg: "bg-accent-yellow/10", 
+                textCol: "text-accent-yellow",
+                onClick: () => navigate('/products?filter=best-seller') 
+              },
+              { 
+                icon: "build", 
+                title: "Maintenance", 
+                text: "Proactive monitoring and maintenance to ensure your system performs at peak efficiency.", 
+                bg: "bg-primary/10", 
+                textCol: "text-primary",
+                onClick: handleMaintenanceClick 
+              },
+              { 
+                icon: "package_2", 
+                title: "Solar Packages", 
+                text: "Curated energy bundles designed for specific home and business power requirements.", 
+                bg: "bg-accent-yellow/10", 
+                textCol: "text-accent-yellow",
+                onClick: () => navigate('/packages') 
+              }
             ].map((service, idx) => (
-              <div key={idx} className="service-card group relative p-10 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300">
-                {/* Corner Reveal Effects */}
+              <div key={idx} onClick={service.onClick} className="service-card group relative p-10 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300">
                 <div className="absolute top-0 left-0 w-0 h-0 border-t-[3px] border-l-[3px] border-primary transition-all duration-300 ease-out group-hover:w-16 group-hover:h-16 rounded-tl-2xl z-0 opacity-0 group-hover:opacity-100"></div>
                 <div className="absolute top-0 right-0 w-0 h-0 border-t-[3px] border-r-[3px] border-primary transition-all duration-300 ease-out group-hover:w-16 group-hover:h-16 rounded-tr-2xl z-0 opacity-0 group-hover:opacity-100"></div>
                 <div className="absolute bottom-0 left-0 w-0 h-0 border-b-[3px] border-l-[3px] border-primary transition-all duration-300 ease-out group-hover:w-16 group-hover:h-16 rounded-bl-2xl z-0 opacity-0 group-hover:opacity-100"></div>
@@ -342,7 +395,7 @@ const LandingPage: React.FC = () => {
                     <p className="text-white/90 text-xl leading-relaxed mb-10 drop-shadow-md font-medium">
                        Our certified engineers don't just install solar panels; they architect energy solutions tailored to your property's unique profile, ensuring maximum output and longevity.
                     </p>
-                    <button onClick={() => navigate('/consultation')} className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-10 py-5 rounded-xl font-bold text-lg transition-all flex items-center gap-2 w-fit group-hover:bg-white/20 group-hover:border-white/40">
+                    <button onClick={() => navigate('/installers')} className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-10 py-5 rounded-xl font-bold text-lg transition-all flex items-center gap-2 w-fit group-hover:bg-white/20 group-hover:border-white/40">
                        Meet Our Team <span className="material-symbols-outlined">arrow_forward</span>
                     </button>
                  </div>
@@ -356,23 +409,16 @@ const LandingPage: React.FC = () => {
              <SectionHeader sub="Client Stories" title="Trusted by Community" />
              
              <div className="testimonials-content relative">
-               {/* Main Slider Container */}
                <div className="overflow-hidden rounded-[3rem] bg-white dark:bg-forest/50 border border-forest/5 dark:border-white/5 shadow-2xl relative h-[500px]">
-                 
-                 {/* Moving Track */}
                  <div 
                    className="flex h-full transition-transform duration-[1500ms] ease-in-out will-change-transform"
                    style={{ transform: `translateX(-${testiIndex * 100}%)` }}
                  >
                     {testimonials.map((testi, idx) => (
                       <div key={idx} className="min-w-full h-full p-8 md:p-16 flex flex-col items-center justify-center text-center">
-                         
-                         {/* Quote Icon */}
                          <div className="mb-8 bg-white dark:bg-forest p-4 rounded-full shadow-lg text-primary inline-flex">
                             <span className="material-symbols-outlined text-5xl">format_quote</span>
                          </div>
-                         
-                         {/* Content Side */}
                          <div className="max-w-4xl">
                             <div className="flex items-center justify-center gap-1 text-accent-yellow mb-8">
                                {[...Array(testi.rating)].map((_, i) => (
@@ -422,124 +468,91 @@ const LandingPage: React.FC = () => {
                        />
                     ))}
                  </div>
-
                </div>
                
-               {/* Decor Elements */}
                <div className="absolute -top-10 -right-10 size-64 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
                <div className="absolute -bottom-10 -left-10 size-64 bg-accent-yellow/5 rounded-full blur-3xl -z-10 pointer-events-none"></div>
              </div>
           </div>
         </section>
 
-        {/* Enhanced Gallery Section */}
-        <section className="gallery-section max-w-[1600px] mx-auto px-6 lg:px-12 py-20" id="gallery">
-          <SectionHeader sub="Our Projects" title="Recent Installations" />
-          
-          <div 
-            className="gallery-container relative w-full h-[600px] md:h-[800px] rounded-[3rem] overflow-hidden shadow-2xl group border-4 border-white dark:border-white/5"
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
-          >
-            {images.length > 0 ? images.map((img, index) => (
-               <div 
-                 key={img.id} 
-                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+        {/* Enhanced Gallery Section (Horizontal Auto Swipe) */}
+        <section className="gallery-section w-full py-20 bg-gradient-to-b from-transparent to-forest/5 dark:to-white/5 overflow-hidden" id="gallery">
+          <div className="max-w-[1600px] mx-auto px-6 lg:px-12 mb-12 flex flex-col md:flex-row items-end justify-between gap-6">
+             <div className="max-w-2xl">
+               <h2 className="text-primary font-bold tracking-widest uppercase text-sm mb-4">Our Projects</h2>
+               <h3 className="text-3xl md:text-5xl font-bold text-forest dark:text-white leading-tight">Recent Installations</h3>
+             </div>
+             
+             {/* Manual Controls */}
+             <div className="flex items-center gap-4">
+               <button 
+                 onClick={() => handleGalleryNav('prev')}
+                 className="size-14 rounded-full border border-forest/10 dark:border-white/10 bg-white dark:bg-[#152a17] text-forest dark:text-white flex items-center justify-center hover:bg-primary hover:text-forest transition-all"
                >
-                 {/* Image with Ken Burns Effect */}
-                 <img 
-                   src={img.url} 
-                   alt={img.title} 
-                   className={`slide-img-${index} w-full h-full object-cover origin-center`}
-                 />
-                 
-                 {/* Aesthetic Gradient Overlay */}
-                 <div className="absolute inset-0 bg-gradient-to-t from-forest/95 via-forest/40 to-transparent opacity-90"></div>
-                 
-                 {/* Content */}
-                 <div className={`slide-content-${index} absolute bottom-0 left-0 w-full p-8 md:p-20 flex flex-col md:flex-row md:items-end justify-between gap-8`}>
-                    <div className="max-w-4xl">
-                       <div className="overflow-hidden mb-6">
-                          <span className="inline-block px-5 py-2 rounded-full bg-white/10 text-white border border-white/20 text-sm font-bold uppercase tracking-widest backdrop-blur-md hover:bg-white/20 transition-colors">
-                            {img.category} Project
+                 <span className="material-symbols-outlined">arrow_back</span>
+               </button>
+               <button 
+                 onClick={() => handleGalleryNav('next')}
+                 className="size-14 rounded-full border border-forest/10 dark:border-white/10 bg-white dark:bg-[#152a17] text-forest dark:text-white flex items-center justify-center hover:bg-primary hover:text-forest transition-all"
+               >
+                 <span className="material-symbols-outlined">arrow_forward</span>
+               </button>
+             </div>
+          </div>
+          
+          <div className="gallery-track-container w-full overflow-hidden">
+            {images.length > 0 ? (
+              <div 
+                ref={galleryTrackRef} 
+                className="flex gap-8 px-6 lg:px-12 w-max"
+              >
+                 {/* Render images twice to ensure visual continuity logic or just render once if using index scrolling */}
+                 {images.map((img) => (
+                    <div 
+                      key={img.id} 
+                      onClick={() => navigate('/gallery')} 
+                      className="group relative bg-white dark:bg-[#152a17] rounded-3xl overflow-hidden shadow-lg border border-forest/5 dark:border-white/5 cursor-pointer w-[85vw] md:w-[450px] lg:w-[500px] aspect-[4/3] shrink-0 transform transition-all duration-500 hover:scale-[1.02]"
+                    >
+                       <img 
+                          src={img.url} 
+                          alt={img.title} 
+                          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                       />
+                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90"></div>
+                       
+                       <div className="absolute top-6 right-6 z-10">
+                          <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full border border-white/10">
+                             {img.category}
                           </span>
                        </div>
-                       <h3 className={`slide-title-${index} text-white text-5xl md:text-7xl font-bold leading-[1.1] mb-8 tracking-tight drop-shadow-lg`}>
-                         {img.title}
-                       </h3>
-                       <p className="text-white/80 text-xl md:text-2xl font-light max-w-2xl leading-relaxed">
-                         Delivering superior energy efficiency with our state-of-the-art solar configurations tailored for {img.category.toLowerCase()} needs.
-                       </p>
+
+                       <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-start">
+                          <h4 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">{img.title}</h4>
+                          {img.description && (
+                             <p className="text-white/70 text-sm line-clamp-2 mb-6 max-w-sm">
+                                {img.description}
+                             </p>
+                          )}
+                          <span className="bg-primary text-forest font-bold text-sm px-6 py-3 rounded-xl flex items-center gap-2 transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                             View Project <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                          </span>
+                       </div>
                     </div>
-                    
-                    <div className="flex gap-4">
-                        <button onClick={() => navigate('/products')} className="h-16 px-10 rounded-2xl bg-white text-forest font-bold text-xl hover:bg-primary hover:text-forest transition-all flex items-center gap-2 shadow-xl shadow-black/20">
-                           View Details
-                        </button>
-                    </div>
-                 </div>
-               </div>
-            )) : (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 text-gray-400">
-                <span className="material-symbols-outlined text-6xl mb-4">photo_library</span>
-                <p>No images in gallery</p>
+                 ))}
+              </div>
+            ) : (
+              <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-12 h-64 flex flex-col items-center justify-center bg-gray-50 dark:bg-white/5 rounded-3xl border-2 border-dashed border-gray-200 dark:border-white/10 text-gray-400">
+                 <span className="material-symbols-outlined text-4xl mb-2">photo_library</span>
+                 <p>No recent projects to display</p>
               </div>
             )}
+          </div>
 
-            {/* Navigation Controls */}
-            <div className="absolute bottom-12 right-12 z-20 flex items-center gap-6">
-               {/* Progress Indicators */}
-               <div className="hidden md:flex gap-3 bg-black/20 backdrop-blur-md p-3 rounded-full border border-white/10">
-                 {images.map((_, idx) => (
-                    <button 
-                      key={idx}
-                      onClick={() => setCurrentSlide(idx)}
-                      className={`h-3 rounded-full transition-all duration-500 ${idx === currentSlide ? 'w-10 bg-primary shadow-[0_0_10px_rgba(19,236,91,0.5)]' : 'w-3 bg-white/40 hover:bg-white/80'}`}
-                      aria-label={`Go to slide ${idx + 1}`}
-                    />
-                 ))}
-               </div>
-
-               <div className="flex gap-4">
-                 <button 
-                   onClick={prevSlide}
-                   className="size-16 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
-                   aria-label="Previous slide"
-                 >
-                   <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
-                 </button>
-                 
-                 <div className="relative size-16 flex items-center justify-center">
-                    {/* Progress Ring SVG */}
-                    <svg className="absolute inset-0 size-full -rotate-90 pointer-events-none" viewBox="0 0 44 44">
-                      <circle 
-                        cx="22" cy="22" r="20" 
-                        fill="none" 
-                        stroke="rgba(255,255,255,0.2)" 
-                        strokeWidth="2" 
-                      />
-                      <circle 
-                        className="progress-ring-circle"
-                        cx="22" cy="22" r="20" 
-                        fill="none" 
-                        stroke="#13ec5b" 
-                        strokeWidth="2"
-                        strokeDasharray="126"
-                        strokeDashoffset="126"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    
-                    <button 
-                      onClick={nextSlide}
-                      className="size-12 rounded-full bg-white text-forest flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-lg relative z-10"
-                      aria-label="Next slide"
-                    >
-                      <span className="material-symbols-outlined">arrow_forward</span>
-                    </button>
-                 </div>
-               </div>
-            </div>
+          <div className="mt-12 text-center">
+             <button onClick={() => navigate('/gallery')} className="inline-flex items-center gap-2 text-forest/70 dark:text-white/70 font-bold hover:text-primary transition-colors text-sm uppercase tracking-widest border-b-2 border-transparent hover:border-primary pb-1">
+                Explore Full Gallery
+             </button>
           </div>
         </section>
 

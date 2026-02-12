@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
 import { productsData, Product } from '../../data/products';
 import { useCart } from '../../context/CartContext';
@@ -7,6 +7,9 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 const ProductCatalog: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const filterParam = searchParams.get('filter');
+
   // --- State Management ---
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -16,10 +19,17 @@ const ProductCatalog: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [featuredOnly, setFeaturedOnly] = useState(false);
   
   const { addToCart } = useCart();
   const itemsPerPage = 20; 
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (filterParam === 'best-seller') {
+      setFeaturedOnly(true);
+    }
+  }, [filterParam]);
 
   // --- Handlers ---
   const toggleCategory = (cat: string) => {
@@ -47,6 +57,7 @@ const ProductCatalog: React.FC = () => {
     setPriceMax(5000);
     setSortBy("Popularity");
     setSearchQuery("");
+    setFeaturedOnly(false);
     setCurrentPage(1);
   };
 
@@ -58,9 +69,15 @@ const ProductCatalog: React.FC = () => {
       const matchPrice = product.price <= priceMax;
       const matchSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           product.series.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchCategory && matchBrand && matchPrice && matchSearch;
+      
+      const matchFeatured = featuredOnly ? product.tag === "Best Seller" : true;
+      
+      // Filter out Out of Stock items
+      const isInStock = product.badge !== 'Out of Stock';
+
+      return matchCategory && matchBrand && matchPrice && matchSearch && matchFeatured && isInStock;
     });
-  }, [selectedCategories, selectedBrands, priceMax, searchQuery]);
+  }, [selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly]);
 
   const sortedProducts = useMemo(() => {
     const products = [...filteredProducts];
@@ -151,6 +168,14 @@ const ProductCatalog: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400" 
                 />
              </div>
+
+            {/* Special Filters */}
+            {featuredOnly && (
+              <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg flex items-center justify-between">
+                <span className="text-sm font-bold text-forest dark:text-white">Showing Top Products</span>
+                <button onClick={() => setFeaturedOnly(false)} className="text-xs text-primary hover:underline">Clear</button>
+              </div>
+            )}
 
             {/* Category Section */}
             <div className="space-y-4">

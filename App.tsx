@@ -6,11 +6,14 @@ import { AdminProvider } from './context/AdminContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
 
-// Lazy load components to improve initial load performance and handle refreshes gracefully
+// Lazy load components
 const LandingPage = lazy(() => import('./pages/PublicPages/LandingPage'));
 const ProductCatalog = lazy(() => import('./pages/PublicPages/ProductCatalog'));
 const ProductDetail = lazy(() => import('./pages/PublicPages/ProductDetail'));
 const ConsultationForm = lazy(() => import('./pages/PublicPages/ConsultationForm'));
+const GalleryPage = lazy(() => import('./pages/PublicPages/GalleryPage'));
+const InstallersPage = lazy(() => import('./pages/PublicPages/InstallersPage'));
+const PackagesPage = lazy(() => import('./pages/PublicPages/PackagesPage'));
 const ContactPage = lazy(() => import('./pages/PublicPages/ContactPage'));
 const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
@@ -20,6 +23,7 @@ const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestFo
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));
 const ProductInventory = lazy(() => import('./pages/AdminPages/ProductInventory'));
 const AdminGallery = lazy(() => import('./pages/AdminPages/AdminGallery'));
+const AdminPackages = lazy(() => import('./pages/AdminPages/AdminPackages'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -29,7 +33,6 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Custom Loading Component to display while pages are fetching
 const PageLoader = () => (
   <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background-light dark:bg-background-dark fixed inset-0 z-[100]">
     <div className="flex flex-col items-center gap-6">
@@ -68,6 +71,9 @@ const App: React.FC = () => {
                   <Route path="/products" element={<ProductCatalog />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/consultation" element={<ConsultationForm />} />
+                  <Route path="/gallery" element={<GalleryPage />} />
+                  <Route path="/installers" element={<InstallersPage />} />
+                  <Route path="/packages" element={<PackagesPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   
                   {/* Auth Routes */}
@@ -83,6 +89,7 @@ const App: React.FC = () => {
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   <Route path="/admin/inventory" element={<ProductInventory />} />
                   <Route path="/admin/gallery" element={<AdminGallery />} />
+                  <Route path="/admin/packages" element={<AdminPackages />} />
                 </Routes>
               </Suspense>
               <CartDrawer />
