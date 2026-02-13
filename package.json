@@ -12,6 +12,7 @@
     "@gsap/react": "^2.1.0",
     "@supabase/supabase-js": "^2.95.3",
     "@tailwindcss/postcss": "^4.1.18",
+    "@tailwindcss/vite": "^4.1.18",
     "autoprefixer": "^10.4.24",
     "gsap": "^3.12.5",
     "postcss": "^8.5.6",
