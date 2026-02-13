@@ -12,9 +12,10 @@ import UpgradeRequest from '../../components/dashboard/UpgradeRequest';
 import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
 import DashboardPackages from '../../components/dashboard/DashboardPackages';
+import ConsultationForm from '../PublicPages/ConsultationForm';
 
 // --- Types (Local) ---
-type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'upgrade' | 'service' | 'gallery' | 'packages';
+type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation';
 
 const SidebarLink: React.FC<{
   active: boolean,
@@ -96,7 +97,7 @@ const UserDashboard: React.FC = () => {
     if (option === 1) {
       navigate('/service-request?type=maintenance');
     } else if (option === 2) {
-      navigate('/consultation');
+      handleViewChange('consultation');
     } else if (option === 3) {
       navigate('/service-request?type=survey');
     }
@@ -472,6 +473,7 @@ const UserDashboard: React.FC = () => {
             {currentView === 'shop' && <DashboardShop />}
             {currentView === 'packages' && <DashboardPackages />}
             {currentView === 'gallery' && <DashboardGallery />}
+            {currentView === 'consultation' && <ConsultationForm isEmbedded={true} />}
             {currentView === 'upgrade' && <UpgradeRequest onSuccess={() => handleViewChange('requests')} />}
             {currentView === 'profile' && <ProfileSettings />}
 

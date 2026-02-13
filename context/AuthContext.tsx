@@ -9,14 +9,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 5 Minutes in milliseconds
-const INACTIVITY_LIMIT = 5 * 60 * 1000; 
+// 24 Hours in milliseconds
+const INACTIVITY_LIMIT = 24 * 60 * 60 * 1000;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('greenlife_auth') === 'true';
   });
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!isAuthenticated) return;
 
     const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-    
+
     const handleActivity = () => {
       resetTimer();
     };
