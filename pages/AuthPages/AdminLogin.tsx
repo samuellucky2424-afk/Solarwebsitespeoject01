@@ -34,6 +34,17 @@ const AdminLogin: React.FC = () => {
         throw new Error("Login successful but no session returned. Check Supabase config.");
       }
 
+      // Explicitly wait for session to be stored
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Verify session was actually stored
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Session after storage:", session);
+
+      if (!session) {
+        throw new Error("Session was not persisted. Please check browser localStorage settings.");
+      }
+
       navigate('/admin/dashboard');
     } catch (err: any) {
       console.error("Login Error:", err);
