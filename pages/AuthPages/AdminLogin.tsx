@@ -21,12 +21,18 @@ const AdminLogin: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
+      console.log("Supabase Auth Response:", { data, error }); // DEBUG LOG
+
       if (error) throw error;
+
+      if (!data.session) {
+        throw new Error("Login successful but no session returned. Check Supabase config.");
+      }
 
       navigate('/admin/dashboard');
     } catch (err: any) {

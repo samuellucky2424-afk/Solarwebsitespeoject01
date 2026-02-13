@@ -8,7 +8,13 @@ if (!supabaseKey || supabaseKey === 'PLACEHOLDER_KEY') {
     console.warn('⚠️ Supabase Key is missing or is a placeholder! Features requiring database access will fail. Please check your Vercel Environment Variables.');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey || 'PLACEHOLDER_KEY');
+export const supabase = createClient(supabaseUrl, supabaseKey || 'PLACEHOLDER_KEY', {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    }
+});
 
 export const uploadImage = async (file: File, bucket: string = 'greenlife-assets', folder: string = 'uploads'): Promise<string | null> => {
     try {
