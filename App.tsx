@@ -40,7 +40,7 @@ const PageLoader = () => (
     <div className="flex flex-col items-center gap-6">
       <div className="relative">
         <div className="size-20 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-xl shadow-primary/10">
-          <span className="material-symbols-outlined text-5xl text-primary animate-pulse">solar_power</span>
+          <img src="/logo.png" alt="Loading..." className="w-12 h-12 object-contain animate-pulse" />
         </div>
         <div className="absolute -bottom-2 -right-2 size-6 bg-forest text-primary rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark animate-spin">
           <span className="material-symbols-outlined text-xs">refresh</span>
