@@ -101,13 +101,13 @@ interface AdminContextType {
   referrals: Referral[];
   notifications: Notification[];
   stats: DashboardStats;
-  addProduct: (product: Omit<Product, 'id'>) => void;
+  addProduct: (product: Omit<Product, 'id'>) => Promise<boolean>;
   updateProduct: (id: any, product: Partial<Product>) => void;
   deleteProduct: (id: any) => void;
   updateRequestStatus: (id: string, status: ServiceRequest['status']) => void;
   deleteRequest: (id: string) => void;
   addRequest: (request: ServiceRequest) => void;
-  addPackage: (pkg: Omit<SolarPackage, 'id'>) => void;
+  addPackage: (pkg: Omit<SolarPackage, 'id'>) => Promise<boolean>;
   deletePackage: (id: string) => void;
   updateUserSystem: (updates: Partial<UserProfile>) => void;
   registerUser: (details: Partial<UserProfile>) => void;
@@ -116,8 +116,11 @@ interface AdminContextType {
   updateUserProfile: (updates: Partial<UserProfile>) => void;
   // Gallery
   gallery: GalleryImage[];
-  addGalleryImage: (image: Omit<GalleryImage, 'id'>) => void;
+  addGalleryImage: (image: Omit<GalleryImage, 'id'>) => Promise<boolean>;
   removeGalleryImage: (id: string) => void;
+  // Installers
+  addInstaller: (installer: UserProfile) => Promise<boolean>;
+  deleteInstaller: (id: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -269,8 +272,10 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!error) {
       addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
       fetchData(); // Refresh local state
+      return true;
     } else {
       console.error("Error adding product:", error);
+      return false;
     }
   };
 
@@ -330,8 +335,10 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!error) {
       addNotification(activeUser.id, "System", `Package ${pkg.name} created.`, "success");
       fetchData();
+      return true;
     } else {
       console.error("Error adding package:", error);
+      return false;
     }
   };
 
@@ -358,8 +365,10 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!error) {
       addNotification(activeUser.id, "Team", `Installer ${installer.fullName} added.`, "success");
       fetchData();
+      return true;
     } else {
       console.error("Error adding installer:", error);
+      return false;
     }
   };
 
@@ -465,8 +474,10 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     if (!error) {
       addNotification(activeUser.id, "Gallery", "Image added to gallery.", "success");
       fetchData();
+      return true;
     } else {
       console.error("Error adding gallery image:", error);
+      return false;
     }
   };
 
