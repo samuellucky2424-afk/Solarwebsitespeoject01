@@ -24,7 +24,7 @@ const SidebarLink: React.FC<{
 }> = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${active ? 'bg-primary text-forest font-semibold shadow-sm' : 'hover:bg-primary/10 text-[#4c9a66] dark:text-gray-300 font-medium'}`}
+    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-left transition-colors ${active ? 'bg-primary text-forest font-semibold shadow-sm' : 'hover:bg-primary/10 text-[#4c9a66] dark:text-gray-300 font-medium'}`}
   >
     <span className="material-symbols-outlined">{icon}</span>
     <span>{label}</span>
@@ -189,7 +189,7 @@ const UserDashboard: React.FC = () => {
         />
 
         {/* Sidebar Content */}
-        <div className={`absolute top-0 left-0 bottom-0 w-[280px] bg-white dark:bg-[#1a2e21] shadow-2xl transition-transform duration-300 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`absolute top-0 left-0 bottom-0 w-[80%] max-w-[260px] bg-white dark:bg-[#1a2e21] shadow-2xl transition-transform duration-300 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-10 px-2 justify-between">
               <div className="flex items-center gap-3">
