@@ -8,6 +8,8 @@ import PackageManagement from '../../components/admin/PackageManagement';
 import GalleryManagement from '../../components/admin/GalleryManagement';
 import TeamManagement from '../../components/admin/TeamManagement';
 
+import DebugStatus from '../../components/admin/DebugStatus';
+
 // Define View Type (matching AdminSidebar)
 type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'gallery' | 'requests' | 'teams';
 
@@ -50,6 +52,7 @@ const AdminDashboard: React.FC = () => {
                {activeView === 'requests' && <div className="text-center p-12 text-gray-500">Request Management (Full View) - See Overview for pending actions.</div>}
             </main>
          </div>
+         <DebugStatus />
       </div>
    );
 };
