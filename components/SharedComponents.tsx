@@ -146,8 +146,8 @@ export const PublicHeader: React.FC = () => {
         {/* Increased max-width to 1600px for wider fit */}
         <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 relative z-50">
-            <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-forest">
-              <span className="material-symbols-outlined font-bold">solar_power</span>
+            <div className="size-10 flex items-center justify-center">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
           </Link>
@@ -261,8 +261,8 @@ export const PublicFooter: React.FC = () => (
     <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
-          <div className="size-8 bg-primary rounded-lg flex items-center justify-center text-forest">
-            <span className="material-symbols-outlined font-bold">solar_power</span>
+          <div className="size-10 flex items-center justify-center">
+            <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
           </div>
           <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
         </div>
