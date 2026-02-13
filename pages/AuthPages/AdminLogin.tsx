@@ -1,12 +1,33 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '../../config/supabaseClient';
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/admin/dashboard');
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      navigate('/admin/dashboard');
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      alert(err.message || "Failed to login");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -15,11 +36,9 @@ const AdminLogin: React.FC = () => {
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 px-6 py-3 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-4 text-forest dark:text-white">
           <div className="flex justify-center">
-            <Link to="/" className="inline-block hover:opacity-80 transition-opacity">
-              <div className="bg-white p-3 rounded-2xl shadow-lg">
-                <img src="/logo.png" alt="Greenlife Solar" className="w-16 h-16 object-contain" />
-              </div>
-            </Link>
+            <div className="bg-white p-3 rounded-2xl shadow-lg">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-16 h-16 object-contain" />
+            </div>
           </div>
           <h2 className="text-lg font-bold leading-tight tracking-tight">Greenlife Solar Solutions LTD</h2>
         </Link>
@@ -55,14 +74,28 @@ const AdminLogin: React.FC = () => {
                   <span className="material-symbols-outlined text-sm">person</span>
                   Admin ID / Email
                 </label>
-                <input className="form-input w-full rounded-lg text-white border border-[#2c4b36] bg-[#0d1b12] focus:ring-2 focus:ring-primary focus:border-transparent h-12 px-4 placeholder:text-gray-600 transition-all" placeholder="Enter your administrator email" type="email" />
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-input w-full rounded-lg text-white border border-[#2c4b36] bg-[#0d1b12] focus:ring-2 focus:ring-primary focus:border-transparent h-12 px-4 placeholder:text-gray-600 transition-all"
+                  placeholder="Enter your administrator email"
+                  type="email"
+                  required
+                />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-gray-300 text-sm font-medium flex items-center gap-2">
                   <span className="material-symbols-outlined text-sm">lock</span>
                   Password
                 </label>
-                <input className="form-input w-full rounded-lg text-white border border-[#2c4b36] bg-[#0d1b12] focus:ring-2 focus:ring-primary focus:border-transparent h-12 px-4 placeholder:text-gray-600 transition-all" placeholder="••••••••" type="password" />
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input w-full rounded-lg text-white border border-[#2c4b36] bg-[#0d1b12] focus:ring-2 focus:ring-primary focus:border-transparent h-12 px-4 placeholder:text-gray-600 transition-all"
+                  placeholder="••••••••"
+                  type="password"
+                  required
+                />
               </div>
 
               <div className="bg-[#0d1b12]/50 border-l-4 border-primary p-4 rounded-r-lg">
@@ -75,9 +108,18 @@ const AdminLogin: React.FC = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-primary hover:bg-primary/90 text-forest font-bold py-3 rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all" type="submit">
-                <span>Secure Login</span>
-                <span className="material-symbols-outlined">login</span>
+              <button className="w-full bg-primary hover:bg-primary/90 text-forest font-bold py-3 rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                    <span>Authenticating...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Secure Login</span>
+                    <span className="material-symbols-outlined">login</span>
+                  </>
+                )}
               </button>
 
               <div className="flex items-center justify-between text-xs pt-2">

@@ -35,7 +35,7 @@ const SidebarLink: React.FC<{
 const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { signOut } = useAuth();
   const { activeUser, notifications, markNotificationRead } = useAdmin();
 
   // --- State ---
@@ -88,7 +88,7 @@ const UserDashboard: React.FC = () => {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
-      logout();
+      signOut();
     }
   };
 

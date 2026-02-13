@@ -1,91 +1,75 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from '../config/supabaseClient';
+import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
+  user: User | null;
+  session: Session | null;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 24 Hours in milliseconds
-const INACTIVITY_LIMIT = 24 * 60 * 60 * 1000;
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('greenlife_auth') === 'true';
-  });
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('greenlife_auth');
-    if (timerRef.current) clearTimeout(timerRef.current);
-    navigate('/login');
-  }, [navigate]);
-
-  const login = useCallback(() => {
-    setIsAuthenticated(true);
-    localStorage.setItem('greenlife_auth', 'true');
-    resetTimer();
-    navigate('/dashboard');
-  }, [navigate]);
-
-  const resetTimer = useCallback(() => {
-    if (!isAuthenticated) return;
-
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    timerRef.current = setTimeout(() => {
-      console.log("Auto-logout due to inactivity");
-      logout();
-    }, INACTIVITY_LIMIT);
-  }, [isAuthenticated, logout]);
-
-  // Event listeners for activity
   useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-
-    const handleActivity = () => {
-      resetTimer();
-    };
-
-    // Initial timer start
-    resetTimer();
-
-    events.forEach(event => {
-      window.addEventListener(event, handleActivity);
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    }).catch((err) => {
+      console.error("Auth session check error:", err);
+      setLoading(false);
     });
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      events.forEach(event => {
-        window.removeEventListener(event, handleActivity);
-      });
-    };
-  }, [isAuthenticated, resetTimer]);
+    // Listen for changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
   // Protect Dashboard Routes
   useEffect(() => {
+    if (loading) return;
+
     const protectedRoutes = ['/dashboard', '/requests', '/service-request'];
     const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
 
-    if (isProtectedRoute && !isAuthenticated) {
+    if (isProtectedRoute && !session) {
       navigate('/login');
     }
-  }, [isAuthenticated, location.pathname, navigate]);
+  }, [session, loading, location.pathname, navigate]);
+
+  const value = {
+    isAuthenticated: !!session,
+    user,
+    session,
+    signOut,
+  };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

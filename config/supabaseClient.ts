@@ -2,9 +2,13 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://xqvapaavywmqswtccfqu.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'PLACEHOLDER_KEY';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+if (!supabaseKey || supabaseKey === 'PLACEHOLDER_KEY') {
+    console.warn('⚠️ Supabase Key is missing or is a placeholder! Features requiring database access will fail. Please check your Vercel Environment Variables.');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey || 'PLACEHOLDER_KEY');
 
 export const uploadImage = async (file: File, bucket: string = 'greenlife-assets', folder: string = 'uploads'): Promise<string | null> => {
     try {

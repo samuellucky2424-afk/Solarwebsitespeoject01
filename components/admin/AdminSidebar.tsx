@@ -10,12 +10,12 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }) => {
-    const { logout } = useAuth();
+    const { signOut } = useAuth();
     const [isCatalogOpen, setIsCatalogOpen] = useState(true);
 
     const handleLogout = () => {
         if (window.confirm("Sign out of Admin Dashboard?")) {
-            logout();
+            signOut();
         }
     };
 

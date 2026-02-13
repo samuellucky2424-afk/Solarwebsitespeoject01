@@ -150,6 +150,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [packages, setPackages] = useState<SolarPackage[]>([]);
 
   // Shared User State (Demo)
+  const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
   const [activeUser, setActiveUser] = useState<UserProfile>(DEMO_USER);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -160,6 +161,10 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       const { data, error } = await supabase.from('greenlife_hub').select('*');
       if (error) {
+        // Ignore AbortError
+        if (error.message && (error.message.includes('AbortError') || error.message.includes('signal is aborted'))) {
+          return;
+        }
         console.error("Supabase Fetch Error:", error);
         return;
       }
@@ -169,21 +174,64 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const mappedPackages = data.filter(i => i.type === 'package').map(mapToPackage);
         const mappedRequests = data.filter(i => i.type === 'request').map(mapToRequest);
         const mappedGallery = data.filter(i => i.type === 'gallery').map(mapToGallery);
+        const mappedUsers = data.filter(i => i.type === 'user_profile').map(mapToUserProfile);
 
         setInventory(mappedInventory);
         setPackages(mappedPackages);
         setRequests(mappedRequests);
         setGallery(mappedGallery);
+        setAllUsers(mappedUsers);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.message?.includes('AbortError')) {
+        return; // Ignore aborts
+      }
       console.error("Unexpected fetch error:", err);
+    }
+  };
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('greenlife_hub')
+        .select('*')
+        .eq('type', 'user_profile')
+        .eq('user_id', userId)
+        .single();
+
+      if (data) {
+        setActiveUser(mapToUserProfile(data));
+      } else {
+        // Fallback or create? For now keep default or partial.
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.message?.includes('AbortError')) {
+        return;
+      }
+      console.error("Profile fetch error:", err);
     }
   };
 
   useEffect(() => {
     fetchData();
 
-    // Subscribe to changes
+    // Check Current Session & Fetch Profile
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
+    });
+
+    // Subscribe to Auth Changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        await fetchUserProfile(session.user.id);
+      } else {
+        setActiveUser(DEMO_USER); // Revert to demo on logout
+      }
+    });
+
+    // Subscribe to DB changes
     const channel = supabase
       .channel('public:greenlife_hub')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'greenlife_hub' }, () => {
@@ -192,6 +240,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       .subscribe();
 
     return () => {
+      authListener.subscription.unsubscribe();
       supabase.removeChannel(channel);
     };
   }, []);
@@ -215,8 +264,12 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     }]);
 
-    if (!error) addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
-    else console.error("Error adding product:", error);
+    if (!error) {
+      addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
+      fetchData(); // Refresh local state
+    } else {
+      console.error("Error adding product:", error);
+    }
   };
 
   const updateProduct = async (id: any, updates: Partial<Product>) => {
@@ -227,7 +280,8 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const deleteProduct = async (id: any) => {
     // In a real scenario, use UUID. Here we need to verify if id is UUID or string
     await supabase.from('greenlife_hub').delete().eq('id', id);
-    // addNotification(activeUser.id, "System", "Product removed.", "info");
+    addNotification(activeUser.id, "System", "Product removed.", "info");
+    fetchData();
   };
 
   const addRequest = async (req: ServiceRequest) => {
@@ -262,7 +316,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const addPackage = async (pkg: Omit<SolarPackage, 'id'>) => {
-    await supabase.from('greenlife_hub').insert([{
+    const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'package',
       name: pkg.name,
       price: pkg.price,
@@ -270,11 +324,18 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       image_url: pkg.img,
       metadata: { appliances: pkg.appliances, powerCapacity: pkg.powerCapacity }
     }]);
-    addNotification(activeUser.id, "System", `Package ${pkg.name} created.`, "success");
+
+    if (!error) {
+      addNotification(activeUser.id, "System", `Package ${pkg.name} created.`, "success");
+      fetchData();
+    } else {
+      console.error("Error adding package:", error);
+    }
   };
 
   const deletePackage = async (id: string) => {
     await supabase.from('greenlife_hub').delete().eq('id', id);
+    fetchData();
   };
 
   // --- User & Local Logic (Keep local for demo user details for now) ---
@@ -356,25 +417,32 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const stats: DashboardStats = {
-    totalSales: 124500,
+    totalSales: 124500, // Placeholder for now, or sum up 'order' types if they existed
     pendingInstalls: requests.filter(r => r.type === 'Installation' && r.status !== 'Completed').length,
-    lowStockCount: inventory.filter(p => false).length,
-    activeCustomers: 842 + requests.length
+    lowStockCount: inventory.filter(p => p.stockStatus === 'Low Stock' || p.stockStatus === 'Out of Stock').length,
+    activeCustomers: allUsers.length
   };
 
   const addGalleryImage = async (image: Omit<GalleryImage, 'id'>) => {
-    await supabase.from('greenlife_hub').insert([{
+    const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'gallery',
       title: image.title,
       category: image.category,
       description: image.description,
       image_url: image.url
     }]);
-    addNotification(activeUser.id, "Gallery", "Image added to gallery.", "success");
+
+    if (!error) {
+      addNotification(activeUser.id, "Gallery", "Image added to gallery.", "success");
+      fetchData();
+    } else {
+      console.error("Error adding gallery image:", error);
+    }
   };
 
   const removeGalleryImage = async (id: string) => {
     await supabase.from('greenlife_hub').delete().eq('id', id);
+    fetchData();
   };
 
   const mapToGallery = (item: any): GalleryImage => ({
@@ -383,6 +451,32 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     title: item.title,
     category: item.category,
     description: item.description
+  });
+
+  const mapToUserProfile = (data: any): UserProfile => ({
+    id: data.id,
+    firstName: data.title ? data.title.split(' ')[0] : 'User',
+    fullName: data.title || 'User',
+    email: data.metadata?.email || '',
+    phone: data.metadata?.phone,
+    address: data.metadata?.address || '',
+    plan: 'Standard Plan',
+    systemName: data.metadata?.solar_details ? `${data.metadata.solar_details.size || 'Unknown'} System` : 'No System',
+    installDate: data.metadata?.solar_details?.installDate || '',
+    installTime: data.metadata?.solar_details?.installTime || '',
+    warrantyStart: new Date(data.created_at).toLocaleDateString(),
+    warrantyEnd: '2030-01-01',
+    systemStatus: 'Operational',
+    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw',
+    referralCode: `REF-${data.id ? data.id.substring(0, 8) : 'NEW'}`,
+    hasSolar: !!data.metadata?.solar_details,
+    inverterType: data.metadata?.solar_details?.inverter,
+    batteryType: data.metadata?.solar_details?.battery,
+    systemSize: data.metadata?.solar_details?.size,
+    street: data.metadata?.address,
+    city: '',
+    state: '',
+    landmark: ''
   });
 
   return (

@@ -146,25 +146,30 @@ const LandingPage: React.FC = () => {
   useGSAP(() => {
     // Hero Animation
     const tl = gsap.timeline();
-    tl.fromTo(".hero-badge", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" })
-      .fromTo(".hero-title", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.4")
-      .fromTo(".hero-desc", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.6")
-      .fromTo(".hero-actions > button", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4");
+    const heroBadge = document.querySelector(".hero-badge");
+    if (heroBadge) {
+      tl.fromTo(".hero-badge", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" })
+        .fromTo(".hero-title", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.4")
+        .fromTo(".hero-desc", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" }, "-=0.6")
+        .fromTo(".hero-actions > button", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4");
+    }
 
     // Stats, Services, Gallery, Products Animations...
-    // (Simulating animation setup for brevity, keeping existing triggers)
     const sections = [".stats-item", ".service-card", ".gallery-track-container", ".product-card", ".cta-container"];
     sections.forEach(selector => {
-      gsap.fromTo(selector,
-        { y: 30, opacity: 0 },
-        {
-          y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out",
-          scrollTrigger: { trigger: selector, start: "top 85%" }
-        }
-      );
+      const elements = document.querySelectorAll(selector);
+      if (elements.length > 0) {
+        gsap.fromTo(selector,
+          { y: 30, opacity: 0 },
+          {
+            y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out",
+            scrollTrigger: { trigger: selector, start: "top 85%" }
+          }
+        );
+      }
     });
 
-  }, { scope: container });
+  }, { scope: container, dependencies: [inventory] }); // Re-run when inventory changes to catch product cards
 
   return (
     <div ref={container} className="min-h-screen flex flex-col overflow-x-hidden">
