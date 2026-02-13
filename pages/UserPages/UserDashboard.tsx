@@ -46,7 +46,9 @@ const UserDashboard: React.FC = () => {
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Theme State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
 
   // --- Effects ---
   // Handle Query Params for Deep Linking
@@ -92,10 +94,6 @@ const UserDashboard: React.FC = () => {
   const handleServiceOption = (option: number) => {
     setIsServiceModalOpen(false);
     if (option === 1) {
-      // Maintenance -> Redirect to Service Request? Or keep internal?
-      // The prompt requested no homepage redirects. Let's assume standard service request form 
-      // is still separate page `/service-request` OR we should inline it. 
-      // For now, let's keep the dedicated page but maybe inline strictly 'Upgrade' requests.
       navigate('/service-request?type=maintenance');
     } else if (option === 2) {
       navigate('/consultation');
@@ -179,6 +177,115 @@ const UserDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile Sidebar Drawer */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+
+        {/* Sidebar Content */}
+        <div className={`absolute top-0 left-0 bottom-0 w-[280px] bg-white dark:bg-[#1a2e21] shadow-2xl transition-transform duration-300 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-6 flex flex-col h-full">
+            <div className="flex items-center gap-3 mb-10 px-2 justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/20 p-2 rounded-lg">
+                  <span className="material-symbols-outlined text-[#0d1b12] dark:text-primary">wb_sunny</span>
+                </div>
+                <div>
+                  <h1 className="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight">Greenlife Solar</h1>
+                  <p className="text-[#4c9a66] text-xs font-medium">Customer App</p>
+                </div>
+              </div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <nav className="flex flex-col gap-2 grow overflow-y-auto">
+              <SidebarLink
+                active={currentView === 'overview'}
+                onClick={() => { handleViewChange('overview'); setIsMobileMenuOpen(false); }}
+                icon="dashboard"
+                label="Dashboard"
+              />
+              <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
+              <p className="px-4 text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-1">Manage</p>
+              <SidebarLink
+                active={currentView === 'systems'}
+                onClick={() => { handleViewChange('systems'); setIsMobileMenuOpen(false); }}
+                icon="solar_power"
+                label="My Systems"
+              />
+              <SidebarLink
+                active={currentView === 'upgrade'}
+                onClick={() => { handleViewChange('upgrade'); setIsMobileMenuOpen(false); }}
+                icon="upgrade"
+                label="Request Upgrade"
+              />
+              <SidebarLink
+                active={currentView === 'requests'}
+                onClick={() => { handleViewChange('requests'); setIsMobileMenuOpen(false); }}
+                icon="assignment"
+                label="Service Requests"
+              />
+
+              <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
+              <p className="px-4 text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-1">Store</p>
+              <SidebarLink
+                active={currentView === 'shop'}
+                onClick={() => { handleViewChange('shop'); setIsMobileMenuOpen(false); }}
+                icon="storefront"
+                label="Shop Products"
+              />
+              <SidebarLink
+                active={currentView === 'packages'}
+                onClick={() => { handleViewChange('packages'); setIsMobileMenuOpen(false); }}
+                icon="package_2"
+                label="Solar Packages"
+              />
+              <SidebarLink
+                active={currentView === 'gallery'}
+                onClick={() => { handleViewChange('gallery'); setIsMobileMenuOpen(false); }}
+                icon="photo_library"
+                label="Project Gallery"
+              />
+              <SidebarLink
+                active={currentView === 'orders'}
+                onClick={() => { handleViewChange('orders'); setIsMobileMenuOpen(false); }}
+                icon="receipt_long"
+                label="Order History"
+              />
+
+              <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
+              <p className="px-4 text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-1">Settings</p>
+              <SidebarLink
+                active={currentView === 'profile'}
+                onClick={() => { handleViewChange('profile'); setIsMobileMenuOpen(false); }}
+                icon="manage_accounts"
+                label="Profile & Address"
+              />
+            </nav>
+
+            <div className="mt-auto pt-6 border-t border-[#e7f3eb] dark:border-white/10">
+              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 py-3 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors mb-6">
+                <span className="material-symbols-outlined text-lg">logout</span> Log Out
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-full bg-cover border border-gray-200 dark:border-white/10" style={{ backgroundImage: `url('${activeUser.avatar}')` }}></div>
+                <div>
+                  <p className="text-sm font-bold dark:text-white line-clamp-1">{activeUser.fullName}</p>
+                  <p className="text-xs text-[#4c9a66]">{activeUser.plan}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="flex min-h-screen">
         {/* Sidebar */}
@@ -282,8 +389,13 @@ const UserDashboard: React.FC = () => {
               {currentView.replace('-', ' ')}
             </h2>
 
-            {/* Mobile Menu Toggle (Placeholder) */}
-            <button className="md:hidden p-2"><span className="material-symbols-outlined">menu</span></button>
+            {/* Mobile Menu Toggle */}
+            <button
+              className="lg:hidden p-2 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <span className="material-symbols-outlined">menu</span>
+            </button>
 
             <div className="flex items-center gap-4 ml-auto">
               {/* Search Bar - only visible on shop */}
