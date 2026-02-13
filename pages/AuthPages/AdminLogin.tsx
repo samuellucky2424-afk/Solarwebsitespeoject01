@@ -13,6 +13,13 @@ const AdminLogin: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Enforce strict admin access control
+    if (email.toLowerCase() !== 'admin@greenlifesolar.com') {
+      alert("Access Denied: Unauthorized Admin ID.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -24,7 +31,12 @@ const AdminLogin: React.FC = () => {
       navigate('/admin/dashboard');
     } catch (err: any) {
       console.error("Login Error:", err);
-      alert(err.message || "Failed to login");
+      // specific check for the user credential mismatch
+      if (err.message === 'Invalid login credentials') {
+        alert("Invalid credentials. Please verify your admin password.");
+      } else {
+        alert(err.message || "Failed to login");
+      }
     } finally {
       setLoading(false);
     }

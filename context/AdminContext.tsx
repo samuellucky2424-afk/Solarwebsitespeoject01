@@ -175,12 +175,14 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         const mappedRequests = data.filter(i => i.type === 'request').map(mapToRequest);
         const mappedGallery = data.filter(i => i.type === 'gallery').map(mapToGallery);
         const mappedUsers = data.filter(i => i.type === 'user_profile').map(mapToUserProfile);
+        const mappedInstallers = data.filter(i => i.type === 'installer').map(mapToUserProfile);
 
         setInventory(mappedInventory);
         setPackages(mappedPackages);
         setRequests(mappedRequests);
         setGallery(mappedGallery);
         setAllUsers(mappedUsers);
+        setInstallers(mappedInstallers);
       }
     } catch (err: any) {
       if (err.name === 'AbortError' || err.message?.includes('AbortError')) {
@@ -338,6 +340,34 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     fetchData();
   };
 
+  // --- Installers / Team ---
+  const [installers, setInstallers] = useState<UserProfile[]>([]);
+
+  const addInstaller = async (installer: UserProfile) => {
+    const { error } = await supabase.from('greenlife_hub').insert([{
+      type: 'installer',
+      title: installer.fullName,
+      metadata: {
+        email: installer.email,
+        phone: installer.phone,
+        role: 'Installer',
+        status: 'Active'
+      }
+    }]);
+
+    if (!error) {
+      addNotification(activeUser.id, "Team", `Installer ${installer.fullName} added.`, "success");
+      fetchData();
+    } else {
+      console.error("Error adding installer:", error);
+    }
+  };
+
+  const deleteInstaller = async (id: string) => {
+    await supabase.from('greenlife_hub').delete().eq('id', id);
+    fetchData();
+  };
+
   // --- User & Local Logic (Keep local for demo user details for now) ---
   const updateUserSystem = (updates: Partial<UserProfile>) => {
     setActiveUser(prev => ({ ...prev, ...updates }));
@@ -482,11 +512,15 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <AdminContext.Provider value={{
       inventory, requests, packages, stats, activeUser, referrals, notifications, gallery,
+      // @ts-ignore
+      allUsers, installers,
       addProduct, updateProduct, deleteProduct,
       updateRequestStatus, deleteRequest, addRequest,
       addPackage, deletePackage,
       updateUserSystem, registerUser, approveReferral, markNotificationRead, updateUserProfile,
-      addGalleryImage, removeGalleryImage
+      addGalleryImage, removeGalleryImage,
+      // @ts-ignore
+      addInstaller, deleteInstaller
     }}>
       {children}
     </AdminContext.Provider>

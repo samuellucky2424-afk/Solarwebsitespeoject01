@@ -38,7 +38,7 @@ const PackageManagement: React.FC = () => {
             }
         }
 
-        addPackage({
+        const success = await addPackage({
             name,
             price: Number(price),
             description,
@@ -47,15 +47,19 @@ const PackageManagement: React.FC = () => {
             img: finalImageUrl || 'https://placehold.co/600x400?text=Solar+Package'
         });
 
-        setName('');
-        setPrice('');
-        setDescription('');
-        setAppliancesStr('');
-        setPowerCapacity('');
-        setImageUrl('');
-        setImageFile(null);
+        if (success) {
+            setName('');
+            setPrice('');
+            setDescription('');
+            setAppliancesStr('');
+            setPowerCapacity('');
+            setImageUrl('');
+            setImageFile(null);
+            setToastMsg("Package added successfully!");
+        } else {
+            setToastMsg("Failed to add package.");
+        }
         setUploading(false);
-        setToastMsg("Package added successfully!");
     };
 
     const handleDelete = (id: string) => {

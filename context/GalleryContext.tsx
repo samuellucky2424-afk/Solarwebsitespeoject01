@@ -7,7 +7,7 @@ export type { GalleryImage };
 
 interface GalleryContextType {
   images: GalleryImage[];
-  addImage: (image: Omit<GalleryImage, 'id'>) => void;
+  addImage: (image: Omit<GalleryImage, 'id'>) => Promise<boolean>;
   removeImage: (id: string) => void;
 }
 

@@ -42,19 +42,23 @@ const GalleryManagement: React.FC = () => {
             return;
         }
 
-        addImage({
+        const success = await addImage({
             url: finalImageUrl,
             title: newTitle,
             category: newCategory,
             description: newDescription
         });
 
-        setNewUrl('');
-        setNewTitle('');
-        setNewDescription('');
-        setImageFile(null);
+        if (success) {
+            setNewUrl('');
+            setNewTitle('');
+            setNewDescription('');
+            setImageFile(null);
+            setToastMsg('Image added to gallery successfully');
+        } else {
+            setToastMsg('Failed to add image. Check console.');
+        }
         setUploading(false);
-        setToastMsg('Image added to gallery successfully');
     };
 
     const handleRemove = (id: string) => {

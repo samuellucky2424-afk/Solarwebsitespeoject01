@@ -93,13 +93,18 @@ const ProductManagement: React.FC = () => {
         if (editingProduct) {
             updateProduct(editingProduct.id, productData);
             setToastMsg("Product updated successfully");
+            setUploading(false);
+            setIsModalOpen(false);
         } else {
-            addProduct(productData as Product);
-            setToastMsg("Product created successfully");
+            const success = await addProduct(productData as Product);
+            if (success) {
+                setToastMsg("Product created successfully");
+                setIsModalOpen(false);
+            } else {
+                setToastMsg("Failed to create product. See console for details.");
+            }
+            setUploading(false);
         }
-
-        setUploading(false);
-        setIsModalOpen(false);
     };
 
     return (
