@@ -8,8 +8,8 @@ export interface CartItem extends Product {
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product, quantity: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, delta: number) => void;
+  removeFromCart: (productId: any) => void;
+  updateQuantity: (productId: any, delta: number) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -35,7 +35,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
-        return prev.map(item => 
+        return prev.map(item =>
           item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
@@ -45,11 +45,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // setIsCartOpen(true); 
   };
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = (productId: any) => {
     setCartItems(prev => prev.filter(item => item.id !== productId));
   };
 
-  const updateQuantity = (productId: number, delta: number) => {
+  const updateQuantity = (productId: any, delta: number) => {
     setCartItems(prev => prev.map(item => {
       if (item.id === productId) {
         const newQty = item.quantity + delta;
@@ -65,9 +65,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ 
-      cartItems, addToCart, removeFromCart, updateQuantity, clearCart, 
-      totalItems, totalPrice, isCartOpen, setIsCartOpen 
+    <CartContext.Provider value={{
+      cartItems, addToCart, removeFromCart, updateQuantity, clearCart,
+      totalItems, totalPrice, isCartOpen, setIsCartOpen
     }}>
       {children}
     </CartContext.Provider>

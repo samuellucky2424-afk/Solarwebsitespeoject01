@@ -1,5 +1,5 @@
 export interface Product {
-  id: number;
+  id: string | number;
   name: string;
   series: string;
   price: number;
@@ -11,6 +11,8 @@ export interface Product {
   category: string;
   brand: string;
   description?: string;
+  stockStatus?: string;
+  reviews?: number;
 }
 
 export const productsData: Product[] = [

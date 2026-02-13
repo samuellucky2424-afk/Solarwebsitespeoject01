@@ -57,7 +57,7 @@ const ProductManagement: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id: number) => {
+    const handleDelete = (id: any) => {
         if (window.confirm("Are you sure you want to delete this product?")) {
             deleteProduct(id);
             setToastMsg("Product deleted successfully");

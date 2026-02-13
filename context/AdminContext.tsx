@@ -24,19 +24,7 @@ export interface GalleryImage {
   description?: string;
 }
 
-export interface Product {
-  id: any; // Changed to any to support UUIDs from DB or string IDs
-  name: string;
-  price: number;
-  category: string;
-  img: string;
-  brand: string;
-  series: string;
-  stockStatus: string;
-  eff: string;
-  spec: string;
-  reviews: number;
-}
+import { Product } from '../data/products';
 
 export interface SolarPackage {
   id: string;
@@ -218,12 +206,12 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       category: product.category,
       image_url: product.img,
       description: product.spec,
-      status: product.stockStatus,
+      status: product.stockStatus || 'In Stock',
       metadata: {
         brand: product.brand,
         series: product.series,
         efficiency: product.eff,
-        reviews: product.reviews
+        reviews: product.reviews || 0
       }
     }]);
 
