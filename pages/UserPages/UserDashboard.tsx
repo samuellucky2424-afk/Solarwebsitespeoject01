@@ -193,8 +193,8 @@ const UserDashboard: React.FC = () => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-10 px-2 justify-between">
               <div className="flex items-center gap-3">
-                <div className="bg-primary/20 p-2 rounded-lg">
-                  <span className="material-symbols-outlined text-[#0d1b12] dark:text-primary">wb_sunny</span>
+                <div className="size-10 flex items-center justify-center">
+                  <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <h1 className="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight">Greenlife Solar</h1>
@@ -292,8 +292,8 @@ const UserDashboard: React.FC = () => {
         <aside className="w-72 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-screen sticky top-0 hidden lg:flex shrink-0">
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-10 px-2">
-              <div className="bg-primary/20 p-2 rounded-lg">
-                <span className="material-symbols-outlined text-[#0d1b12] dark:text-primary">wb_sunny</span>
+              <div className="size-10 flex items-center justify-center">
+                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight">Greenlife Solar</h1>

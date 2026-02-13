@@ -41,13 +41,13 @@ const UserLogin: React.FC = () => {
 
   const handleAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (authMode === 'signup') {
       if (signUpData.password !== signUpData.confirmPassword) {
         alert("Passwords do not match");
         return;
       }
-      
+
       // Register user in mock DB context
       registerUser({
         fullName: signUpData.fullName,
@@ -66,7 +66,7 @@ const UserLogin: React.FC = () => {
 
     // Perform Login
     login();
-    
+
     // Redirect to where the user came from or dashboard
     const from = location.state?.from || '/dashboard';
     navigate(from);
@@ -75,19 +75,19 @@ const UserLogin: React.FC = () => {
   useGSAP(() => {
     // Animate Left Panel
     gsap.from(".visual-panel", {
-       x: -100,
-       opacity: 0,
-       duration: 1,
-       ease: "power3.out"
+      x: -100,
+      opacity: 0,
+      duration: 1,
+      ease: "power3.out"
     });
 
     // Animate Right Panel Content
     gsap.from(".auth-content", {
-       y: 20,
-       opacity: 0,
-       duration: 0.8,
-       ease: "power2.out",
-       delay: 0.2
+      y: 20,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power2.out",
+      delay: 0.2
     });
   }, { scope: containerRef });
 
@@ -99,11 +99,9 @@ const UserLogin: React.FC = () => {
         <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDywjTY-ACoD5T274KEVbpjZpt1UsEACtIVbJMHCRFz6yvYkav1NDLgGVB_12KHvz-YIZHvQUer2FW__NQSlJOCK6aBQToLrM1_jTtkSfTu3dzqCouMKKe34n-UORwMKpwM_DqoWczq5GQZ_mTkp3jJIYcvRpXWs79XAgX29VkaUNEqffEILxgiOYXS2Ly14ndhnImJeE65WQdbkLJxGkoe6e68SEVHC_hPpQssIcTjsuT8vbXHWHITKEwrs4a-xvJ_6MXOM352ob4')" }}></div>
         <div className="relative z-20 flex flex-col justify-between p-16 w-full h-full">
           <Link to="/" className="flex items-center gap-3">
-             <div className="size-10 text-primary">
-                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <path clipRule="evenodd" d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z" fill="currentColor" fillRule="evenodd"></path>
-                </svg>
-              </div>
+            <div className="size-10 text-primary">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
+            </div>
             <h2 className="text-white text-2xl font-bold tracking-tight">Greenlife Solar</h2>
           </Link>
           <div className="max-w-md">
@@ -111,11 +109,11 @@ const UserLogin: React.FC = () => {
             <p className="text-gray-300 text-lg">Join over 10,000 households and businesses making the switch to clean, renewable energy with Greenlife Solutions.</p>
           </div>
           <div className="flex gap-4 items-center">
-             <div className="flex -space-x-2">
-                <div className="size-8 rounded-full border-2 border-background-dark bg-gray-400"></div>
-                <div className="size-8 rounded-full border-2 border-background-dark bg-gray-500"></div>
-                <div className="size-8 rounded-full border-2 border-background-dark bg-gray-600"></div>
-              </div>
+            <div className="flex -space-x-2">
+              <div className="size-8 rounded-full border-2 border-background-dark bg-gray-400"></div>
+              <div className="size-8 rounded-full border-2 border-background-dark bg-gray-500"></div>
+              <div className="size-8 rounded-full border-2 border-background-dark bg-gray-600"></div>
+            </div>
             <span className="text-white text-sm font-medium">Trusted by industry leaders worldwide</span>
           </div>
         </div>
@@ -125,9 +123,9 @@ const UserLogin: React.FC = () => {
       <div className="w-full lg:w-1/2 lg:ml-auto flex flex-col min-h-screen">
         {/* Back Button for Mobile/Desktop */}
         <div className="p-6">
-           <Link to="/" className="inline-flex items-center gap-2 text-sm font-bold text-forest/60 dark:text-white/60 hover:text-primary transition-colors">
-              <span className="material-symbols-outlined text-lg">arrow_back</span> Back to Home
-           </Link>
+          <Link to="/" className="inline-flex items-center gap-2 text-sm font-bold text-forest/60 dark:text-white/60 hover:text-primary transition-colors">
+            <span className="material-symbols-outlined text-lg">arrow_back</span> Back to Home
+          </Link>
         </div>
 
         <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-24 pb-12">
@@ -142,13 +140,13 @@ const UserLogin: React.FC = () => {
             {/* Toggle */}
             <div className="mb-8">
               <div className="flex h-12 w-full items-center justify-center rounded-xl bg-gray-200/50 dark:bg-white/5 p-1.5">
-                <button 
+                <button
                   onClick={() => setAuthMode('signin')}
                   className={`flex h-full grow items-center justify-center rounded-lg px-2 text-sm font-bold transition-all ${authMode === 'signin' ? 'bg-white dark:bg-white/10 shadow-sm text-forest dark:text-white' : 'text-forest/60 dark:text-white/60'}`}
                 >
                   Sign In
                 </button>
-                <button 
+                <button
                   onClick={() => setAuthMode('signup')}
                   className={`flex h-full grow items-center justify-center rounded-lg px-2 text-sm font-bold transition-all ${authMode === 'signup' ? 'bg-white dark:bg-white/10 shadow-sm text-forest dark:text-white' : 'text-forest/60 dark:text-white/60'}`}
                 >
@@ -241,14 +239,14 @@ const UserLogin: React.FC = () => {
                     {signUpData.hasSolar && (
                       <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                           <div>
-                              <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Date Installed</label>
-                              <input required={signUpData.hasSolar} name="installDate" type="date" value={signUpData.installDate} onChange={handleInputChange} className="form-input block w-full rounded-lg border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-10 px-3 text-sm focus:ring-primary focus:border-primary" />
-                           </div>
-                           <div>
-                              <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Time Installed</label>
-                              <input name="installTime" type="time" value={signUpData.installTime} onChange={handleInputChange} className="form-input block w-full rounded-lg border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-10 px-3 text-sm focus:ring-primary focus:border-primary" />
-                           </div>
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Date Installed</label>
+                            <input required={signUpData.hasSolar} name="installDate" type="date" value={signUpData.installDate} onChange={handleInputChange} className="form-input block w-full rounded-lg border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-10 px-3 text-sm focus:ring-primary focus:border-primary" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Time Installed</label>
+                            <input name="installTime" type="time" value={signUpData.installTime} onChange={handleInputChange} className="form-input block w-full rounded-lg border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-10 px-3 text-sm focus:ring-primary focus:border-primary" />
+                          </div>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
@@ -281,12 +279,12 @@ const UserLogin: React.FC = () => {
                 <span className="material-symbols-outlined">arrow_forward</span>
               </button>
             </form>
-            
+
             <div className="mt-8 text-center">
-               <Link to="/requests" className="inline-flex items-center gap-2 text-sm font-bold text-primary-dark dark:text-green-300 hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">help</span>
-                  <span>Need help with your account?</span>
-               </Link>
+              <Link to="/requests" className="inline-flex items-center gap-2 text-sm font-bold text-primary-dark dark:text-green-300 hover:text-primary transition-colors">
+                <span className="material-symbols-outlined">help</span>
+                <span>Need help with your account?</span>
+              </Link>
             </div>
           </div>
         </div>

@@ -23,8 +23,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
         <aside className="w-64 border-r border-[#e7f3e8] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] flex flex-col shrink-0 hidden md:flex h-full">
             <div className="p-6">
                 <Link to="/" className="flex items-center gap-3">
-                    <div className="bg-primary/20 p-2 rounded-lg">
-                        <span className="material-symbols-outlined text-primary">solar_power</span>
+                    <div className="size-10 flex items-center justify-center">
+                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-[#0d1b0f] dark:text-white text-base font-bold leading-none">Greenlife Solar</h1>
