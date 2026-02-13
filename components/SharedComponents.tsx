@@ -25,7 +25,7 @@ export const CartDrawer: React.FC = () => {
 
   return (
     <>
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-[60] backdrop-blur-sm transition-opacity"
         onClick={() => setIsCartOpen(false)}
       />
@@ -49,23 +49,23 @@ export const CartDrawer: React.FC = () => {
           ) : (
             cartItems.map(item => (
               <div key={item.id} className="flex gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl">
-                 <div className="w-20 h-20 rounded-lg bg-white dark:bg-black/20 bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${item.img}')` }}></div>
-                 <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <h4 className="font-bold text-sm text-forest dark:text-white line-clamp-2">{item.name}</h4>
-                      <p className="text-xs text-primary font-bold mt-1">₦{item.price.toLocaleString()}</p>
+                <div className="w-20 h-20 rounded-lg bg-white dark:bg-black/20 bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${item.img}')` }}></div>
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-sm text-forest dark:text-white line-clamp-2">{item.name}</h4>
+                    <p className="text-xs text-primary font-bold mt-1">₦{item.price.toLocaleString()}</p>
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-3 bg-white dark:bg-black/20 rounded-lg px-2 py-1 border border-gray-200 dark:border-white/10">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="text-sm font-bold hover:text-primary">-</button>
+                      <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="text-sm font-bold hover:text-primary">+</button>
                     </div>
-                    <div className="flex items-center justify-between mt-2">
-                       <div className="flex items-center gap-3 bg-white dark:bg-black/20 rounded-lg px-2 py-1 border border-gray-200 dark:border-white/10">
-                          <button onClick={() => updateQuantity(item.id, -1)} className="text-sm font-bold hover:text-primary">-</button>
-                          <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, 1)} className="text-sm font-bold hover:text-primary">+</button>
-                       </div>
-                       <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500">
-                          <span className="material-symbols-outlined text-lg">delete</span>
-                       </button>
-                    </div>
-                 </div>
+                    <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500">
+                      <span className="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             ))
           )}
@@ -77,9 +77,13 @@ export const CartDrawer: React.FC = () => {
               <span className="text-forest dark:text-white font-medium">Subtotal</span>
               <span className="text-xl font-bold text-forest dark:text-white">₦{totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
-            <button className="w-full bg-primary text-forest font-bold py-4 rounded-xl hover:brightness-105 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+            <Link
+              to="/checkout"
+              onClick={() => setIsCartOpen(false)}
+              className="w-full bg-primary text-forest font-bold py-4 rounded-xl hover:brightness-105 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+            >
               Checkout Now <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
+            </Link>
           </div>
         )}
       </div>
@@ -89,11 +93,11 @@ export const CartDrawer: React.FC = () => {
 
 export const FloatingCartButton: React.FC = () => {
   const { totalItems, setIsCartOpen } = useCart();
-  
+
   if (totalItems === 0) return null;
 
   return (
-    <button 
+    <button
       onClick={() => setIsCartOpen(true)}
       className="fixed bottom-6 right-6 z-40 bg-forest text-primary p-4 rounded-full shadow-2xl shadow-forest/40 hover:scale-110 transition-transform animate-in zoom-in duration-300 flex items-center justify-center"
     >
@@ -117,8 +121,8 @@ export const Toast: React.FC<{ message: string, onClose: () => void }> = ({ mess
         <span className="material-symbols-outlined text-sm font-bold">check</span>
       </div>
       <div>
-         <p className="font-bold text-sm">Success</p>
-         <p className="text-sm opacity-90">{message}</p>
+        <p className="font-bold text-sm">Success</p>
+        <p className="text-sm opacity-90">{message}</p>
       </div>
       <button onClick={onClose} className="ml-2 hover:opacity-70">
         <span className="material-symbols-outlined text-sm">close</span>
@@ -133,7 +137,7 @@ export const PublicHeader: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { setIsCartOpen, totalItems } = useCart();
-  
+
   React.useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -154,18 +158,17 @@ export const PublicHeader: React.FC = () => {
             </div>
             <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
           </Link>
-          
-          <nav className="hidden md:flex items-center gap-10">
+
+          <nav className="hidden lg:flex items-center gap-10">
             <Link to="/products" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Products</Link>
             <Link to="/consultation" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Solutions</Link>
             <Link to="/gallery" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Gallery</Link>
             <Link to="/requests" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Support</Link>
-            <Link to="/admin" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Admin</Link>
           </nav>
 
           <div className="flex items-center gap-4 relative z-50">
             <Link to="/login" className="text-sm font-bold hover:text-primary hidden sm:block">Sign In</Link>
-            <button 
+            <button
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-forest dark:text-white hover:text-primary transition-colors hidden sm:block"
             >
@@ -179,10 +182,10 @@ export const PublicHeader: React.FC = () => {
             <Link to="/consultation" className="bg-primary hover:bg-primary/90 text-forest px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-primary/20 hidden sm:block">
               Get a Free Quote
             </Link>
-            
-            <button 
+
+            <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-forest dark:text-white hover:bg-forest/5 dark:hover:bg-white/10 rounded-full transition-colors"
+              className="lg:hidden p-2 text-forest dark:text-white hover:bg-forest/5 dark:hover:bg-white/10 rounded-full transition-colors"
             >
               <span className="material-symbols-outlined text-2xl">menu</span>
             </button>
@@ -191,64 +194,63 @@ export const PublicHeader: React.FC = () => {
       </header>
 
       {/* Mobile Side Drawer */}
-      <div 
-        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-700 backdrop-blur-sm md:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      <div
+        className={`fixed inset-0 bg-black/50 z-50 transition-opacity duration-700 backdrop-blur-sm lg:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsMobileMenuOpen(false)}
         aria-hidden="true"
       />
 
-      <div 
-        className={`fixed inset-y-0 right-0 z-[60] w-[85%] max-w-[320px] bg-white dark:bg-[#0f2015] shadow-2xl transform transition-transform duration-700 cubic-bezier(0.33, 1, 0.68, 1) md:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      <div
+        className={`fixed inset-y-0 right-0 z-[60] w-[85%] max-w-[320px] bg-white dark:bg-[#0f2015] shadow-2xl transform transition-transform duration-700 cubic-bezier(0.33, 1, 0.68, 1) lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/5">
-             <h3 className="text-xl font-bold text-forest dark:text-white">Menu</h3>
-             <button 
+            <h3 className="text-xl font-bold text-forest dark:text-white">Menu</h3>
+            <button
               onClick={() => setIsMobileMenuOpen(false)}
               className="p-2 text-forest dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
             >
               <span className="material-symbols-outlined text-2xl">close</span>
             </button>
           </div>
-          
+
           <nav className="flex-1 overflow-y-auto py-6 px-6 flex flex-col gap-2">
             {[
               { to: "/products", label: "Products", icon: "inventory_2" },
               { to: "/consultation", label: "Solutions", icon: "solar_power" },
               { to: "/gallery", label: "Our Gallery", icon: "photo_library" },
               { to: "/requests", label: "Support", icon: "support_agent" },
-              { to: "/admin", label: "Admin Portal", icon: "admin_panel_settings" },
             ].map((link) => (
-               <Link 
+              <Link
                 key={link.to}
-                onClick={() => setIsMobileMenuOpen(false)} 
-                to={link.to} 
+                onClick={() => setIsMobileMenuOpen(false)}
+                to={link.to}
                 className="flex items-center gap-4 p-4 rounded-xl text-forest dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all group"
               >
                 <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-forest transition-colors">
-                   <span className="material-symbols-outlined">{link.icon}</span>
+                  <span className="material-symbols-outlined">{link.icon}</span>
                 </div>
                 <span className="text-lg font-bold">{link.label}</span>
                 <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-primary">chevron_right</span>
               </Link>
             ))}
-            
+
             <hr className="border-gray-100 dark:border-white/5 my-4" />
-            
-            <Link 
-              onClick={() => setIsMobileMenuOpen(false)} 
-              to="/login" 
+
+            <Link
+              onClick={() => setIsMobileMenuOpen(false)}
+              to="/login"
               className="flex items-center gap-4 p-4 rounded-xl text-forest/70 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
             >
               <span className="material-symbols-outlined">login</span>
               <span className="font-bold">Sign In</span>
             </Link>
           </nav>
-          
+
           <div className="p-6 border-t border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20">
-             <Link 
-              onClick={() => setIsMobileMenuOpen(false)} 
-              to="/consultation" 
+            <Link
+              onClick={() => setIsMobileMenuOpen(false)}
+              to="/consultation"
               className="flex w-full items-center justify-center gap-2 bg-primary text-forest py-4 rounded-xl text-lg font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
             >
               Get a Free Quote
@@ -275,12 +277,12 @@ export const PublicFooter: React.FC = () => (
           Leading the transition to sustainable energy since 2012. Professional solutions for a brighter, cleaner future.
         </p>
         <div className="flex gap-4">
-           <a href="https://www.facebook.com/GreenlifeSolarsolution" target="_blank" rel="noopener noreferrer" className="size-10 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-forest dark:text-white">
-             <img src="https://cdn.simpleicons.org/facebook" className="w-4 h-4 opacity-60 hover:opacity-100 dark:invert" alt="facebook" />
-           </a>
-           <a href="https://www.instagram.com/greenlife_solarsolution?igsh=YjFiZHk0ajc3b2Yx" target="_blank" rel="noopener noreferrer" className="size-10 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-forest dark:text-white">
-             <img src="https://cdn.simpleicons.org/instagram" className="w-4 h-4 opacity-60 hover:opacity-100 dark:invert" alt="instagram" />
-           </a>
+          <a href="https://www.facebook.com/GreenlifeSolarsolution" target="_blank" rel="noopener noreferrer" className="size-10 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-forest dark:text-white">
+            <img src="https://cdn.simpleicons.org/facebook" className="w-4 h-4 opacity-60 hover:opacity-100 dark:invert" alt="facebook" />
+          </a>
+          <a href="https://www.instagram.com/greenlife_solarsolution?igsh=YjFiZHk0ajc3b2Yx" target="_blank" rel="noopener noreferrer" className="size-10 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-white transition-all text-forest dark:text-white">
+            <img src="https://cdn.simpleicons.org/instagram" className="w-4 h-4 opacity-60 hover:opacity-100 dark:invert" alt="instagram" />
+          </a>
         </div>
       </div>
       <div>

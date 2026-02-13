@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AdminProvider } from './context/AdminContext';
@@ -18,12 +18,14 @@ const ContactPage = lazy(() => import('./pages/PublicPages/ContactPage'));
 const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
 const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
-const UserRequests = lazy(() => import('./pages/UserPages/UserRequests'));
 const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestForm'));
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));
-const ProductInventory = lazy(() => import('./pages/AdminPages/ProductInventory'));
-const AdminGallery = lazy(() => import('./pages/AdminPages/AdminGallery'));
-const AdminPackages = lazy(() => import('./pages/AdminPages/AdminPackages'));
+const CheckoutPage = lazy(() => import('./pages/UserPages/CheckoutPage'));
+
+// Admin Sub-pages are now integrated into AdminDashboard
+// const ProductInventory = lazy(() => import('./pages/AdminPages/ProductInventory'));
+// const AdminGallery = lazy(() => import('./pages/AdminPages/AdminGallery'));
+// const AdminPackages = lazy(() => import('./pages/AdminPages/AdminPackages'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -41,7 +43,7 @@ const PageLoader = () => (
           <span className="material-symbols-outlined text-5xl text-primary animate-pulse">solar_power</span>
         </div>
         <div className="absolute -bottom-2 -right-2 size-6 bg-forest text-primary rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark animate-spin">
-           <span className="material-symbols-outlined text-xs">refresh</span>
+          <span className="material-symbols-outlined text-xs">refresh</span>
         </div>
       </div>
       <div className="flex flex-col items-center gap-2">
@@ -58,8 +60,8 @@ const PageLoader = () => (
 
 const App: React.FC = () => {
   return (
-    <GalleryProvider>
-      <AdminProvider>
+    <AdminProvider>
+      <GalleryProvider>
         <CartProvider>
           <HashRouter>
             <AuthProvider>
@@ -75,21 +77,23 @@ const App: React.FC = () => {
                   <Route path="/installers" element={<InstallersPage />} />
                   <Route path="/packages" element={<PackagesPage />} />
                   <Route path="/contact" element={<ContactPage />} />
-                  
+                  <Route path="/checkout" element={<CheckoutPage />} />
+
                   {/* Auth Routes */}
                   <Route path="/login" element={<UserLogin />} />
-                  <Route path="/admin" element={<AdminLogin />} />
+                  <Route path="/php/greenlife/privatelog" element={<AdminLogin />} />
 
                   {/* User Protected Routes */}
                   <Route path="/dashboard" element={<UserDashboard />} />
-                  <Route path="/requests" element={<UserRequests />} />
+                  <Route path="/requests" element={<Navigate to="/dashboard?view=requests" replace />} />
                   <Route path="/service-request" element={<ServiceRequestForm />} />
 
                   {/* Admin Protected Routes */}
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                  <Route path="/admin/inventory" element={<ProductInventory />} />
-                  <Route path="/admin/gallery" element={<AdminGallery />} />
-                  <Route path="/admin/packages" element={<AdminPackages />} />
+                  {/* Redirect old admin routes to dashboard */}
+                  <Route path="/admin/inventory" element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="/admin/gallery" element={<Navigate to="/admin/dashboard" replace />} />
+                  <Route path="/admin/packages" element={<Navigate to="/admin/dashboard" replace />} />
                 </Routes>
               </Suspense>
               <CartDrawer />
@@ -97,8 +101,8 @@ const App: React.FC = () => {
             </AuthProvider>
           </HashRouter>
         </CartProvider>
-      </AdminProvider>
-    </GalleryProvider>
+      </GalleryProvider>
+    </AdminProvider>
   );
 };
 

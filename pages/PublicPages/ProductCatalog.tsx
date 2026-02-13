@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
-import { productsData, Product } from '../../data/products';
+import { useAdmin } from '../../context/AdminContext'; // Use AdminContext instead of static data
 import { useCart } from '../../context/CartContext';
+import { Product } from '../../data/products';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -11,18 +12,19 @@ const ProductCatalog: React.FC = () => {
   const filterParam = searchParams.get('filter');
 
   // --- State Management ---
+  const { inventory } = useAdmin(); // Get dynamic inventory
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [priceMax, setPriceMax] = useState<number>(5000);
+  const [priceMax, setPriceMax] = useState<number>(5000000); // Increased max price for solar items
   const [sortBy, setSortBy] = useState<string>("Popularity");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  
+
   const { addToCart } = useCart();
-  const itemsPerPage = 20; 
+  const itemsPerPage = 20;
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,14 +35,14 @@ const ProductCatalog: React.FC = () => {
 
   // --- Handlers ---
   const toggleCategory = (cat: string) => {
-    setSelectedCategories(prev => 
+    setSelectedCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
     );
     setCurrentPage(1); // Reset to page 1 on filter change
   };
 
   const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev => 
+    setSelectedBrands(prev =>
       prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]
     );
     setCurrentPage(1);
@@ -54,7 +56,7 @@ const ProductCatalog: React.FC = () => {
   const handleReset = () => {
     setSelectedCategories([]);
     setSelectedBrands([]);
-    setPriceMax(5000);
+    setPriceMax(5000000);
     setSortBy("Popularity");
     setSearchQuery("");
     setFeaturedOnly(false);
@@ -63,21 +65,21 @@ const ProductCatalog: React.FC = () => {
 
   // --- Derived Data Logic ---
   const filteredProducts = useMemo(() => {
-    return productsData.filter(product => {
+    return inventory.filter(product => {
       const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
       const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
       const matchPrice = product.price <= priceMax;
-      const matchSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          product.series.toLowerCase().includes(searchQuery.toLowerCase());
-      
+      const matchSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.series.toLowerCase().includes(searchQuery.toLowerCase());
+
       const matchFeatured = featuredOnly ? product.tag === "Best Seller" : true;
-      
+
       // Filter out Out of Stock items
       const isInStock = product.badge !== 'Out of Stock';
 
       return matchCategory && matchBrand && matchPrice && matchSearch && matchFeatured && isInStock;
     });
-  }, [selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly]);
+  }, [inventory, selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly]);
 
   const sortedProducts = useMemo(() => {
     const products = [...filteredProducts];
@@ -98,34 +100,39 @@ const ProductCatalog: React.FC = () => {
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
+  // Derive unique brands/categories from inventory for filters
+  const uniqueCategories = useMemo(() => Array.from(new Set(inventory.map(p => p.category))), [inventory]);
+  const uniqueBrands = useMemo(() => Array.from(new Set(inventory.map(p => p.brand))), [inventory]);
+
+
   // --- GSAP Animations ---
   useGSAP(() => {
     // Force items to be visible first to avoid them getting stuck
     gsap.set(".product-item", { opacity: 0, y: 30 });
-    
+
     // Animate grid items whenever paginatedProducts changes
     gsap.to(".product-item", {
-      opacity: 1, 
-      y: 0, 
-      duration: 0.5, 
-      stagger: 0.05, 
+      opacity: 1,
+      y: 0,
+      duration: 0.5,
+      stagger: 0.05,
       ease: "power2.out",
       clearProps: "transform" // Clean up transform to prevent blurriness
     });
   }, { scope: containerRef, dependencies: [paginatedProducts] });
 
   useGSAP(() => {
-     gsap.fromTo(".filter-sidebar > *", 
-       { opacity: 0, x: -20 },
-       { opacity: 1, x: 0, duration: 0.6, stagger: 0.05, ease: "power2.out" }
-     );
+    gsap.fromTo(".filter-sidebar > *",
+      { opacity: 0, x: -20 },
+      { opacity: 1, x: 0, duration: 0.6, stagger: 0.05, ease: "power2.out" }
+    );
   }, { scope: containerRef });
 
   return (
     <div ref={containerRef} className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-body overflow-x-hidden">
       <PublicHeader />
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
-      
+
       {/* Full width container */}
       <main className="w-full max-w-[1920px] mx-auto px-4 lg:px-12 py-8 flex-1">
         {/* Breadcrumbs */}
@@ -137,7 +144,7 @@ const ProductCatalog: React.FC = () => {
 
         {/* Mobile Filter Toggle */}
         <div className="lg:hidden mb-6">
-          <button 
+          <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className="w-full flex items-center justify-center gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 py-3 rounded-lg font-bold text-forest dark:text-white"
           >
@@ -156,18 +163,18 @@ const ProductCatalog: React.FC = () => {
               </h2>
               <button onClick={handleReset} className="text-xs text-primary-dark font-bold hover:underline">Reset All</button>
             </div>
-            
-             {/* Search */}
-             <div className="relative">
-                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
-                <input 
-                  type="text" 
-                  placeholder="Search products..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400" 
-                />
-             </div>
+
+            {/* Search */}
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400"
+              />
+            </div>
 
             {/* Special Filters */}
             {featuredOnly && (
@@ -181,13 +188,13 @@ const ProductCatalog: React.FC = () => {
             <div className="space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Category</h3>
               <div className="space-y-2">
-                {['Solar Panels', 'Inverters', 'Batteries', 'Accessories'].map((cat) => (
-                   <label key={cat} className="flex items-center gap-3 cursor-pointer group">
-                    <input 
+                {uniqueCategories.map((cat) => (
+                  <label key={cat} className="flex items-center gap-3 cursor-pointer group">
+                    <input
                       checked={selectedCategories.includes(cat)}
                       onChange={() => toggleCategory(cat)}
-                      className="h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary-dark focus:ring-primary/20 bg-white dark:bg-white/5" 
-                      type="checkbox" 
+                      className="h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary-dark focus:ring-primary/20 bg-white dark:bg-white/5"
+                      type="checkbox"
                     />
                     <span className={`text-sm transition-colors ${selectedCategories.includes(cat) ? 'font-bold text-primary-dark' : 'text-slate-700 dark:text-gray-300'}`}>
                       {cat}
@@ -199,15 +206,15 @@ const ProductCatalog: React.FC = () => {
             {/* Price Range Slider */}
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                 <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Max Price</h3>
-                 <span className="text-xs font-bold text-primary-dark">₦{priceMax.toLocaleString()}</span>
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Max Price</h3>
+                <span className="text-xs font-bold text-primary-dark">₦{priceMax.toLocaleString()}</span>
               </div>
               <div className="relative pt-1 px-2">
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="5000" 
-                  step="100" 
+                <input
+                  type="range"
+                  min="0"
+                  max="5000000"
+                  step="5000"
                   value={priceMax}
                   onChange={(e) => {
                     setPriceMax(Number(e.target.value));
@@ -217,21 +224,21 @@ const ProductCatalog: React.FC = () => {
                 />
                 <div className="flex justify-between mt-2 text-xs font-medium text-slate-600 dark:text-gray-400">
                   <span>₦0</span>
-                  <span>₦5,000+</span>
+                  <span>₦5M+</span>
                 </div>
               </div>
             </div>
-             {/* Brand Section */}
+            {/* Brand Section */}
             <div className="space-y-4">
               <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Brand</h3>
               <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                {['EcoVolt', 'SunMaster', 'GreenTech', 'Lumina Solar'].map(brand => (
-                   <label key={brand} className="flex items-center gap-3 cursor-pointer">
-                    <input 
+                {uniqueBrands.map(brand => (
+                  <label key={brand} className="flex items-center gap-3 cursor-pointer">
+                    <input
                       checked={selectedBrands.includes(brand)}
                       onChange={() => toggleBrand(brand)}
-                      className="h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary-dark focus:ring-primary/20 bg-white dark:bg-white/5" 
-                      type="checkbox" 
+                      className="h-5 w-5 rounded border-slate-300 dark:border-white/10 text-primary-dark focus:ring-primary/20 bg-white dark:bg-white/5"
+                      type="checkbox"
                     />
                     <span className={`text-sm transition-colors ${selectedBrands.includes(brand) ? 'font-bold text-primary-dark' : 'text-slate-700 dark:text-gray-300'}`}>
                       {brand}
@@ -254,7 +261,7 @@ const ProductCatalog: React.FC = () => {
               </div>
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <label className="text-sm font-medium shrink-0 text-slate-700 dark:text-gray-300">Sort By:</label>
-                <select 
+                <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="w-full sm:w-48 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-sm px-4 py-2 focus:ring-primary/20 focus:border-primary text-slate-700 dark:text-white outline-none"
@@ -288,7 +295,7 @@ const ProductCatalog: React.FC = () => {
                     <div className="p-3 md:p-4 flex flex-col flex-1">
                       <div className="text-primary-dark text-[10px] md:text-xs font-bold uppercase mb-1 truncate">{product.series}</div>
                       <Link to={`/product/${product.id}`} className="text-xs md:text-sm lg:text-base font-bold mb-2 group-hover:text-primary-dark transition-colors text-forest dark:text-white leading-tight line-clamp-2" title={product.name}>{product.name}</Link>
-                      
+
                       <div className="flex gap-2 md:gap-4 mb-2 md:mb-4 mt-auto">
                         <div className="text-[10px] md:text-[11px] text-slate-500 flex-1 min-w-0">
                           <span className="block font-bold text-slate-800 dark:text-slate-200 truncate">{product.eff}</span>
@@ -303,7 +310,7 @@ const ProductCatalog: React.FC = () => {
 
                       <div className="flex items-center justify-between pt-2 md:pt-4 border-t border-slate-50 dark:border-white/5 mt-2 md:mt-4">
                         <div className="text-sm md:text-xl font-bold text-forest dark:text-white">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                        <button 
+                        <button
                           onClick={() => handleAddToCart(product)}
                           className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-1.5 md:p-2 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"
                         >
@@ -316,10 +323,10 @@ const ProductCatalog: React.FC = () => {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center opacity-60">
-                 <span className="material-symbols-outlined text-6xl mb-4">search_off</span>
-                 <h3 className="text-xl font-bold">No products found</h3>
-                 <p className="text-sm">Try adjusting your filters or search criteria.</p>
-                 <button onClick={handleReset} className="mt-4 text-primary-dark font-bold hover:underline">Clear Filters</button>
+                <span className="material-symbols-outlined text-6xl mb-4">search_off</span>
+                <h3 className="text-xl font-bold">No products found</h3>
+                <p className="text-sm">Try adjusting your filters or search criteria.</p>
+                <button onClick={handleReset} className="mt-4 text-primary-dark font-bold hover:underline">Clear Filters</button>
               </div>
             )}
 
@@ -327,29 +334,28 @@ const ProductCatalog: React.FC = () => {
             {totalPages > 1 && (
               <div className="mt-12 flex justify-center">
                 <nav className="flex items-center gap-1">
-                  <button 
+                  <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                     className="size-10 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-slate-500 dark:text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <span className="material-symbols-outlined">chevron_left</span>
                   </button>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button 
+                    <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`size-10 flex items-center justify-center rounded-lg font-bold transition-colors ${
-                        currentPage === page 
-                        ? 'bg-primary-dark text-forest' 
-                        : 'border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300'
-                      }`}
+                      className={`size-10 flex items-center justify-center rounded-lg font-bold transition-colors ${currentPage === page
+                          ? 'bg-primary-dark text-forest'
+                          : 'border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300'
+                        }`}
                     >
                       {page}
                     </button>
                   ))}
 
-                  <button 
+                  <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
                     className="size-10 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-slate-500 dark:text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed"

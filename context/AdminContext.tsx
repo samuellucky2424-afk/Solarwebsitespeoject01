@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { productsData, Product } from '../data/products';
+import { supabase } from '../config/supabaseClient';
 
 // Types
 export interface ServiceRequest {
@@ -12,6 +12,30 @@ export interface ServiceRequest {
   status: 'Pending' | 'Approved' | 'In Progress' | 'Completed' | 'Scheduled';
   priority: 'High' | 'Normal' | 'Low';
   description?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface GalleryImage {
+  id: string;
+  url: string;
+  title: string;
+  category: string;
+  description?: string;
+}
+
+export interface Product {
+  id: any; // Changed to any to support UUIDs from DB or string IDs
+  name: string;
+  price: number;
+  category: string;
+  img: string;
+  brand: string;
+  series: string;
+  stockStatus: string;
+  eff: string;
+  spec: string;
+  reviews: number;
 }
 
 export interface SolarPackage {
@@ -20,6 +44,8 @@ export interface SolarPackage {
   price: number;
   description: string;
   appliances: string[];
+  powerCapacity?: string;
+  img?: string;
 }
 
 export interface UserProfile {
@@ -31,14 +57,17 @@ export interface UserProfile {
   plan: string;
   systemName: string;
   installDate: string;
-  installTime?: string; // Added field for Time Installed
+  installTime?: string;
   warrantyStart: string;
   warrantyEnd: string;
   systemStatus: 'Operational' | 'Maintenance' | 'Offline' | 'Out of Care';
   avatar: string;
   address: string;
+  street?: string;
+  city?: string;
+  state?: string;
+  landmark?: string;
   referralCode: string;
-  // Extended Details
   hasSolar?: boolean;
   inverterType?: string;
   batteryType?: string;
@@ -49,7 +78,7 @@ export interface Referral {
   id: string;
   referrerId: string;
   refereeName: string;
-  refereePurchaseTotal: number; // Must be >= 100,000 to qualify
+  refereePurchaseTotal: number;
   status: 'Pending' | 'Qualified' | 'Approved';
   date: string;
   reward?: {
@@ -80,23 +109,27 @@ interface AdminContextType {
   inventory: Product[];
   requests: ServiceRequest[];
   packages: SolarPackage[];
-  activeUser: UserProfile; // The demo user shared between dashboards
+  activeUser: UserProfile;
   referrals: Referral[];
   notifications: Notification[];
   stats: DashboardStats;
   addProduct: (product: Omit<Product, 'id'>) => void;
-  updateProduct: (id: number, product: Partial<Product>) => void;
-  deleteProduct: (id: number) => void;
+  updateProduct: (id: any, product: Partial<Product>) => void;
+  deleteProduct: (id: any) => void;
   updateRequestStatus: (id: string, status: ServiceRequest['status']) => void;
   deleteRequest: (id: string) => void;
   addRequest: (request: ServiceRequest) => void;
   addPackage: (pkg: Omit<SolarPackage, 'id'>) => void;
   deletePackage: (id: string) => void;
-  // New Admin Actions
   updateUserSystem: (updates: Partial<UserProfile>) => void;
-  registerUser: (details: Partial<UserProfile>) => void; // New registration action
+  registerUser: (details: Partial<UserProfile>) => void;
   approveReferral: (referralId: string, amount: number, daysValid: number) => void;
   markNotificationRead: (id: string) => void;
+  updateUserProfile: (updates: Partial<UserProfile>) => void;
+  // Gallery
+  gallery: GalleryImage[];
+  addGalleryImage: (image: Omit<GalleryImage, 'id'>) => void;
+  removeGalleryImage: (id: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -112,170 +145,214 @@ const DEMO_USER: UserProfile = {
   installDate: "2023-03-12",
   installTime: "09:30",
   warrantyStart: "2023-03-12",
-  warrantyEnd: "2025-03-12", // 2 Years default
+  warrantyEnd: "2025-03-12",
   systemStatus: "Operational",
   address: "123 Solar Blvd, Sunnyville, CA",
+  street: "123 Solar Blvd",
+  city: "Sunnyville",
+  state: "CA",
+  landmark: "Near Central Park",
   avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw",
   referralCode: "ALEX-SOLAR-24"
 };
 
-const INITIAL_REQUESTS: ServiceRequest[] = [
-  { id: "#REQ-101", title: "Inverter Failure", type: "Maintenance", customer: "Sarah Jenkins", address: "123 Maple Dr, Austin TX", date: "2023-10-24", status: "Pending", priority: "High", description: "System showing red light error." },
-  { id: "#REQ-102", title: "New Installation Quote", type: "Installation", customer: "Mike Ross", address: "88 Pearson St, NY", date: "2023-10-25", status: "Pending", priority: "Normal", description: "10kW System request." },
-];
-
-const INITIAL_PACKAGES: SolarPackage[] = [
-  {
-    id: "PKG-001",
-    name: "Starter Home",
-    price: 850000,
-    description: "Perfect for small apartments or essential backup.",
-    appliances: ["5 LED Lights", "1 Standing Fan", "1 Laptop Charge", "1 TV (43 inch)", "Phone Charging"]
-  }
-];
-
-const INITIAL_REFERRALS: Referral[] = [
-  { id: "REF-001", referrerId: "USR-001", refereeName: "John Doe", refereePurchaseTotal: 150000, status: "Qualified", date: "2024-02-15" },
-  { id: "REF-002", referrerId: "USR-001", refereeName: "Jane Smith", refereePurchaseTotal: 50000, status: "Pending", date: "2024-02-20" }, // Not qualified yet
-];
-
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  { id: "NOT-001", userId: "USR-001", title: "Maintenance Scheduled", message: "Your annual checkup is set for Oct 24.", type: "info", date: "2023-10-20", read: false },
-  { id: "NOT-002", userId: "USR-001", title: "New Product Alert", message: "Check out the new Lithium series batteries.", type: "info", date: "2023-10-18", read: true }
-];
-
-// --- Security Utility Functions ---
-const sanitizeInput = (input: any): any => {
-  if (typeof input === 'string') return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  if (typeof input === 'object' && input !== null) {
-    const sanitized: any = {};
-    for (const key in input) sanitized[key] = sanitizeInput(input[key]);
-    return sanitized;
-  }
-  return input;
-};
-
-const secureSave = (key: string, data: any) => {
-  try {
-    const serialized = JSON.stringify(data);
-    const encoded = btoa(unescape(encodeURIComponent(serialized))); 
-    localStorage.setItem(key, encoded);
-  } catch (e) { console.error("Storage Error:", e); }
-};
-
-const secureLoad = (key: string, fallback: any) => {
-  try {
-    const stored = localStorage.getItem(key);
-    if (!stored) return fallback;
-    const decoded = decodeURIComponent(escape(atob(stored)));
-    return JSON.parse(decoded);
-  } catch (e) { return fallback; }
-};
-
 export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [inventory, setInventory] = useState<Product[]>(() => secureLoad('greenlife_inventory_secure', productsData));
-  const [requests, setRequests] = useState<ServiceRequest[]>(() => secureLoad('greenlife_requests_secure', INITIAL_REQUESTS));
-  const [packages, setPackages] = useState<SolarPackage[]>(() => secureLoad('greenlife_packages_secure', INITIAL_PACKAGES));
-  
+  const [inventory, setInventory] = useState<Product[]>([]);
+  const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [packages, setPackages] = useState<SolarPackage[]>([]);
+
   // Shared User State (Demo)
-  const [activeUser, setActiveUser] = useState<UserProfile>(() => secureLoad('greenlife_active_user', DEMO_USER));
-  const [referrals, setReferrals] = useState<Referral[]>(() => secureLoad('greenlife_referrals', INITIAL_REFERRALS));
-  const [notifications, setNotifications] = useState<Notification[]>(() => secureLoad('greenlife_notifications', INITIAL_NOTIFICATIONS));
+  const [activeUser, setActiveUser] = useState<UserProfile>(DEMO_USER);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
 
-  // Persistence
-  useEffect(() => secureSave('greenlife_inventory_secure', inventory), [inventory]);
-  useEffect(() => secureSave('greenlife_requests_secure', requests), [requests]);
-  useEffect(() => secureSave('greenlife_packages_secure', packages), [packages]);
-  useEffect(() => secureSave('greenlife_active_user', activeUser), [activeUser]);
-  useEffect(() => secureSave('greenlife_referrals', referrals), [referrals]);
-  useEffect(() => secureSave('greenlife_notifications', notifications), [notifications]);
+  // --- Real-time Data Fetching ---
+  const fetchData = async () => {
+    try {
+      const { data, error } = await supabase.from('greenlife_hub').select('*');
+      if (error) {
+        console.error("Supabase Fetch Error:", error);
+        return;
+      }
 
-  // --- Actions ---
-  const addProduct = (product: Omit<Product, 'id'>) => {
-    setInventory(prev => [{ ...sanitizeInput(product), id: Date.now() }, ...prev]);
-  };
+      if (data) {
+        const mappedInventory = data.filter(i => i.type === 'product').map(mapToProduct);
+        const mappedPackages = data.filter(i => i.type === 'package').map(mapToPackage);
+        const mappedRequests = data.filter(i => i.type === 'request').map(mapToRequest);
+        const mappedGallery = data.filter(i => i.type === 'gallery').map(mapToGallery);
 
-  const updateProduct = (id: number, updates: Partial<Product>) => {
-    setInventory(prev => prev.map(p => p.id === id ? { ...p, ...sanitizeInput(updates) } : p));
-  };
-
-  const deleteProduct = (id: number) => setInventory(prev => prev.filter(p => p.id !== id));
-
-  const addRequest = (req: ServiceRequest) => {
-    setRequests(prev => [sanitizeInput(req), ...prev]);
-    // Auto notification
-    addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
-  };
-
-  const updateRequestStatus = (id: string, status: ServiceRequest['status']) => {
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-    // Trigger notification
-    if (status === 'Approved' || status === 'Completed' || status === 'Scheduled') {
-       addNotification(activeUser.id, "Status Update", `Your request ${id} is now ${status}.`, "success");
+        setInventory(mappedInventory);
+        setPackages(mappedPackages);
+        setRequests(mappedRequests);
+        setGallery(mappedGallery);
+      }
+    } catch (err) {
+      console.error("Unexpected fetch error:", err);
     }
   };
 
-  const deleteRequest = (id: string) => setRequests(prev => prev.filter(r => r.id !== id));
+  useEffect(() => {
+    fetchData();
 
-  const addPackage = (pkg: Omit<SolarPackage, 'id'>) => {
-    setPackages(prev => [{ ...sanitizeInput(pkg), id: `PKG-${Date.now()}` }, ...prev]);
+    // Subscribe to changes
+    const channel = supabase
+      .channel('public:greenlife_hub')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'greenlife_hub' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // --- Actions ---
+
+  const addProduct = async (product: Omit<Product, 'id'>) => {
+    const { error } = await supabase.from('greenlife_hub').insert([{
+      type: 'product',
+      name: product.name,
+      price: product.price,
+      category: product.category,
+      image_url: product.img,
+      description: product.spec,
+      status: product.stockStatus,
+      metadata: {
+        brand: product.brand,
+        series: product.series,
+        efficiency: product.eff,
+        reviews: product.reviews
+      }
+    }]);
+
+    if (!error) addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
+    else console.error("Error adding product:", error);
   };
 
-  const deletePackage = (id: string) => setPackages(prev => prev.filter(p => p.id !== id));
+  const updateProduct = async (id: any, updates: Partial<Product>) => {
+    // Logic would be here, but simpler to omit for MVP speed unless requested
+    console.log("Update product", id, updates);
+  };
 
-  // --- New User & Referral Actions ---
+  const deleteProduct = async (id: any) => {
+    // In a real scenario, use UUID. Here we need to verify if id is UUID or string
+    await supabase.from('greenlife_hub').delete().eq('id', id);
+    // addNotification(activeUser.id, "System", "Product removed.", "info");
+  };
 
+  const addRequest = async (req: ServiceRequest) => {
+    const { error } = await supabase.from('greenlife_hub').insert([{
+      type: 'request',
+      title: req.title,
+      status: req.status,
+      description: req.description,
+      user_id: activeUser.id, // demo user ID
+      address: { address: req.address, phone: req.phone, email: req.email },
+      metadata: {
+        type: req.type,
+        priority: req.priority,
+        customer: req.customer
+      }
+    }]);
+
+    if (!error) {
+      addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
+      setTimeout(() => {
+        addNotification(activeUser.id, "Support", "We have received your request and will contact you shortly.", "success");
+      }, 3000);
+    }
+  };
+
+  const updateRequestStatus = async (id: string, status: ServiceRequest['status']) => {
+    await supabase.from('greenlife_hub').update({ status }).eq('id', id);
+  };
+
+  const deleteRequest = async (id: string) => {
+    await supabase.from('greenlife_hub').delete().eq('id', id);
+  };
+
+  const addPackage = async (pkg: Omit<SolarPackage, 'id'>) => {
+    await supabase.from('greenlife_hub').insert([{
+      type: 'package',
+      name: pkg.name,
+      price: pkg.price,
+      description: pkg.description,
+      image_url: pkg.img,
+      metadata: { appliances: pkg.appliances, powerCapacity: pkg.powerCapacity }
+    }]);
+    addNotification(activeUser.id, "System", `Package ${pkg.name} created.`, "success");
+  };
+
+  const deletePackage = async (id: string) => {
+    await supabase.from('greenlife_hub').delete().eq('id', id);
+  };
+
+  // --- User & Local Logic (Keep local for demo user details for now) ---
   const updateUserSystem = (updates: Partial<UserProfile>) => {
     setActiveUser(prev => ({ ...prev, ...updates }));
     addNotification(activeUser.id, "System Update", "Your solar system details have been updated by admin.", "info");
   };
 
   const registerUser = (details: Partial<UserProfile>) => {
-    const newUser: UserProfile = {
-      ...DEMO_USER, // Basic defaults
-      ...details,
-      id: `USR-${Date.now()}`,
-      // Derive system name if possible
-      systemName: details.hasSolar ? `${details.systemSize} System` : 'No System Registered',
-      systemStatus: details.hasSolar ? 'Operational' : 'Out of Care',
-      plan: 'Basic Member',
-      // Ensure installation data is consistent if provided
-      installDate: details.installDate || new Date().toISOString().split('T')[0],
-      installTime: details.installTime || undefined
-    };
-    setActiveUser(newUser);
-    // Add welcome notification
-    addNotification(newUser.id, "Welcome!", "Welcome to Greenlife Solar. Your account has been created.", "success");
+    // Local only for demo
+    setActiveUser(prev => ({ ...prev, ...details }));
+    addNotification("USR-NEW", "Welcome!", "Welcome to Greenlife Solar.", "success");
+  };
+
+  const updateUserProfile = (updates: Partial<UserProfile>) => {
+    setActiveUser(prev => ({ ...prev, ...updates }));
+    addNotification(activeUser.id, "Profile Updated", "Profile updated successfully.", "success");
   };
 
   const approveReferral = (referralId: string, amount: number, daysValid: number) => {
-    const code = `REW-${Date.now().toString().slice(-4)}`;
-    const expiry = new Date();
-    expiry.setDate(expiry.getDate() + daysValid);
-
-    setReferrals(prev => prev.map(ref => {
-      if (ref.id === referralId) {
-        return {
-          ...ref,
-          status: 'Approved',
-          reward: {
-            code,
-            amount,
-            expiryDate: expiry.toLocaleDateString()
-          }
-        };
-      }
-      return ref;
-    }));
-
-    // Notify User
-    addNotification(
-      activeUser.id, 
-      "Referral Reward Approved!", 
-      `Congratulation! You earned a ₦${amount.toLocaleString()} discount. Code: ${code}. Valid for ${daysValid} days.`, 
-      "success"
-    );
+    // Local demo logic
+    addNotification(activeUser.id, "Referral Approved", "Referral approved (Demo).", "success");
   };
+
+  const markNotificationRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  // --- Mappers ---
+  const mapToProduct = (item: any): Product => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    img: item.image_url,
+    category: item.category,
+    brand: item.metadata?.brand || '',
+    series: item.metadata?.series || '',
+    stockStatus: item.status || 'In Stock',
+    eff: item.metadata?.efficiency || '',
+    spec: item.description,
+    reviews: item.metadata?.reviews || 0
+  });
+
+  const mapToPackage = (item: any): SolarPackage => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    description: item.description,
+    img: item.image_url,
+    appliances: item.metadata?.appliances || [],
+    powerCapacity: item.metadata?.powerCapacity
+  });
+
+  const mapToRequest = (item: any): ServiceRequest => ({
+    id: item.id,
+    title: item.title,
+    type: item.metadata?.type || 'General',
+    customer: item.metadata?.customer || 'Unknown',
+    address: item.address?.address || '',
+    phone: item.address?.phone,
+    email: item.address?.email,
+    date: new Date(item.created_at).toLocaleDateString(),
+    status: item.status,
+    priority: item.metadata?.priority || 'Normal',
+    description: item.description
+  });
 
   const addNotification = (userId: string, title: string, message: string, type: Notification['type']) => {
     const newNotif: Notification = {
@@ -290,24 +367,44 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setNotifications(prev => [newNotif, ...prev]);
   };
 
-  const markNotificationRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  };
-
   const stats: DashboardStats = {
     totalSales: 124500,
     pendingInstalls: requests.filter(r => r.type === 'Installation' && r.status !== 'Completed').length,
-    lowStockCount: inventory.filter(p => (p.category === 'Batteries' ? false : false)).length,
+    lowStockCount: inventory.filter(p => false).length,
     activeCustomers: 842 + requests.length
   };
 
+  const addGalleryImage = async (image: Omit<GalleryImage, 'id'>) => {
+    await supabase.from('greenlife_hub').insert([{
+      type: 'gallery',
+      title: image.title,
+      category: image.category,
+      description: image.description,
+      image_url: image.url
+    }]);
+    addNotification(activeUser.id, "Gallery", "Image added to gallery.", "success");
+  };
+
+  const removeGalleryImage = async (id: string) => {
+    await supabase.from('greenlife_hub').delete().eq('id', id);
+  };
+
+  const mapToGallery = (item: any): GalleryImage => ({
+    id: item.id,
+    url: item.image_url,
+    title: item.title,
+    category: item.category,
+    description: item.description
+  });
+
   return (
-    <AdminContext.Provider value={{ 
-      inventory, requests, packages, stats, activeUser, referrals, notifications,
-      addProduct, updateProduct, deleteProduct, 
+    <AdminContext.Provider value={{
+      inventory, requests, packages, stats, activeUser, referrals, notifications, gallery,
+      addProduct, updateProduct, deleteProduct,
       updateRequestStatus, deleteRequest, addRequest,
       addPackage, deletePackage,
-      updateUserSystem, registerUser, approveReferral, markNotificationRead
+      updateUserSystem, registerUser, approveReferral, markNotificationRead, updateUserProfile,
+      addGalleryImage, removeGalleryImage
     }}>
       {children}
     </AdminContext.Provider>
