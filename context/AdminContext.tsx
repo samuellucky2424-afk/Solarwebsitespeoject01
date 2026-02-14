@@ -519,7 +519,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   });
 
   const mapToUserProfile = (data: any): UserProfile => ({
-    id: data.id,
+    id: data.id || data.user_id,
     firstName: data.title ? data.title.split(' ')[0] : 'User',
     fullName: data.title || 'User',
     email: data.metadata?.email || '',
@@ -529,9 +529,9 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     systemName: data.metadata?.solar_details ? `${data.metadata.solar_details.size || 'Unknown'} System` : 'No System',
     installDate: data.metadata?.solar_details?.installDate || '',
     installTime: data.metadata?.solar_details?.installTime || '',
-    warrantyStart: new Date(data.created_at).toLocaleDateString(),
+    warrantyStart: data.created_at ? new Date(data.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
     warrantyEnd: '2030-01-01',
-    systemStatus: 'Operational',
+    systemStatus: data.status || 'Operational',
     avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw',
     referralCode: `REF-${data.id ? data.id.substring(0, 8) : 'NEW'}`,
     hasSolar: !!data.metadata?.solar_details,
