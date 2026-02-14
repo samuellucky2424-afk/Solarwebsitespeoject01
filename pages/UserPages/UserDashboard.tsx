@@ -65,9 +65,18 @@ const SidebarLink: React.FC<{
   if (!activeUser) {
     return (
       <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <span className="material-symbols-outlined text-5xl text-primary animate-spin">progress_activity</span>
-          <p className="text-forest dark:text-white font-bold">Loading your dashboard...</p>
+        <div className="flex flex-col items-center gap-6 p-8 rounded-3xl bg-white dark:bg-white/5 shadow-xl animate-in fade-in zoom-in duration-300">
+          <div className="relative size-20">
+            <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="material-symbols-outlined text-3xl text-primary">solar_power</span>
+            </div>
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold text-forest dark:text-white mb-1">Loading Dashboard</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Personalizing your experience...</p>
+          </div>
         </div>
       </div>
     );

@@ -198,33 +198,38 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // First try 'profile' table as requested
-      const { data: profileData, error: profileError } = await supabase
-        .from('profile')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      // Fetch from both in parallel for speed
+      const [profileRes, hubRes] = await Promise.all([
+        supabase.from('profile').select('*').eq('id', userId).maybeSingle(),
+        supabase.from('greenlife_hub').select('*').eq('type', 'user_profile').eq('user_id', userId).maybeSingle()
+      ]);
 
-      if (profileData) {
-        setActiveUser(mapToUserProfile({ ...profileData, type: 'user_profile' }));
+      if (profileRes.data) {
+        setActiveUser(mapToUserProfile({ ...profileRes.data, type: 'user_profile' }));
         return;
       }
 
-      // Fallback to greenlife_hub if not found in profile
-      const { data, error } = await supabase
-        .from('greenlife_hub')
-        .select('*')
-        .eq('type', 'user_profile')
-        .eq('user_id', userId)
-        .single();
-
-      if (data) {
-        setActiveUser(mapToUserProfile(data));
+      if (hubRes.data) {
+        setActiveUser(mapToUserProfile(hubRes.data));
+      } else {
+        // Create initial profile if none exists to unblock UI
+        setActiveUser({
+          id: userId,
+          firstName: 'User',
+          fullName: 'New User',
+          email: '',
+          plan: 'Standard Plan',
+          systemName: 'No System',
+          installDate: '',
+          warrantyStart: new Date().toLocaleDateString(),
+          warrantyEnd: '2030-01-01',
+          systemStatus: 'Operational',
+          avatar: '',
+          address: '',
+          referralCode: `REF-${userId.substring(0, 8)}`
+        });
       }
     } catch (err: any) {
-      if (err.name === 'AbortError' || err.message?.includes('AbortError')) {
-        return;
-      }
       console.error("Profile fetch error:", err);
     }
   };
