@@ -345,7 +345,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }]);
 
     if (!error) {
-      addNotification(activeUser.id, "System", `Package ${pkg.name} created.`, "success");
+      if (activeUser) addNotification(activeUser.id, "System", `Package ${pkg.name} created.`, "success");
       fetchData();
       return true;
     } else {
@@ -375,7 +375,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }]);
 
     if (!error) {
-      addNotification(activeUser.id, "Team", `Installer ${installer.fullName} added.`, "success");
+      if (activeUser) addNotification(activeUser.id, "Team", `Installer ${installer.fullName} added.`, "success");
       fetchData();
       return true;
     } else {
@@ -391,37 +391,49 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // --- User & Local Logic (Keep local for demo user details for now) ---
   const updateUserSystem = (updates: Partial<UserProfile>) => {
-    setActiveUser(prev => ({ ...prev, ...updates }));
-    addNotification(activeUser.id, "System Update", "Your solar system details have been updated by admin.", "info");
+    if (activeUser) {
+      setActiveUser(prev => prev ? { ...prev, ...updates } : null);
+      addNotification(activeUser.id, "System Update", "Your solar system details have been updated by admin.", "info");
+    }
   };
 
   const registerUser = (details: Partial<UserProfile>) => {
     // Local only for demo
-    setActiveUser(prev => ({ ...prev, ...details }));
+    setActiveUser(prev => prev ? { ...prev, ...details } : null);
     addNotification("USR-NEW", "Welcome!", "Welcome to Greenlife Solar.", "success");
   };
 
   const updateUserProfile = async (updates: Partial<UserProfile>) => {
+    if (!activeUser) return;
     try {
       const { error } = await supabase
-        .from('greenlife_hub')
+        .from('profile')
         .update({
-          title: updates.fullName || activeUser.fullName,
-          metadata: {
-            ...activeUser.metadata, // Assuming metadata field exists in DB
-            email: updates.email || activeUser.email,
-            phone: updates.phone || activeUser.phone,
-            address: updates.address || activeUser.address,
-            // Preserve other metadata
-            solar_details: activeUser.metadata?.solar_details
-          }
+          fullName: updates.fullName || activeUser.fullName,
+          email: updates.email || activeUser.email,
+          phone: updates.phone || activeUser.phone,
+          address: updates.address || activeUser.address,
         })
-        .eq('type', 'user_profile')
-        .eq('user_id', activeUser.id);
+        .eq('id', activeUser.id);
 
-      if (error) throw error;
+      if (error) {
+        // Fallback to greenlife_hub
+        await supabase
+          .from('greenlife_hub')
+          .update({
+            title: updates.fullName || activeUser.fullName,
+            metadata: {
+              ...activeUser.metadata,
+              email: updates.email || activeUser.email,
+              phone: updates.phone || activeUser.phone,
+              address: updates.address || activeUser.address,
+            }
+          })
+          .eq('type', 'user_profile')
+          .eq('user_id', activeUser.id);
+      }
 
-      setActiveUser(prev => ({ ...prev, ...updates }));
+      setActiveUser(prev => prev ? { ...prev, ...updates } : null);
       addNotification(activeUser.id, "Profile Updated", "Profile updated successfully.", "success");
     } catch (err) {
       console.error("Error updating profile:", err);
@@ -430,8 +442,9 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const approveReferral = (referralId: string, amount: number, daysValid: number) => {
-    // Local demo logic
-    addNotification(activeUser.id, "Referral Approved", "Referral approved (Demo).", "success");
+    if (activeUser) {
+      addNotification(activeUser.id, "Referral Approved", "Referral approved (Demo).", "success");
+    }
   };
 
   const markNotificationRead = (id: string) => {
@@ -507,7 +520,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }]);
 
     if (!error) {
-      addNotification(activeUser.id, "Gallery", "Image added to gallery.", "success");
+      if (activeUser) addNotification(activeUser.id, "Gallery", "Image added to gallery.", "success");
       fetchData();
       return true;
     } else {
@@ -529,35 +542,40 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     description: item.description
   });
 
-  const mapToUserProfile = (data: any): UserProfile => ({
-    id: data.id || data.user_id,
-    firstName: data.title ? data.title.split(' ')[0] : 'User',
-    fullName: data.title || 'User',
-    email: data.metadata?.email || '',
-    phone: data.metadata?.phone,
-    address: data.metadata?.address || '',
-    plan: 'Standard Plan',
-    systemName: data.metadata?.solar_details ? `${data.metadata.solar_details.size || 'Unknown'} System` : 'No System',
-    installDate: data.metadata?.solar_details?.installDate || '',
-    installTime: data.metadata?.solar_details?.installTime || '',
-    warrantyStart: data.created_at ? new Date(data.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
-    warrantyEnd: '2030-01-01',
-    systemStatus: data.status || 'Operational',
-    avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw',
-    referralCode: `REF-${data.id ? data.id.substring(0, 8) : 'NEW'}`,
-    hasSolar: !!data.metadata?.solar_details,
-    inverterType: data.metadata?.solar_details?.inverter,
-    batteryType: data.metadata?.solar_details?.battery,
-    systemSize: data.metadata?.solar_details?.size,
-    street: data.metadata?.address,
-    city: '',
-    state: '',
-    landmark: ''
-  });
+  const mapToUserProfile = (data: any): UserProfile => {
+    // Debug log to see incoming data
+    console.log("Mapping user data:", data);
+    
+    return {
+      id: data.id || data.user_id,
+      firstName: data.fullName ? data.fullName.split(' ')[0] : (data.title ? data.title.split(' ')[0] : 'User'),
+      fullName: data.fullName || data.title || 'User',
+      email: data.email || data.metadata?.email || '',
+      phone: data.phone || data.metadata?.phone,
+      address: data.address || data.metadata?.address || '',
+      plan: data.plan || 'Standard Plan',
+      systemName: data.systemName || (data.metadata?.solar_details ? `${data.metadata.solar_details.size || 'Unknown'} System` : 'No System'),
+      installDate: data.installDate || data.metadata?.solar_details?.installDate || '',
+      installTime: data.installTime || data.metadata?.solar_details?.installTime || '',
+      warrantyStart: data.created_at ? new Date(data.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+      warrantyEnd: '2030-01-01',
+      systemStatus: data.status || data.systemStatus || 'Operational',
+      avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw',
+      referralCode: data.referralCode || `REF-${(data.id || data.user_id || 'NEW').substring(0, 8)}`,
+      hasSolar: data.hasSolar !== undefined ? data.hasSolar : !!data.metadata?.solar_details,
+      inverterType: data.inverterType || data.metadata?.solar_details?.inverter,
+      batteryType: data.batteryType || data.metadata?.solar_details?.battery,
+      systemSize: data.systemSize || data.metadata?.solar_details?.size,
+      street: data.address || data.metadata?.address,
+      city: data.city || '',
+      state: data.state || '',
+      landmark: data.landmark || ''
+    };
+  };
 
   return (
     <AdminContext.Provider value={{
-      inventory, requests, packages, stats, activeUser, referrals, notifications, gallery,
+      inventory, requests, packages, stats, activeUser: activeUser as UserProfile, referrals, notifications, gallery,
       // @ts-ignore
       allUsers, installers,
       addProduct, updateProduct, deleteProduct,
