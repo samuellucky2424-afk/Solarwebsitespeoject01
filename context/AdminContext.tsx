@@ -60,6 +60,7 @@ export interface UserProfile {
   inverterType?: string;
   batteryType?: string;
   systemSize?: string;
+  metadata?: any;
 }
 
 export interface Referral {
@@ -389,9 +390,32 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     addNotification("USR-NEW", "Welcome!", "Welcome to Greenlife Solar.", "success");
   };
 
-  const updateUserProfile = (updates: Partial<UserProfile>) => {
-    setActiveUser(prev => ({ ...prev, ...updates }));
-    addNotification(activeUser.id, "Profile Updated", "Profile updated successfully.", "success");
+  const updateUserProfile = async (updates: Partial<UserProfile>) => {
+    try {
+      const { error } = await supabase
+        .from('greenlife_hub')
+        .update({
+          title: updates.fullName || activeUser.fullName,
+          metadata: {
+            ...activeUser.metadata, // Assuming metadata field exists in DB
+            email: updates.email || activeUser.email,
+            phone: updates.phone || activeUser.phone,
+            address: updates.address || activeUser.address,
+            // Preserve other metadata
+            solar_details: activeUser.metadata?.solar_details
+          }
+        })
+        .eq('type', 'user_profile')
+        .eq('user_id', activeUser.id);
+
+      if (error) throw error;
+
+      setActiveUser(prev => ({ ...prev, ...updates }));
+      addNotification(activeUser.id, "Profile Updated", "Profile updated successfully.", "success");
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      addNotification(activeUser.id, "Update Failed", "Could not save profile changes.", "alert");
+    }
   };
 
   const approveReferral = (referralId: string, amount: number, daysValid: number) => {
