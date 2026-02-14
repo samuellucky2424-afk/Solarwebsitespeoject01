@@ -79,7 +79,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ handleBookService
                             </div>
                             <div className="p-4 bg-background-light dark:bg-white/5 rounded-lg border border-[#e7f3eb] dark:border-white/5">
                                 <p className="text-xs text-[#4c9a66] uppercase font-bold mb-1">Service Plan</p>
-                                <p className="font-semibold">{activeUser.plan}</p>
+                                <p className="font-semibold">{activeUser.plan || 'Standard Plan'}</p>
                             </div>
                         </div>
                     </div>

@@ -207,8 +207,6 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
       if (data) {
         setActiveUser(mapToUserProfile(data));
-      } else {
-        // Fallback or create? For now keep default or partial.
       }
     } catch (err: any) {
       if (err.name === 'AbortError' || err.message?.includes('AbortError')) {
