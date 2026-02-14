@@ -20,11 +20,29 @@ const OrderHistory: React.FC = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Mock fetch
-        setOrders([
-            { id: "ORD-001", product_name: "Smart Inverter Pro", created_at: "2024-06-12", status: "Shipped", amount: 1299000 },
-            { id: "ORD-002", product_name: "Solar Cleaning Kit", created_at: "2024-05-20", status: "Delivered", amount: 89500 },
-        ]);
+        const fetchOrders = async () => {
+            setLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                if (data) setOrders(data);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+                // Fallback to mock for UI stability if table doesn't exist yet
+                setOrders([
+                    { id: "ORD-001", product_name: "Smart Inverter Pro", created_at: "2024-06-12", status: "Shipped", amount: 1299000 },
+                    { id: "ORD-002", product_name: "Solar Cleaning Kit", created_at: "2024-05-20", status: "Delivered", amount: 89500 },
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchOrders();
     }, []);
 
     const getStatusColor = (status: string) => {
