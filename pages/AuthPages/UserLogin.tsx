@@ -66,30 +66,46 @@ const UserLogin: React.FC = () => {
         if (authError) throw authError;
 
         if (authData.user) {
-          // 2. Create User Profile in 'greenlife_hub' (as 'user_profile' type)
-          // We store extended data that doesn't fit in standard metadata or for easier querying
-          const { error: profileError } = await supabase.from('greenlife_hub').insert([{
-            type: 'user_profile',
-            title: signUpData.fullName, // Using title for name
-            status: 'Active',
-            user_id: authData.user.id, // Important: Link to Auth User
-            metadata: {
-              email: signUpData.email,
-              phone: signUpData.phone,
-              address: signUpData.address,
-              solar_details: signUpData.hasSolar ? {
-                inverter: signUpData.inverterType,
-                battery: signUpData.batteryType,
-                size: signUpData.systemSize,
-                installDate: signUpData.installDate,
-                installTime: signUpData.installTime
-              } : null
-            }
+          // 2. Create User Profile in 'profile' table (as requested)
+          const { error: profileError } = await supabase.from('profile').insert([{
+            id: authData.user.id,
+            fullName: signUpData.fullName,
+            email: signUpData.email,
+            phone: signUpData.phone,
+            address: signUpData.address,
+            plan: 'Standard Plan',
+            systemName: signUpData.hasSolar ? `${signUpData.systemSize} System` : 'No System',
+            installDate: signUpData.installDate || null,
+            installTime: signUpData.installTime || null,
+            inverterType: signUpData.inverterType || null,
+            batteryType: signUpData.batteryType || null,
+            systemSize: signUpData.systemSize || null,
+            hasSolar: signUpData.hasSolar,
+            systemStatus: 'Operational',
+            created_at: new Date().toISOString()
           }]);
 
           if (profileError) {
-            console.error("Profile creation error:", profileError);
-            // Verify if we should rollback auth? For now, just log.
+            console.error("Profile creation error (profile table):", profileError);
+            // Fallback: Create in greenlife_hub if profile table fails
+            await supabase.from('greenlife_hub').insert([{
+              type: 'user_profile',
+              title: signUpData.fullName,
+              status: 'Active',
+              user_id: authData.user.id,
+              metadata: {
+                email: signUpData.email,
+                phone: signUpData.phone,
+                address: signUpData.address,
+                solar_details: signUpData.hasSolar ? {
+                  inverter: signUpData.inverterType,
+                  battery: signUpData.batteryType,
+                  size: signUpData.systemSize,
+                  installDate: signUpData.installDate,
+                  installTime: signUpData.installTime
+                } : null
+              }
+            }]);
           }
 
           alert("Account created! Please check your email for verification.");

@@ -155,7 +155,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Shared User State (Demo)
   const [allUsers, setAllUsers] = useState<UserProfile[]>([]);
-  const [activeUser, setActiveUser] = useState<UserProfile>(DEMO_USER);
+  const [activeUser, setActiveUser] = useState<UserProfile | null>(null);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
@@ -198,6 +198,19 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      // First try 'profile' table as requested
+      const { data: profileData, error: profileError } = await supabase
+        .from('profile')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (profileData) {
+        setActiveUser(mapToUserProfile({ ...profileData, type: 'user_profile' }));
+        return;
+      }
+
+      // Fallback to greenlife_hub if not found in profile
       const { data, error } = await supabase
         .from('greenlife_hub')
         .select('*')
@@ -231,7 +244,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       if (session?.user) {
         await fetchUserProfile(session.user.id);
       } else {
-        setActiveUser(DEMO_USER); // Revert to demo on logout
+        setActiveUser(null);
       }
     });
 
@@ -269,7 +282,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }]);
 
     if (!error) {
-      addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
+      if (activeUser) addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
       fetchData(); // Refresh local state
       return true;
     } else {
@@ -286,7 +299,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const deleteProduct = async (id: any) => {
     // In a real scenario, use UUID. Here we need to verify if id is UUID or string
     await supabase.from('greenlife_hub').delete().eq('id', id);
-    addNotification(activeUser.id, "System", "Product removed.", "info");
+    if (activeUser) addNotification(activeUser.id, "System", "Product removed.", "info");
     fetchData();
   };
 
@@ -296,7 +309,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       title: req.title,
       status: req.status,
       description: req.description,
-      user_id: activeUser.id, // demo user ID
+      user_id: activeUser?.id, 
       address: { address: req.address, phone: req.phone, email: req.email },
       metadata: {
         type: req.type,
@@ -305,7 +318,7 @@ export const AdminProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     }]);
 
-    if (!error) {
+    if (!error && activeUser) {
       addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
       setTimeout(() => {
         addNotification(activeUser.id, "Support", "We have received your request and will contact you shortly.", "success");

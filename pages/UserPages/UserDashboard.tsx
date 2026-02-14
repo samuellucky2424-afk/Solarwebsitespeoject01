@@ -32,11 +32,22 @@ const SidebarLink: React.FC<{
   </button>
 );
 
-const UserDashboard: React.FC = () => {
+  const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { signOut, user: authUser } = useAuth();
   const { activeUser, notifications, markNotificationRead } = useAdmin();
+
+  // Redirect if not logged in or profile not loaded
+  useEffect(() => {
+    if (!authUser && !activeUser) {
+      // Small delay to allow session to initialize
+      const timer = setTimeout(() => {
+        if (!authUser) navigate('/login');
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [authUser, activeUser, navigate]);
 
   // --- State ---
   const [currentView, setCurrentView] = useState<DashboardView>('overview');
@@ -49,6 +60,18 @@ const UserDashboard: React.FC = () => {
   // Theme State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+
+  // Loading state
+  if (!activeUser) {
+    return (
+      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <span className="material-symbols-outlined text-5xl text-primary animate-spin">progress_activity</span>
+          <p className="text-forest dark:text-white font-bold">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
 
   // --- Effects ---
