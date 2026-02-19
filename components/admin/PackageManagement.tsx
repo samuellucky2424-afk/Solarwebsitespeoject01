@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import { uploadImage } from '../../config/supabaseClient';
 import { Toast } from '../../components/SharedComponents';
 
-const PackageManagement: React.FC = () => {
+interface PackageManagementProps {
+    focusPackageId?: string | null;
+    onFocusHandled?: () => void;
+}
+
+const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, onFocusHandled }) => {
     const { packages, addPackage, deletePackage } = useAdmin();
 
     // Form State
@@ -68,6 +73,18 @@ const PackageManagement: React.FC = () => {
             setToastMsg("Package deleted.");
         }
     };
+
+    const focusKey = useMemo(() => focusPackageId, [focusPackageId]);
+    useEffect(() => {
+        if (!focusKey) return;
+        const el = document.querySelector(`[data-package-id="${CSS.escape(focusKey)}"]`) as HTMLElement | null;
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-background-light');
+            setTimeout(() => el.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'ring-offset-background-light'), 1600);
+        }
+        onFocusHandled?.();
+    }, [focusKey, onFocusHandled]);
 
     return (
         <div className="space-y-8 animate-in fade-in">
@@ -136,7 +153,11 @@ const PackageManagement: React.FC = () => {
                 {/* List */}
                 <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
                     {packages.map(pkg => (
-                        <div key={pkg.id} className="bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] overflow-hidden flex flex-col relative group hover:shadow-lg transition-all">
+                        <div
+                            key={pkg.id}
+                            data-package-id={pkg.id}
+                            className="bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] overflow-hidden flex flex-col relative group hover:shadow-lg transition-all"
+                        >
                             {pkg.img && (
                                 <div className="h-40 w-full bg-gray-100 dark:bg-black/20 relative">
                                     <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover" />
@@ -148,7 +169,17 @@ const PackageManagement: React.FC = () => {
                             </button>
 
                             <div className="p-6 flex-1 flex flex-col">
-                                <h4 className="font-bold text-lg mb-1">{pkg.name}</h4>
+                                <div className="flex items-start justify-between gap-3 mb-2">
+                                    <div className="min-w-0">
+                                        <h4 className="font-bold text-lg leading-tight truncate">{pkg.name}</h4>
+                                        <div className="mt-1 inline-flex items-center gap-2">
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">Package ID</span>
+                                            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-black">
+                                                {pkg.id}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                                 <p className="text-primary font-bold text-xl mb-2">₦{pkg.price.toLocaleString()}</p>
 
                                 {pkg.powerCapacity && (

@@ -4,7 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://xqvapaavywmqswtccfqu.supabase.co';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseKey || supabaseKey === 'PLACEHOLDER_KEY') {
+export const isSupabaseConfigured = !!supabaseKey && supabaseKey !== 'PLACEHOLDER_KEY';
+
+if (!isSupabaseConfigured) {
     console.warn('⚠️ Supabase Key is missing or is a placeholder! Features requiring database access will fail. Please check your Vercel Environment Variables.');
 }
 

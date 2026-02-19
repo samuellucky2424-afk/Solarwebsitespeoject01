@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'gallery' | 'requests' | 'teams';
+type AdminView = 'overview' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings';
 
 interface AdminSidebarProps {
     activeView: AdminView;
@@ -42,14 +42,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     <span className="text-sm">Overview</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('users')}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${activeView === 'users' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined">group</span>
-                    <span className="text-sm">User Management</span>
-                </button>
-
                 {/* Catalog Group */}
                 <div className="pt-2">
                     <button
@@ -67,7 +59,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-r-lg font-medium transition-colors text-sm ${activeView === 'products' ? 'bg-primary/10 text-primary' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
                             >
                                 <span className="material-symbols-outlined text-lg">inventory_2</span>
-                                <span>Products</span>
+                                <span>Products (optional)</span>
                             </button>
                             <button
                                 onClick={() => setActiveView('packages')}
@@ -96,11 +88,19 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                 </button>
 
                 <button
-                    onClick={() => setActiveView('teams')}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${activeView === 'teams' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                    onClick={() => setActiveView('analytics')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${activeView === 'analytics' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
                 >
-                    <span className="material-symbols-outlined">engineering</span>
-                    <span className="text-sm">Team Mgmt</span>
+                    <span className="material-symbols-outlined">insights</span>
+                    <span className="text-sm">Analytics</span>
+                </button>
+
+                <button
+                    onClick={() => setActiveView('settings')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${activeView === 'settings' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                >
+                    <span className="material-symbols-outlined">settings</span>
+                    <span className="text-sm">Settings</span>
                 </button>
             </nav>
 
