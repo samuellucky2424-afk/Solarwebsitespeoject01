@@ -4,6 +4,18 @@ import { useCart } from '../../context/CartContext';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
 import { supabase } from '../../config/supabaseClient';
 
+declare global {
+    interface Window {
+        FlutterwaveCheckout?: (options: any) => void;
+    }
+}
+
+const FLW_PUBLIC_KEY = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY as string | undefined;
+
+const FUNCTIONS_BASE_URL =
+    import.meta.env.VITE_SUPABASE_FUNCTION_URL ||
+    'https://xqvapaavywmqswtccfqu.functions.supabase.co';
+
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
     const { cartItems, totalPrice, clearCart } = useCart();
@@ -26,6 +38,16 @@ const CheckoutPage: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!FLW_PUBLIC_KEY) {
+            setToast({ msg: "Payment is not configured. Please contact support." });
+            return;
+        }
+        if (!window.FlutterwaveCheckout) {
+            setToast({ msg: "Unable to load payment gateway. Please retry." });
+            return;
+        }
+
         setIsSubmitting(true);
 
         if (cartItems.length === 0) {
@@ -35,49 +57,115 @@ const CheckoutPage: React.FC = () => {
         }
 
         try {
-            // Create the order as a 'request' in the database
-            const { error } = await supabase.from('greenlife_hub').insert([{
-                type: 'request',
-                title: `Order from ${formData.name}`,
-                status: 'Pending',
-                description: `Order contains ${cartItems.length} items. Total: ₦${totalPrice.toLocaleString()}`,
-                // Using metadata to store specific order details
-                metadata: {
-                    type: 'Order',
-                    customer: {
-                        name: formData.name,
-                        email: formData.email,
-                        phone: formData.phone,
-                        address: `${formData.address}, ${formData.city}, ${formData.state}`
-                    },
-                    items: cartItems.map(item => ({
-                        id: item.id,
-                        name: item.name,
-                        quantity: item.quantity,
-                        price: item.price
-                    })),
-                    totalAmount: totalPrice,
-                    notes: formData.notes
+            // 1) Create an order via Supabase Edge Function
+            const createOrderRes = await fetch(`${FUNCTIONS_BASE_URL}/create-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: totalPrice,
+                    currency: 'NGN',
+                    kind: 'product',
+                    item_id: null,
+                    item_snapshot: {
+                        customer: formData,
+                        items: cartItems
+                    }
+                })
+            });
+
+            if (!createOrderRes.ok) {
+                throw new Error('Could not create order');
+            }
+
+            const { order_id, tx_ref } = await createOrderRes.json();
+
+            // 2) Open Flutterwave Standard Checkout
+            window.FlutterwaveCheckout({
+                public_key: FLW_PUBLIC_KEY,
+                tx_ref,
+                amount: totalPrice,
+                currency: "NGN",
+                customer: {
+                    email: formData.email,
+                    phonenumber: formData.phone,
+                    name: formData.name,
                 },
-                address: {
-                    street: formData.address,
-                    city: formData.city,
-                    state: formData.state,
-                    phone: formData.phone,
-                    email: formData.email
+                customizations: {
+                    title: "GreenLife Solar Solutions",
+                    description: `Order payment for ${cartItems.length} item(s)`,
+                    logo: "/logo.png",
+                },
+                callback: async (response: any) => {
+                    try {
+                        // 3) Verify payment via Supabase function
+                        const verifyRes = await fetch(`${FUNCTIONS_BASE_URL}/verify-flutterwave`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                transaction_id: response.transaction_id,
+                                tx_ref
+                            })
+                        });
+
+                        if (!verifyRes.ok) {
+                            throw new Error('Payment verification failed');
+                        }
+
+                        // 4) Create an admin-facing request entry for the order
+                        const { error } = await supabase.from('greenlife_hub').insert([{
+                            type: 'request',
+                            title: `Paid order from ${formData.name}`,
+                            status: 'Completed',
+                            description: `Order contains ${cartItems.length} items. Total: ₦${totalPrice.toLocaleString()}`,
+                            metadata: {
+                                type: 'Order',
+                                customer: {
+                                    name: formData.name,
+                                    email: formData.email,
+                                    phone: formData.phone,
+                                    address: `${formData.address}, ${formData.city}, ${formData.state}`
+                                },
+                                items: cartItems.map(item => ({
+                                    id: item.id,
+                                    name: item.name,
+                                    quantity: item.quantity,
+                                    price: item.price
+                                })),
+                                totalAmount: totalPrice,
+                                notes: formData.notes,
+                                orderId: order_id,
+                                tx_ref
+                            },
+                            address: {
+                                street: formData.address,
+                                city: formData.city,
+                                state: formData.state,
+                                phone: formData.phone,
+                                email: formData.email
+                            }
+                        }]);
+
+                        if (error) {
+                            console.error("Order request insert error:", error);
+                        }
+
+                        setToast({ msg: "Payment successful! Your order has been placed." });
+                        clearCart();
+                        setTimeout(() => navigate('/'), 2000);
+                    } catch (err) {
+                        console.error("Payment verification error:", err);
+                        setToast({ msg: "Payment could not be verified. Please contact support." });
+                    } finally {
+                        setIsSubmitting(false);
+                    }
+                },
+                onclose: () => {
+                    setIsSubmitting(false);
                 }
-            }]);
-
-            if (error) throw error;
-
-            setToast({ msg: "Order placed successfully!" });
-            clearCart();
-            setTimeout(() => navigate('/'), 2000);
-
+            });
         } catch (err) {
-            console.error("Order submission error:", err);
-            setToast({ msg: "Failed to place order. Please try again." });
-        } finally {
+            console.error("Checkout error:", err);
+            setToast({ msg: "Failed to start payment. Please try again." });
             setIsSubmitting(false);
         }
     };

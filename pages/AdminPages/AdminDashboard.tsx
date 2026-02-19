@@ -9,8 +9,6 @@ import RequestsManagement from '../../components/admin/RequestsManagement';
 import AnalyticsInsights from '../../components/admin/AnalyticsInsights';
 import SettingsPanel from '../../components/admin/SettingsPanel';
 
-import DebugStatus from '../../components/admin/DebugStatus';
-
 // Define View Type (matching AdminSidebar)
 type AdminView = 'overview' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings';
 
@@ -95,7 +93,6 @@ const AdminDashboard: React.FC = () => {
                {activeView === 'settings' && <SettingsPanel />}
             </main>
          </div>
-         <DebugStatus />
       </div>
    );
 };

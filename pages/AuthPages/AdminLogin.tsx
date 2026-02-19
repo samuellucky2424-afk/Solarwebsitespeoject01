@@ -13,13 +13,6 @@ const AdminLogin: React.FC = () => {
     e.preventDefault();
     setLoading(true);
 
-    // Enforce strict admin access control
-    if (email.toLowerCase() !== 'admin@greenlifesolar.com') {
-      alert("Access Denied: Unauthorized Admin ID.");
-      setLoading(false);
-      return;
-    }
-
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,

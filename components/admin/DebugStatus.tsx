@@ -12,8 +12,16 @@ const DebugStatus: React.FC = () => {
     }, []);
 
     const checkSession = async () => {
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
+        try {
+            const { data } = await supabase.auth.getSession();
+            setSession(data.session);
+        } catch (err: any) {
+            // Ignore AbortError noise from dev/HMR
+            if (err?.name === 'AbortError' || err?.message?.includes('aborted')) {
+                return;
+            }
+            console.error("DebugStatus session error:", err);
+        }
     };
 
     const testInsert = async () => {

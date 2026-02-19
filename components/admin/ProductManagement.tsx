@@ -34,10 +34,21 @@ const ProductManagement: React.FC = () => {
         });
     }, [inventory, searchTerm, filterCategory]);
 
-    // Unique Categories for Datalist
+    const BASE_CATEGORIES = [
+        'Solar Panels',
+        'Inverters',
+        'Batteries',
+        'Solar Kits',
+        'Power Banks',
+        'Fans',
+        'Accessories',
+        'Solar Lights'
+    ];
+
+    // Unique Categories for Filters
     const uniqueCategories = useMemo(() => {
         const cats = new Set(inventory.map(p => p.category));
-        return ['Solar Panels', 'Inverters', 'Batteries', 'Accessories', ...Array.from(cats)].filter((v, i, a) => a.indexOf(v) === i);
+        return [...BASE_CATEGORIES, ...Array.from(cats)].filter((v, i, a) => a.indexOf(v) === i);
     }, [inventory]);
 
     // Handlers
@@ -51,7 +62,16 @@ const ProductManagement: React.FC = () => {
         } else {
             setEditingProduct(null);
             setFormData({
-                name: '', series: '', price: 0, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: 'In Stock', description: ''
+                name: '',
+                series: '',
+                price: 0,
+                category: BASE_CATEGORIES[0],
+                brand: '',
+                spec: '',
+                eff: '',
+                img: '',
+                badge: 'In Stock',
+                description: ''
             });
         }
         setIsModalOpen(true);
@@ -216,30 +236,29 @@ const ProductManagement: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Product Name</label>
-                                    <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Solar Panel X" />
+                                    <input required type="text" value={formData.name ?? ''} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Solar Panel X" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Series</label>
-                                    <input type="text" value={formData.series} onChange={e => setFormData({ ...formData, series: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Pro Series" />
+                                    <input type="text" value={formData.series ?? ''} onChange={e => setFormData({ ...formData, series: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Pro Series" />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Category</label>
-                                    <input
-                                        list="categories-list"
-                                        value={formData.category}
+                                    <select
+                                        value={formData.category ?? BASE_CATEGORIES[0]}
                                         onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary"
-                                        placeholder="Select or Type New..."
-                                    />
-                                    <datalist id="categories-list">
-                                        {uniqueCategories.map(cat => <option key={cat} value={cat} />)}
-                                    </datalist>
+                                        className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary appearance-none"
+                                    >
+                                        {BASE_CATEGORIES.map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Price (₦)</label>
-                                    <input required type="number" step="0.01" value={formData.price} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="0.00" />
+                                    <input required type="number" step="0.01" value={formData.price ?? 0} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="0.00" />
                                 </div>
 
                                 {/* Image Selection */}
@@ -257,7 +276,7 @@ const ProductManagement: React.FC = () => {
                                     </div>
 
                                     {imageMode === 'url' ? (
-                                        <input type="url" value={formData.img} onChange={e => setFormData({ ...formData, img: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="https://..." />
+                                        <input type="url" value={formData.img ?? ''} onChange={e => setFormData({ ...formData, img: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="https://..." />
                                     ) : (
                                         <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files ? e.target.files[0] : null)} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" />
                                     )}
@@ -276,7 +295,7 @@ const ProductManagement: React.FC = () => {
 
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Stock Status</label>
-                                    <select value={formData.badge} onChange={e => setFormData({ ...formData, badge: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary appearance-none">
+                                    <select value={formData.badge ?? 'In Stock'} onChange={e => setFormData({ ...formData, badge: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary appearance-none">
                                         <option>In Stock</option>
                                         <option>Low Stock</option>
                                         <option>Out of Stock</option>
