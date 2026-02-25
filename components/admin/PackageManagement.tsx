@@ -33,11 +33,11 @@ const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, o
         let finalImageUrl = imageUrl;
 
         if (imageMode === 'upload' && imageFile) {
-            const uploadedUrl = await uploadImage(imageFile, 'greenlife-assets', 'packages');
-            if (uploadedUrl) {
-                finalImageUrl = uploadedUrl;
+            const uploadResult = await uploadImage(imageFile, 'greenlife-assets', 'packages');
+            if (uploadResult.url) {
+                finalImageUrl = uploadResult.url;
             } else {
-                setToastMsg("Failed to upload image. Please try again.");
+                setToastMsg(uploadResult.error || "Failed to upload image. Please try again.");
                 setUploading(false);
                 return;
             }
@@ -67,10 +67,14 @@ const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, o
         setUploading(false);
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (window.confirm("Delete this package?")) {
-            deletePackage(id);
-            setToastMsg("Package deleted.");
+            const success = await deletePackage(id);
+            if (success) {
+                setToastMsg("Package deleted.");
+            } else {
+                setToastMsg("Failed to delete package.");
+            }
         }
     };
 

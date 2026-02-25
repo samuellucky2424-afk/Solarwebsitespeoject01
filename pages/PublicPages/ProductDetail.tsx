@@ -22,7 +22,7 @@ const ProductDetail: React.FC = () => {
 
   useGSAP(() => {
     if (!product) return;
-    
+
     // Image enters from left
     gsap.from(".product-image-container", {
       x: -50,
@@ -58,8 +58,10 @@ const ProductDetail: React.FC = () => {
   }
 
   const handleAddToCart = () => {
-    addToCart(product, quantity);
-    setToast({ msg: `Added ${quantity} x ${product.name} to cart` });
+    const success = addToCart(product, quantity);
+    if (success) {
+      setToast({ msg: `Added ${quantity} x ${product.name} to cart` });
+    }
   };
 
   const handleRequestQuote = () => {
@@ -70,7 +72,7 @@ const ProductDetail: React.FC = () => {
     <div ref={containerRef} className="bg-background-light dark:bg-background-dark font-display text-forest dark:text-[#f8fcf8] min-h-screen overflow-x-hidden">
       <PublicHeader />
       {toast && <Toast message={toast.msg} onClose={() => setToast(null)} />}
-      
+
       <main className="max-w-[1280px] mx-auto px-6 py-6">
         <nav className="flex items-center gap-2 mb-8 text-sm font-medium text-[#4c9a52]">
           <Link className="hover:underline" to="/">Home</Link>
@@ -96,20 +98,20 @@ const ProductDetail: React.FC = () => {
               <h1 className="text-3xl md:text-4xl font-black leading-tight tracking-tight mb-2">{product.name}</h1>
               <div className="flex items-center gap-3">
                 <div className="flex text-primary">
-                  {[1,2,3,4,5].map(i=><span key={i} className="material-symbols-outlined filled-icon text-lg">star</span>)}
+                  {[1, 2, 3, 4, 5].map(i => <span key={i} className="material-symbols-outlined filled-icon text-lg">star</span>)}
                 </div>
                 <span className="text-sm font-medium opacity-70">5.0 (24 Reviews)</span>
               </div>
             </div>
-            
+
             <div className="flex items-baseline gap-3">
               <span className="text-3xl font-bold text-primary-dark">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
-            
+
             <p className="text-lg leading-relaxed opacity-80">
               {product.description || "High-efficiency premium power for residential and commercial energy solutions. Engineered with cutting-edge technology for maximum energy harvest."}
             </p>
-            
+
             <div className="grid grid-cols-3 gap-4 py-6 border-y border-[#e7f3e8] dark:border-[#2a3a2c]">
               {[
                 { icon: "bolt", label: "Power", val: product.badge || "Standard" },
@@ -127,21 +129,21 @@ const ProductDetail: React.FC = () => {
             <div className="space-y-4 pt-4">
               <div className="flex gap-4">
                 <div className="flex items-center border border-[#e7f3e8] dark:border-[#2a3a2c] rounded-lg bg-white dark:bg-white/5">
-                  <button 
+                  <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
                     className="px-4 py-3 hover:bg-primary/10 transition-colors text-lg"
                   >
                     -
                   </button>
                   <span className="px-4 font-bold text-lg w-12 text-center">{quantity}</span>
-                  <button 
+                  <button
                     onClick={() => setQuantity(q => q + 1)}
                     className="px-4 py-3 hover:bg-primary/10 transition-colors text-lg"
                   >
                     +
                   </button>
                 </div>
-                <button 
+                <button
                   onClick={handleAddToCart}
                   className="flex-1 bg-primary text-forest font-bold py-4 rounded-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95"
                 >
@@ -149,7 +151,7 @@ const ProductDetail: React.FC = () => {
                   Add to Cart
                 </button>
               </div>
-              <button 
+              <button
                 onClick={handleRequestQuote}
                 className="w-full border-2 border-primary text-primary font-bold py-4 rounded-lg hover:bg-primary hover:text-forest transition-all flex items-center justify-center gap-2 active:scale-95"
               >

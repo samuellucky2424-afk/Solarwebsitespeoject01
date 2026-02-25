@@ -26,11 +26,11 @@ const GalleryManagement: React.FC = () => {
         let finalImageUrl = newUrl;
 
         if (imageMode === 'upload' && imageFile) {
-            const uploadedUrl = await uploadImage(imageFile, 'greenlife-assets', 'gallery');
-            if (uploadedUrl) {
-                finalImageUrl = uploadedUrl;
+            const uploadResult = await uploadImage(imageFile, 'greenlife-assets', 'gallery');
+            if (uploadResult.url) {
+                finalImageUrl = uploadResult.url;
             } else {
-                setToastMsg("Failed to upload image. Please try again.");
+                setToastMsg(uploadResult.error || "Failed to upload image. Please try again.");
                 setUploading(false);
                 return;
             }
@@ -61,10 +61,14 @@ const GalleryManagement: React.FC = () => {
         setUploading(false);
     };
 
-    const handleRemove = (id: string) => {
+    const handleRemove = async (id: string) => {
         if (window.confirm('Are you sure you want to remove this image?')) {
-            removeImage(id);
-            setToastMsg('Image removed');
+            const success = await removeImage(id);
+            if (success) {
+                setToastMsg('Image removed');
+            } else {
+                setToastMsg('Failed to remove image.');
+            }
         }
     };
 

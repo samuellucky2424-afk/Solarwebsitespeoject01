@@ -4,9 +4,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const flutterwaveSecret = Deno.env.get("FLUTTERWAVE_SECRET_KEY")!;
-const webhookHash = Deno.env.get("FLUTTERWAVE_WEBHOOK_SECRET_HASH")!;
+const webhookHash = Deno.env.get("FLUTTERWAVE_WEBHOOK_SECRET_HASH");
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, verif-hash",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+};
 
 async function verifyFlutterwaveTransaction(transactionId: string) {
   const res = await fetch(
@@ -29,14 +35,18 @@ async function verifyFlutterwaveTransaction(transactionId: string) {
 }
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { status: 200, headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   const signature = req.headers.get("verif-hash");
-  if (!signature || signature !== webhookHash) {
+  if (webhookHash && signature !== webhookHash) {
     console.warn("Invalid webhook signature");
-    return new Response("Invalid signature", { status: 401 });
+    return new Response("Invalid signature", { status: 401, headers: corsHeaders });
   }
 
   try {
@@ -44,7 +54,7 @@ serve(async (req) => {
     const data = payload?.data;
 
     if (!data || !data.id || !data.tx_ref) {
-      return new Response("Bad payload", { status: 400 });
+      return new Response("Bad payload", { status: 400, headers: corsHeaders });
     }
 
     const verify = await verifyFlutterwaveTransaction(String(data.id));
@@ -52,7 +62,7 @@ serve(async (req) => {
 
     if (!v || v.status !== "successful" || v.tx_ref !== data.tx_ref) {
       console.warn("Verification failed or mismatch", v);
-      return new Response("Ignored", { status: 400 });
+      return new Response("Ignored", { status: 400, headers: corsHeaders });
     }
 
     const tx_ref = v.tx_ref;
@@ -67,7 +77,7 @@ serve(async (req) => {
 
     if (orderErr || !order) {
       console.error("Order not found for webhook tx_ref", tx_ref, orderErr);
-      return new Response("Order not found", { status: 404 });
+      return new Response("Order not found", { status: 404, headers: corsHeaders });
     }
 
     await supabase
@@ -88,10 +98,10 @@ serve(async (req) => {
       verified_at: new Date().toISOString(),
     });
 
-    return new Response("OK", { status: 200 });
+    return new Response("OK", { status: 200, headers: corsHeaders });
   } catch (err) {
     console.error("flutterwave-webhook error", err);
-    return new Response("Error", { status: 500 });
+    return new Response("Error", { status: 500, headers: corsHeaders });
   }
 });
 

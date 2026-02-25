@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 // --- SVGs ---
 
@@ -12,6 +13,7 @@ export const Logo: React.FC<{ className?: string }> = ({ className = "size-8" })
 
 export const CartDrawer: React.FC = () => {
   const { isCartOpen, setIsCartOpen, cartItems, removeFromCart, updateQuantity, totalPrice } = useCart();
+  const { isAuthenticated } = useAuth();
 
   // Close when clicking backdrop
   if (!isCartOpen) return null;
@@ -71,7 +73,7 @@ export const CartDrawer: React.FC = () => {
               <span className="text-xl font-bold text-forest dark:text-white">₦{totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <Link
-              to="/checkout"
+              to={isAuthenticated ? "/dashboard?view=checkout" : "/checkout"}
               onClick={() => setIsCartOpen(false)}
               className="w-full bg-primary text-forest font-bold py-4 rounded-xl hover:brightness-105 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
             >

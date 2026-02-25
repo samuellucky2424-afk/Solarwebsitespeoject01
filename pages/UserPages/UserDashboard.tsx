@@ -13,9 +13,11 @@ import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
 import DashboardPackages from '../../components/dashboard/DashboardPackages';
 import ConsultationForm from '../PublicPages/ConsultationForm';
+import ServiceRequestForm from './ServiceRequestForm';
+import CheckoutPage from './CheckoutPage';
 
 // --- Types (Local) ---
-type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation';
+type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout';
 
 const SidebarLink: React.FC<{
   active: boolean,
@@ -32,7 +34,7 @@ const SidebarLink: React.FC<{
   </button>
 );
 
-  const UserDashboard: React.FC = () => {
+const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut, user: authUser } = useAuth();
@@ -61,7 +63,28 @@ const SidebarLink: React.FC<{
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
 
-  // Loading state
+  // --- Effects (MUST be above the early return to satisfy Rules of Hooks) ---
+  // Handle Query Params for Deep Linking
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const viewParam = params.get('view');
+    if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout'].includes(viewParam)) {
+      setCurrentView(viewParam as DashboardView);
+    }
+  }, [location.search]);
+
+  // --- Close Dropdown on click outside ---
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Loading state — early return AFTER all hooks
   if (!activeUser) {
     return (
       <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
@@ -82,33 +105,11 @@ const SidebarLink: React.FC<{
     );
   }
 
-
-  // --- Effects ---
-  // Handle Query Params for Deep Linking
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const viewParam = params.get('view');
-    if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages'].includes(viewParam)) {
-      setCurrentView(viewParam as DashboardView);
-    }
-  }, [location.search]);
-
   // Update URL when view changes
   const handleViewChange = (view: DashboardView) => {
     setCurrentView(view);
     navigate(`/dashboard?view=${view}`, { replace: true });
   };
-
-  // --- Close Dropdown on click outside ---
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setIsNotifOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // --- Calculations ---
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -118,20 +119,21 @@ const SidebarLink: React.FC<{
     setIsServiceModalOpen(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm("Are you sure you want to log out?")) {
-      signOut();
+      await signOut();
+      navigate('/login');
     }
   };
 
   const handleServiceOption = (option: number) => {
     setIsServiceModalOpen(false);
     if (option === 1) {
-      navigate('/service-request?type=maintenance');
+      handleViewChange('maintenance');
     } else if (option === 2) {
       handleViewChange('consultation');
     } else if (option === 3) {
-      navigate('/service-request?type=survey');
+      handleViewChange('survey');
     }
   };
 
@@ -506,8 +508,11 @@ const SidebarLink: React.FC<{
             {currentView === 'packages' && <DashboardPackages />}
             {currentView === 'gallery' && <DashboardGallery />}
             {currentView === 'consultation' && <ConsultationForm isEmbedded={true} />}
+            {currentView === 'maintenance' && <ServiceRequestForm isEmbedded={true} requestType="maintenance" onSuccess={() => handleViewChange('requests')} />}
+            {currentView === 'survey' && <ServiceRequestForm isEmbedded={true} requestType="survey" onSuccess={() => handleViewChange('requests')} />}
             {currentView === 'upgrade' && <UpgradeRequest onSuccess={() => handleViewChange('requests')} />}
             {currentView === 'profile' && <ProfileSettings />}
+            {currentView === 'checkout' && <CheckoutPage isEmbedded={true} />}
 
             {/* Existing Views */}
             {currentView === 'systems' && <MySystems />}

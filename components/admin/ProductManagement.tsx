@@ -77,10 +77,14 @@ const ProductManagement: React.FC = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id: any) => {
+    const handleDelete = async (id: any) => {
         if (window.confirm("Are you sure you want to delete this product?")) {
-            deleteProduct(id);
-            setToastMsg("Product deleted successfully");
+            const success = await deleteProduct(id);
+            if (success) {
+                setToastMsg("Product deleted successfully");
+            } else {
+                setToastMsg("Failed to delete product.");
+            }
         }
     };
 
@@ -92,11 +96,11 @@ const ProductManagement: React.FC = () => {
         let finalImageUrl = formData.img;
 
         if (imageMode === 'upload' && imageFile) {
-            const uploadedUrl = await uploadImage(imageFile, 'greenlife-assets', 'products');
-            if (uploadedUrl) {
-                finalImageUrl = uploadedUrl;
+            const uploadResult = await uploadImage(imageFile, 'greenlife-assets', 'products');
+            if (uploadResult.url) {
+                finalImageUrl = uploadResult.url;
             } else {
-                setToastMsg("Failed to upload image. Please try again.");
+                setToastMsg(uploadResult.error || "Failed to upload image. Please try again.");
                 setUploading(false);
                 return;
             }
@@ -107,7 +111,7 @@ const ProductManagement: React.FC = () => {
             img: finalImageUrl || 'https://placehold.co/400',
             brand: formData.brand || 'GreenLife',
             eff: formData.eff || 'N/A',
-            spec: formData.spec || 'Standard'
+            spec: formData.description || 'Standard'
         };
 
         if (editingProduct) {

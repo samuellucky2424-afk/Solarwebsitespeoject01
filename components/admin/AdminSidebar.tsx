@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-type AdminView = 'overview' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings';
+type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings';
 
 interface AdminSidebarProps {
     activeView: AdminView;
@@ -13,9 +13,9 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
     const { signOut } = useAuth();
     const [isCatalogOpen, setIsCatalogOpen] = useState(true);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         if (window.confirm("Sign out of Admin Dashboard?")) {
-            signOut();
+            await signOut();
         }
     };
 
@@ -40,6 +40,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                 >
                     <span className="material-symbols-outlined">dashboard</span>
                     <span className="text-sm">Overview</span>
+                </button>
+
+                <button
+                    onClick={() => setActiveView('users')}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${activeView === 'users' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                >
+                    <span className="material-symbols-outlined">group</span>
+                    <span className="text-sm">Users</span>
                 </button>
 
                 {/* Catalog Group */}

@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product } from '../data/products';
 
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+
 export interface CartItem extends Product {
   quantity: number;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, quantity: number) => void;
+  addToCart: (product: Product, quantity: number) => boolean;
   removeFromCart: (productId: any) => void;
   updateQuantity: (productId: any, delta: number) => void;
   clearCart: () => void;
@@ -20,6 +23,10 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     // Load from local storage if available
     const savedCart = localStorage.getItem('greenlife_cart');
@@ -31,7 +38,12 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('greenlife_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product: Product, quantity: number) => {
+  const addToCart = (product: Product, quantity: number): boolean => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location.pathname } });
+      return false;
+    }
+
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -43,6 +55,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
     // Optional: Open cart when adding
     // setIsCartOpen(true); 
+    return true;
   };
 
   const removeFromCart = (productId: any) => {

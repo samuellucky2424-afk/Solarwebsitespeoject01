@@ -19,13 +19,13 @@ const LandingPage: React.FC = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Showcase the first 5 gallery images in the hero slider if available, else default placeholders
-  const heroImages = images.length > 0 ? images.slice(0, 5) : [
+  // Showcase all gallery images in the hero slider if available, else default placeholders
+  const heroImages = images.length > 0 ? images : [
     { id: 'h1', url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDZorIbyrZ5OLhbDy634lXDn9Pdhc4stIeZqUjuHMAlvZJ5w2PS4Y9M_5znVvIV3C0VY89GZ2tgBtf5dZvyH2G0EcUxS9p6AQY3U0j8pQ5diSochratuVXWrfyfRe6btjNtAboqC8xaWFwSPmf-pMSac0YoENe0aosNNcg4K9kp00_IdL181Tx0iKpQ_oramQeJe4Rmn6RqceeMdHieJ5m3Dlh02kFdme_pXcHuCwKTYiWGcI64M_uBE1frQTxYva44niSL5tnIr84', title: 'Clean Energy', description: 'Sustainable solar solutions.' }
   ];
 
-  // Featured Products: Get top 3 or random 3
-  const featuredProducts = inventory.slice(0, 3);
+  // Featured Products: Show all products marked as featured
+  const featuredProducts = inventory;
 
   // Gallery Carousel State
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -203,6 +203,31 @@ const LandingPage: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* Slider Indicators */}
+            <div className="absolute bottom-10 right-10 z-20 flex gap-4">
+              {heroImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`relative size-12 flex items-center justify-center transition-all ${currentSlide === idx ? 'scale-110' : 'opacity-40 hover:opacity-100'}`}
+                >
+                  <span className="text-white text-sm font-black">{idx + 1}</span>
+                  {currentSlide === idx && (
+                    <svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 48 48">
+                      <circle
+                        cx="24" cy="24" r="20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeDasharray="126"
+                        className="progress-ring-circle text-primary"
+                      />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -288,15 +313,15 @@ const LandingPage: React.FC = () => {
         <section className="products-section bg-forest dark:bg-black/20 py-24 my-20" id="products">
           <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
             <SectionHeader sub="Product Showcase" title="Advanced Solar Technology" dark={true} />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {featuredProducts.map((prod) => (
-                <div key={prod.id} className="product-card flex flex-col gap-6 bg-white/5 p-8 rounded-3xl border border-white/10 hover:bg-white/10 transition-colors group">
-                  <div className="w-full aspect-square bg-cover bg-center rounded-2xl overflow-hidden" style={{ backgroundImage: `url('${prod.img}')` }}></div>
-                  <div>
-                    <p className="text-primary text-sm font-bold uppercase tracking-widest mb-2">{prod.category}</p>
-                    <h4 className="text-white text-3xl font-bold mb-4">{prod.name}</h4>
-                    <p className="text-white/60 mb-8 text-lg line-clamp-3">{prod.description || `${prod.brand} ${prod.series} - ${prod.spec}`}</p>
-                    <Link to={`/product/${prod.id}`} className="text-primary font-bold flex items-center gap-2 group-hover:gap-3 transition-all text-lg">
+                <div key={prod.id} className="product-card flex flex-col gap-4 bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group">
+                  <div className="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden" style={{ backgroundImage: `url('${prod.img}')` }}></div>
+                  <div className="flex-1 flex flex-col">
+                    <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1">{prod.category}</p>
+                    <h4 className="text-white text-xl font-bold mb-2 line-clamp-1">{prod.name}</h4>
+                    <p className="text-white/60 mb-4 text-sm line-clamp-2 flex-1">{prod.description || `${prod.brand} ${prod.series} - ${prod.spec}`}</p>
+                    <Link to={`/product/${prod.id}`} className="text-primary font-bold flex items-center gap-2 group-hover:gap-3 transition-all text-sm mt-auto">
                       Learn More <span className="material-symbols-outlined text-sm">arrow_right_alt</span>
                     </Link>
                   </div>

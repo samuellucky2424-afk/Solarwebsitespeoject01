@@ -49,8 +49,10 @@ const ProductCatalog: React.FC = () => {
   };
 
   const handleAddToCart = (product: Product) => {
-    addToCart(product, 1);
-    setToastMessage(`Added ${product.name} to cart.`);
+    const success = addToCart(product, 1);
+    if (success) {
+      setToastMessage(`Added ${product.name} to cart.`);
+    }
   };
 
   const handleReset = () => {
@@ -347,8 +349,8 @@ const ProductCatalog: React.FC = () => {
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`size-10 flex items-center justify-center rounded-lg font-bold transition-colors ${currentPage === page
-                          ? 'bg-primary-dark text-forest'
-                          : 'border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300'
+                        ? 'bg-primary-dark text-forest'
+                        : 'border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300'
                         }`}
                     >
                       {page}

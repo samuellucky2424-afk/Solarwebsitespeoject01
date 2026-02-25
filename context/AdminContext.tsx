@@ -1,33 +1,34 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { isSupabaseConfigured, supabase } from '../config/supabaseClient';
+import { useAuth } from './AuthContext';
 
 // Types
 export interface ServiceRequest {
   id: string;
   title: string;
   type:
-    | 'Package Request'
-    | 'Maintenance Request'
-    | 'Site Survey Request'
-    | 'System Upgrade Request'
-    | 'Consultation Request'
-    // Back-compat values (older data)
-    | 'Maintenance'
-    | 'Installation'
-    | 'Survey'
-    | 'Upgrade';
+  | 'Package Request'
+  | 'Maintenance Request'
+  | 'Site Survey Request'
+  | 'System Upgrade Request'
+  | 'Consultation Request'
+  // Back-compat values (older data)
+  | 'Maintenance'
+  | 'Installation'
+  | 'Survey'
+  | 'Upgrade';
   customer: string;
   address: string;
   date: string;
   status:
-    | 'New'
-    | 'In-progress'
-    | 'Completed'
-    // Back-compat values (older data)
-    | 'Pending'
-    | 'Approved'
-    | 'In Progress'
-    | 'Scheduled';
+  | 'New'
+  | 'In-progress'
+  | 'Completed'
+  // Back-compat values (older data)
+  | 'Pending'
+  | 'Approved'
+  | 'In Progress'
+  | 'Scheduled';
   priority: 'High' | 'Normal' | 'Low';
   description?: string;
   phone?: string;
@@ -80,6 +81,7 @@ export interface UserProfile {
   batteryType?: string;
   systemSize?: string;
   metadata?: any;
+  systems?: any[]; // Array of solar systems
 }
 
 export interface Referral {
@@ -122,25 +124,25 @@ interface AdminContextType {
   notifications: Notification[];
   stats: DashboardStats;
   addProduct: (product: Omit<Product, 'id'>) => Promise<boolean>;
-  updateProduct: (id: any, product: Partial<Product>) => void;
-  deleteProduct: (id: any) => void;
+  updateProduct: (id: any, product: Partial<Product>) => Promise<boolean | void>;
+  deleteProduct: (id: any) => Promise<boolean>;
   updateRequestStatus: (id: string, status: ServiceRequest['status']) => void;
-  deleteRequest: (id: string) => void;
+  deleteRequest: (id: string) => Promise<boolean>;
   addRequest: (request: ServiceRequest) => void;
   addPackage: (pkg: Omit<SolarPackage, 'id'>) => Promise<boolean>;
-  deletePackage: (id: string) => void;
+  deletePackage: (id: string) => Promise<boolean>;
   updateUserSystem: (updates: Partial<UserProfile>) => void;
   registerUser: (details: Partial<UserProfile>) => void;
   approveReferral: (referralId: string, amount: number, daysValid: number) => void;
   markNotificationRead: (id: string) => void;
-  updateUserProfile: (updates: Partial<UserProfile>) => void;
+  updateUserProfile: (updates: Partial<UserProfile>) => Promise<void>;
   // Gallery
   gallery: GalleryImage[];
   addGalleryImage: (image: Omit<GalleryImage, 'id'>) => Promise<boolean>;
-  removeGalleryImage: (id: string) => void;
+  removeGalleryImage: (id: string) => Promise<boolean>;
   // Installers
   addInstaller: (installer: UserProfile) => Promise<boolean>;
-  deleteInstaller: (id: string) => void;
+  deleteInstaller: (id: string) => Promise<boolean>;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -292,6 +294,7 @@ const DEMO_GALLERY: GalleryImage[] = [
 ];
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
+  const { session } = useAuth();
   const [inventory, setInventory] = useState<Product[]>([]);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [packages, setPackages] = useState<SolarPackage[]>([]);
@@ -335,7 +338,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
           loadDemoData();
           return;
         }
-        console.error("Supabase Fetch Error:", error);
+        // For any other error (RLS, network, permission), also fall back to demo data
+        // so the homepage always shows content rather than empty sections.
+        console.warn("Supabase fetch error, falling back to demo data:", error);
+        loadDemoData();
         return;
       }
 
@@ -370,11 +376,17 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Fetch from both in parallel for speed
       const [profileRes, hubRes] = await Promise.all([
-        supabase.from('profile').select('*').eq('id', userId).maybeSingle(),
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
         supabase.from('greenlife_hub').select('*').eq('type', 'user_profile').eq('user_id', userId).maybeSingle()
       ]);
 
       if (profileRes.data) {
+        // If profile exists but is missing key metadata (e.g. systems), try hub as a fallback source of truth.
+        const profileHasSystems = Array.isArray((profileRes.data as any)?.metadata?.systems);
+        if (!profileHasSystems && hubRes.data) {
+          setActiveUser(mapToUserProfile(hubRes.data));
+          return;
+        }
         setActiveUser(mapToUserProfile({ ...profileRes.data, type: 'user_profile' }));
         return;
       }
@@ -400,56 +412,51 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } catch (err: any) {
-      console.error("Profile fetch error:", err);
+      const isAbort = err.name === 'AbortError' || err.message?.includes('AbortError') || err.message?.includes('signal is aborted');
+      if (!isAbort) {
+        console.error("Profile fetch error:", err);
+      }
     }
   };
 
   useEffect(() => {
+    // Fetch public data immediately regardless of auth status
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [session?.access_token]); // re-fetch if session changes, but also run on mount
 
   useEffect(() => {
+    let mounted = true;
+
     if (!isSupabaseConfigured) return;
+
+    // Fetch Profile (session is guaranteed to have access_token here)
+    if (mounted && session?.user) {
+      fetchUserProfile(session.user.id);
+    }
+
     if (!enableRealtime) return;
     if (usingDemoData) return;
-
-    // Check Current Session & Fetch Profile (only when backend is confirmed)
-    supabase.auth.getSession().then(({ data }: { data: { session: any } }) => {
-      const session = data.session;
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-    });
-
-    // Subscribe to Auth Changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
-      if (session?.user) {
-        await fetchUserProfile(session.user.id);
-      } else {
-        setActiveUser(null);
-      }
-    });
 
     // Subscribe to DB changes (only when backend is confirmed)
     const channel = supabase
       .channel('public:greenlife_hub')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'greenlife_hub' }, () => {
-        fetchData();
+        if (mounted) fetchData();
       })
       .subscribe();
 
     return () => {
-      authListener.subscription.unsubscribe();
+      mounted = false;
       supabase.removeChannel(channel);
     };
-  }, [enableRealtime, usingDemoData]);
+  }, [enableRealtime, usingDemoData, session?.access_token]);
 
   // --- Actions ---
 
   const addProduct = async (product: Omit<Product, 'id'>) => {
     const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'product',
+      user_id: activeUser?.id,
       name: product.name,
       price: product.price,
       category: product.category,
@@ -475,15 +482,42 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProduct = async (id: any, updates: Partial<Product>) => {
-    // Logic would be here, but simpler to omit for MVP speed unless requested
-    console.log("Update product", id, updates);
+    const { error } = await supabase.from('greenlife_hub').update({
+      user_id: activeUser?.id,
+      name: updates.name,
+      price: updates.price,
+      category: updates.category,
+      image_url: updates.img,
+      description: updates.spec,
+      status: updates.stockStatus || updates.badge || 'In Stock',
+      metadata: {
+        brand: updates.brand,
+        series: updates.series,
+        efficiency: updates.eff,
+        reviews: updates.reviews || 0
+      }
+    }).eq('id', id);
+
+    if (!error) {
+      if (activeUser) addNotification(activeUser.id, "System", `Product updated.`, "success");
+      fetchData(); // Refresh local state
+      return true;
+    } else {
+      console.error("Error updating product:", error);
+      return false;
+    }
   };
 
   const deleteProduct = async (id: any) => {
     // In a real scenario, use UUID. Here we need to verify if id is UUID or string
-    await supabase.from('greenlife_hub').delete().eq('id', id);
-    if (activeUser) addNotification(activeUser.id, "System", "Product removed.", "info");
-    fetchData();
+    const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
+    if (!error) {
+      if (activeUser) addNotification(activeUser.id, "System", "Product removed.", "info");
+      fetchData();
+      return true;
+    }
+    console.error("Error deleting product:", error);
+    return false;
   };
 
   const addRequest = async (req: ServiceRequest) => {
@@ -492,7 +526,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       title: req.title,
       status: req.status,
       description: req.description,
-      user_id: activeUser?.id, 
+      user_id: activeUser?.id,
       address: { address: req.address, phone: req.phone, email: req.email },
       metadata: {
         type: req.type,
@@ -515,12 +549,18 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteRequest = async (id: string) => {
-    await supabase.from('greenlife_hub').delete().eq('id', id);
+    const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
+    if (!error) {
+      fetchData();
+      return true;
+    }
+    return false;
   };
 
   const addPackage = async (pkg: Omit<SolarPackage, 'id'>) => {
     const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'package',
+      user_id: activeUser?.id,
       name: pkg.name,
       price: pkg.price,
       description: pkg.description,
@@ -539,8 +579,13 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deletePackage = async (id: string) => {
-    await supabase.from('greenlife_hub').delete().eq('id', id);
-    fetchData();
+    const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
+    if (!error) {
+      fetchData();
+      return true;
+    }
+    console.error("Error deleting package", error);
+    return false;
   };
 
   // --- Installers / Team ---
@@ -569,8 +614,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteInstaller = async (id: string) => {
-    await supabase.from('greenlife_hub').delete().eq('id', id);
-    fetchData();
+    const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
+    if (!error) {
+      fetchData();
+      return true;
+    }
+    return false;
   };
 
   // --- User & Local Logic (Keep local for demo user details for now) ---
@@ -587,22 +636,29 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     addNotification("USR-NEW", "Welcome!", "Welcome to Greenlife Solar.", "success");
   };
 
-  const updateUserProfile = async (updates: Partial<UserProfile>) => {
+  const updateUserProfile = async (updates: Partial<UserProfile>): Promise<void> => {
     if (!activeUser) return;
     try {
+      // Merge metadata to avoid overwriting fields stored server-side by other flows.
+      const mergedMetadata = updates.metadata
+        ? { ...(activeUser.metadata || {}), ...(updates.metadata || {}) }
+        : (activeUser.metadata || undefined);
+
       const { error } = await supabase
-        .from('profile')
+        .from('profiles')
         .update({
-          fullName: updates.fullName || activeUser.fullName,
+          full_name: updates.fullName || activeUser.fullName,
           email: updates.email || activeUser.email,
           phone: updates.phone || activeUser.phone,
           address: updates.address || activeUser.address,
+          metadata: mergedMetadata,
         })
         .eq('id', activeUser.id);
 
       if (error) {
+        console.error('profiles update failed', error);
         // Fallback to greenlife_hub
-        await supabase
+        const { error: hubErr } = await supabase
           .from('greenlife_hub')
           .update({
             title: updates.fullName || activeUser.fullName,
@@ -615,13 +671,41 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
           })
           .eq('type', 'user_profile')
           .eq('user_id', activeUser.id);
+
+        if (hubErr) {
+          console.error('greenlife_hub update failed', hubErr);
+          throw hubErr;
+        }
+
+        throw error;
+      } else {
+        // Keep hub in sync when profiles update succeeds (best-effort).
+        const { error: hubErr } = await supabase
+          .from('greenlife_hub')
+          .update({
+            title: updates.fullName || activeUser.fullName,
+            metadata: {
+              ...(activeUser.metadata || {}),
+              ...(mergedMetadata || {}),
+              email: updates.email || activeUser.email,
+              phone: updates.phone || activeUser.phone,
+              address: updates.address || activeUser.address,
+            }
+          })
+          .eq('type', 'user_profile')
+          .eq('user_id', activeUser.id);
+
+        if (hubErr) {
+          console.warn('greenlife_hub sync failed (non-fatal)', hubErr);
+        }
       }
 
-      setActiveUser((prev: UserProfile | null) => (prev ? { ...prev, ...updates } : null));
+      setActiveUser((prev: UserProfile | null) => (prev ? { ...prev, ...updates, metadata: mergedMetadata } : null));
       addNotification(activeUser.id, "Profile Updated", "Profile updated successfully.", "success");
     } catch (err) {
       console.error("Error updating profile:", err);
       addNotification(activeUser.id, "Update Failed", "Could not save profile changes.", "alert");
+      throw err;
     }
   };
 
@@ -698,6 +782,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const addGalleryImage = async (image: Omit<GalleryImage, 'id'>) => {
     const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'gallery',
+      user_id: activeUser?.id,
       title: image.title,
       category: image.category,
       description: image.description,
@@ -715,8 +800,13 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const removeGalleryImage = async (id: string) => {
-    await supabase.from('greenlife_hub').delete().eq('id', id);
-    fetchData();
+    const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
+    if (!error) {
+      fetchData();
+      return true;
+    }
+    console.error("Error deleting gallery image", error);
+    return false;
   };
 
   const mapToGallery = (item: any): GalleryImage => ({
@@ -730,18 +820,20 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const mapToUserProfile = (data: any): UserProfile => {
     // Debug log to see incoming data
     console.log("Mapping user data:", data);
-    
+
+    // Support both snake_case (from DB) and camelCase (legacy) column names
+    const fullName = data.full_name || data.fullName || data.title || 'User';
     return {
       id: data.id || data.user_id,
-      firstName: data.fullName ? data.fullName.split(' ')[0] : (data.title ? data.title.split(' ')[0] : 'User'),
-      fullName: data.fullName || data.title || 'User',
+      firstName: fullName.split(' ')[0],
+      fullName,
       email: data.email || data.metadata?.email || '',
-      phone: data.phone || data.metadata?.phone,
+      phone: data.phone || data.metadata?.phone || '',
       address: data.address || data.metadata?.address || '',
-      plan: data.plan || 'Standard Plan',
-      systemName: data.systemName || (data.metadata?.solar_details ? `${data.metadata.solar_details.size || 'Unknown'} System` : 'No System'),
-      installDate: data.installDate || data.metadata?.solar_details?.installDate || '',
-      installTime: data.installTime || data.metadata?.solar_details?.installTime || '',
+      plan: data.metadata?.plan || data.plan || 'Standard Plan',
+      systemName: data.metadata?.systemName || data.systemName || (data.metadata?.solar_details ? `${data.metadata.solar_details.size || 'Unknown'} System` : 'No System'),
+      installDate: data.metadata?.solar_details?.installDate || data.installDate || '',
+      installTime: data.metadata?.solar_details?.installTime || data.installTime || '',
       warrantyStart: data.created_at ? new Date(data.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
       warrantyEnd: '2030-01-01',
       systemStatus: data.status || data.systemStatus || 'Operational',
@@ -751,10 +843,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       inverterType: data.inverterType || data.metadata?.solar_details?.inverter,
       batteryType: data.batteryType || data.metadata?.solar_details?.battery,
       systemSize: data.systemSize || data.metadata?.solar_details?.size,
-      street: data.address || data.metadata?.address,
+      street: data.address || data.metadata?.address || '',
       city: data.city || '',
       state: data.state || '',
-      landmark: data.landmark || ''
+      landmark: data.landmark || '',
+      metadata: data.metadata,
+      systems: data.metadata?.systems || []
     };
   };
 

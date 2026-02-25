@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAdmin } from '../../context/AdminContext';
 import { Link } from 'react-router-dom';
+import { supabase } from '../../config/supabaseClient';
 
 interface DashboardOverviewProps {
     handleBookService: () => void;
@@ -9,6 +10,42 @@ interface DashboardOverviewProps {
 }
 
 const DashboardOverview: React.FC<DashboardOverviewProps> = ({ handleBookService, activeUser, notifications }) => {
+    const { requests } = useAdmin();
+
+    const [latestSystem, setLatestSystem] = useState<any | null>(null);
+
+    useEffect(() => {
+        const loadLatest = async () => {
+            if (!activeUser?.id) return;
+            try {
+                const { data, error } = await supabase
+                    .from('user_systems')
+                    .select('*')
+                    .eq('user_id', activeUser.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (error) throw error;
+                setLatestSystem(data || null);
+            } catch (err) {
+                console.error('Failed to load latest system:', err);
+                setLatestSystem(null);
+            }
+        };
+
+        loadLatest();
+    }, [activeUser?.id]);
+
+    const systemCard = useMemo(() => {
+        const sysData = latestSystem?.system_data || {};
+        return {
+            name: latestSystem?.name || sysData?.name || activeUser.systemName,
+            address: sysData?.address || activeUser.address,
+            installDate: latestSystem?.installation_date || sysData?.installDate || activeUser.installDate,
+            status: latestSystem?.status || activeUser.systemStatus,
+        };
+    }, [activeUser.address, activeUser.installDate, activeUser.systemName, activeUser.systemStatus, latestSystem]);
 
     // Helper helpers
     const getSystemStatusBadge = (status: string) => {
@@ -46,9 +83,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ handleBookService
             <section className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-8 shadow-sm relative overflow-hidden">
                 {/* Status Indicator */}
                 <div className="absolute top-0 right-0 p-8">
-                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getSystemStatusBadge(activeUser.systemStatus)}`}>
-                        <span className={`size-2 rounded-full ${activeUser.systemStatus === 'Operational' ? 'bg-green-500 animate-pulse' : 'bg-current'}`}></span>
-                        {activeUser.systemStatus}
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getSystemStatusBadge(systemCard.status)}`}>
+                        <span className={`size-2 rounded-full ${systemCard.status === 'Operational' ? 'bg-green-500 animate-pulse' : 'bg-current'}`}></span>
+                        {systemCard.status}
                     </div>
                 </div>
 
@@ -58,14 +95,14 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ handleBookService
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                            <h2 className="text-2xl font-bold">{activeUser.systemName}</h2>
+                            <h2 className="text-2xl font-bold">{systemCard.name}</h2>
                         </div>
-                        <p className="text-[#4c9a66] dark:text-gray-400 text-lg mb-6">{activeUser.address}</p>
+                        <p className="text-[#4c9a66] dark:text-gray-400 text-lg mb-6">{systemCard.address}</p>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="p-4 bg-background-light dark:bg-white/5 rounded-lg border border-[#e7f3eb] dark:border-white/5">
                                 <p className="text-xs text-[#4c9a66] uppercase font-bold mb-1">Installation Date</p>
-                                <p className="font-semibold">{activeUser.installDate}</p>
+                                <p className="font-semibold">{systemCard.installDate}</p>
                                 {activeUser.installTime && <p className="text-xs text-gray-500">{activeUser.installTime}</p>}
                             </div>
                             <div className={`p-4 rounded-lg border ${isWarrantyActive ? 'bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30' : 'bg-red-50 border-red-200 dark:bg-red-900/10 dark:border-red-900/30'}`}>
@@ -86,33 +123,75 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ handleBookService
                 </div>
             </section>
 
-            {/* Feature 2: Recent History */}
+            {/* Feature 2: Recent Activity (from Supabase) */}
             <section>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold dark:text-white">Recent Activity</h2>
                 </div>
                 <div className="bg-white dark:bg-[#152a17] rounded-xl border border-gray-100 dark:border-white/5 overflow-hidden shadow-sm">
                     <div className="grid grid-cols-1 divide-y divide-gray-100 dark:divide-white/5">
-                        <div className="p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center shrink-0">
-                                <span className="material-symbols-outlined">shopping_bag</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-bold text-sm dark:text-white truncate">Order #ORD-248 - Cleaning Kit</p>
-                                <p className="text-xs text-gray-500">2 days ago</p>
-                            </div>
-                            <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">Delivered</span>
-                        </div>
-                        <div className="p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                            <div className="size-10 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center shrink-0">
-                                <span className="material-symbols-outlined">build</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-bold text-sm dark:text-white truncate">Maintenance Request #REQ-101</p>
-                                <p className="text-xs text-gray-500">1 week ago</p>
-                            </div>
-                            <span className="text-xs font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded">Pending</span>
-                        </div>
+                        {(() => {
+                            // Build activity items from real data
+                            const activities: { id: string; icon: string; iconBg: string; iconColor: string; title: string; date: string; status: string; statusStyle: string }[] = [];
+
+                            // Add service requests
+                            requests.forEach(req => {
+                                const iconMap: Record<string, { icon: string; bg: string; color: string }> = {
+                                    'Maintenance Request': { icon: 'build', bg: 'bg-orange-100 dark:bg-orange-900/30', color: 'text-orange-600' },
+                                    'Package Request': { icon: 'shopping_bag', bg: 'bg-blue-100 dark:bg-blue-900/30', color: 'text-blue-600' },
+                                    'Site Survey Request': { icon: 'home_work', bg: 'bg-green-100 dark:bg-green-900/30', color: 'text-green-600' },
+                                    'System Upgrade Request': { icon: 'upgrade', bg: 'bg-purple-100 dark:bg-purple-900/30', color: 'text-purple-600' },
+                                    'Consultation Request': { icon: 'support_agent', bg: 'bg-cyan-100 dark:bg-cyan-900/30', color: 'text-cyan-600' },
+                                };
+                                const iconInfo = iconMap[req.type] || { icon: 'assignment', bg: 'bg-gray-100 dark:bg-gray-700', color: 'text-gray-600' };
+
+                                const statusStyles: Record<string, string> = {
+                                    'New': 'bg-blue-100 text-blue-700',
+                                    'In-progress': 'bg-amber-100 text-amber-700',
+                                    'Completed': 'bg-green-100 text-green-700',
+                                    'Pending': 'bg-amber-100 text-amber-700',
+                                    'Approved': 'bg-green-100 text-green-700',
+                                    'In Progress': 'bg-amber-100 text-amber-700',
+                                    'Scheduled': 'bg-blue-100 text-blue-700',
+                                };
+
+                                activities.push({
+                                    id: req.id,
+                                    icon: iconInfo.icon,
+                                    iconBg: iconInfo.bg,
+                                    iconColor: iconInfo.color,
+                                    title: `${req.type} — ${req.title}`,
+                                    date: req.date,
+                                    status: req.status,
+                                    statusStyle: statusStyles[req.status] || 'bg-gray-100 text-gray-600',
+                                });
+                            });
+
+                            // Show latest 5
+                            const recent = activities.slice(0, 5);
+
+                            if (recent.length === 0) {
+                                return (
+                                    <div className="p-8 text-center">
+                                        <span className="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2 block">history</span>
+                                        <p className="text-sm text-gray-400 dark:text-gray-500">No recent activity yet. Book a service or place an order to get started!</p>
+                                    </div>
+                                );
+                            }
+
+                            return recent.map(item => (
+                                <div key={item.id} className="p-4 flex items-center gap-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                    <div className={`size-10 rounded-full ${item.iconBg} ${item.iconColor} flex items-center justify-center shrink-0`}>
+                                        <span className="material-symbols-outlined">{item.icon}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-sm dark:text-white truncate">{item.title}</p>
+                                        <p className="text-xs text-gray-500">{item.date}</p>
+                                    </div>
+                                    <span className={`text-xs font-bold px-2 py-1 rounded ${item.statusStyle}`}>{item.status}</span>
+                                </div>
+                            ));
+                        })()}
                     </div>
                 </div>
             </section>

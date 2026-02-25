@@ -83,7 +83,11 @@ serve(async (req: Request) => {
       supabaseAdmin.from("user_systems").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       supabaseAdmin.from("service_bookings").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       supabaseAdmin.from("greenlife_hub").select("*").eq("type", "request").eq("user_id", userId).order("created_at", { ascending: false }),
-      supabaseAdmin.from("orders").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+      supabaseAdmin
+        .from("orders")
+        .select("id, amount, currency, kind, status, tx_ref, item_snapshot, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false }),
       supabaseAdmin.from("payments").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
     ]);
 

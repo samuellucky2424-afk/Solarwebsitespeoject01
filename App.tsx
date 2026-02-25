@@ -29,9 +29,24 @@ const CheckoutPage = lazy(() => import('./pages/UserPages/CheckoutPage'));
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+
+  // Global suppressor for transient Supabase/AbortError race conditions
+  useEffect(() => {
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      const err = event.reason;
+      const isAbort = err?.name === 'AbortError' || err?.message?.includes('AbortError') || err?.message?.includes('signal is aborted');
+      if (isAbort) {
+        event.preventDefault(); // Swallow it
+      }
+    };
+    window.addEventListener('unhandledrejection', handleRejection);
+    return () => window.removeEventListener('unhandledrejection', handleRejection);
+  }, []);
+
   return null;
 };
 
@@ -60,11 +75,11 @@ const PageLoader = () => (
 
 const App: React.FC = () => {
   return (
-    <AdminProvider>
-      <GalleryProvider>
-        <CartProvider>
-          <HashRouter>
-            <AuthProvider>
+    <HashRouter>
+      <AuthProvider>
+        <AdminProvider>
+          <GalleryProvider>
+            <CartProvider>
               <ScrollToTop />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
@@ -98,11 +113,11 @@ const App: React.FC = () => {
               </Suspense>
               <CartDrawer />
               <FloatingCartButton />
-            </AuthProvider>
-          </HashRouter>
-        </CartProvider>
-      </GalleryProvider>
-    </AdminProvider>
+            </CartProvider>
+          </GalleryProvider>
+        </AdminProvider>
+      </AuthProvider>
+    </HashRouter>
   );
 };
 

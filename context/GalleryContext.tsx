@@ -8,7 +8,7 @@ export type { GalleryImage };
 interface GalleryContextType {
   images: GalleryImage[];
   addImage: (image: Omit<GalleryImage, 'id'>) => Promise<boolean>;
-  removeImage: (id: string) => void;
+  removeImage: (id: string) => Promise<boolean>;
 }
 
 const GalleryContext = createContext<GalleryContextType | undefined>(undefined);
