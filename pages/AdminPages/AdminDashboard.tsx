@@ -49,30 +49,30 @@ const AdminDashboard: React.FC = () => {
          {/* Main Content */}
          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             {/* Header */}
-            <header className="h-16 flex items-center justify-between border-b border-[#e7f3e8] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] px-8 shrink-0 relative z-20">
+            <header className="h-14 md:h-16 flex items-center justify-between border-b border-[#e7f3e8] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] px-4 md:px-6 lg:px-8 shrink-0 relative z-20">
                <div className="flex items-center gap-2">
                   <button
                      type="button"
                      onClick={() => setMobileNavOpen(true)}
-                     className="md:hidden p-2 -ml-2 rounded-lg hover:bg-background-light/80 dark:hover:bg-black/10 transition-colors"
+                     className="md:hidden p-1.5 md:p-2 -ml-1.5 md:-ml-2 rounded-lg hover:bg-background-light/80 dark:hover:bg-black/10 transition-colors"
                      aria-label="Open navigation"
                   >
-                     <span className="material-symbols-outlined">menu</span>
+                     <span className="material-symbols-outlined text-[20px] md:text-[24px]">menu</span>
                   </button>
-                  <h2 className="text-xl font-bold capitalize">{activeView}</h2>
+                  <h2 className="text-lg md:text-xl font-bold capitalize">{activeView}</h2>
                </div>
-               <div className="flex items-center gap-4">
+               <div className="flex items-center gap-3 md:gap-4">
                   <div className="flex flex-col text-right">
-                     <span className="text-sm font-bold leading-none">Alex Rivera</span>
-                     <span className="text-xs text-[#4c9a52]">Admin</span>
+                     <span className="text-xs md:text-sm font-bold leading-none">Alex Rivera</span>
+                     <span className="text-[10px] md:text-xs text-[#4c9a52]">Admin</span>
                   </div>
-                  <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+                  <div className="size-7 md:size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs md:text-sm">
                      AR
                   </div>
                </div>
             </header>
 
-            <main className="flex-1 overflow-y-auto p-8 scroll-smooth">
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
                {activeView === 'overview' && <AdminOverview />}
                {activeView === 'users' && <UserManagement />}
                {activeView === 'products' && <ProductManagement />}

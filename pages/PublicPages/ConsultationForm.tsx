@@ -126,19 +126,19 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
                         </div>
                       </div>
 
-                      <div className="space-y-6">
-                        <div className="flex flex-col gap-2">
-                          <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal">Property Address</label>
+                      <div className="space-y-4 md:space-y-6">
+                        <div className="flex flex-col gap-1.5 md:gap-2">
+                          <label className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-semibold leading-normal">Property Address</label>
                           <div className="relative">
-                            <span className="material-symbols-outlined absolute left-4 top-4 text-[#4c9a52]">location_on</span>
-                            <input className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 pl-12 pr-4 text-[#0d1b0f] dark:text-white placeholder:text-[#4c9a52]/60 focus:ring-primary focus:border-primary transition-all" placeholder="Enter your street address, city, and zip code" type="text" />
+                            <span className="material-symbols-outlined absolute left-3 md:left-4 top-3 md:top-4 text-[#4c9a52] text-xl">location_on</span>
+                            <input className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 pl-10 md:pl-12 pr-4 text-sm md:text-base text-[#0d1b0f] dark:text-white placeholder:text-[#4c9a52]/60 focus:ring-primary focus:border-primary transition-all" placeholder="Enter your street address, city, and zip code" type="text" />
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="flex flex-col gap-2">
-                            <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal">Roof Type</label>
-                            <select className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none" defaultValue="">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            <label className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-semibold leading-normal">Roof Type</label>
+                            <select className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none" defaultValue="">
                               <option disabled value="">Select roof type</option>
                               <option value="tile">Asphalt Shingle / Tile</option>
                               <option value="metal">Metal</option>
@@ -147,13 +147,13 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
                             </select>
                           </div>
 
-                          <div className="flex flex-col gap-2">
-                            <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal">Primary Orientation</label>
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            <label className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-semibold leading-normal">Primary Orientation</label>
                             <div className="grid grid-cols-2 gap-2">
                               {['North', 'South', 'East', 'West'].map(dir => (
                                 <label key={dir} className="relative cursor-pointer">
                                   <input className="peer sr-only" name="orientation" type="radio" value={dir.toLowerCase()} />
-                                  <div className="h-14 border border-[#cfe7d1] dark:border-[#1a351c] rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] flex items-center justify-center text-sm font-medium peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary transition-all hover:bg-primary/5 dark:hover:bg-white/5">{dir}</div>
+                                  <div className="h-11 md:h-14 border border-[#cfe7d1] dark:border-[#1a351c] rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] flex items-center justify-center text-xs md:text-sm font-medium peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary transition-all hover:bg-primary/5 dark:hover:bg-white/5">{dir}</div>
                                 </label>
                               ))}
                             </div>
@@ -172,32 +172,32 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
                         <h3 className="text-[#0d1b0f] dark:text-white tracking-tight text-2xl font-bold leading-tight">Energy Analysis</h3>
                       </div>
 
-                      <div className="space-y-6">
-                        <div className="flex flex-col gap-2">
-                          <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal flex justify-between">
+                      <div className="space-y-4 md:space-y-6">
+                        <div className="flex flex-col gap-1.5 md:gap-2">
+                          <label className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-semibold leading-normal flex justify-between">
                             <span>Average Monthly Electric Bill</span>
                             <span className="text-primary font-bold">₦250</span>
                           </label>
                           <input type="range" min="50" max="1000" defaultValue="250" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary" />
-                          <div className="flex justify-between text-xs text-gray-500 font-medium">
+                          <div className="flex justify-between text-[10px] md:text-xs text-gray-500 font-medium">
                             <span>₦50</span>
                             <span>₦1000+</span>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="flex flex-col gap-2">
-                            <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal">Utility Provider</label>
-                            <select className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            <label className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-semibold leading-normal">Utility Provider</label>
+                            <select className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none">
                               <option>PG&E</option>
                               <option>SCE</option>
                               <option>SDGE</option>
                               <option>Other / Municipal</option>
                             </select>
                           </div>
-                          <div className="flex flex-col gap-2">
-                            <label className="text-[#0d1b0f] dark:text-white text-base font-semibold leading-normal">Home Size (Sq Ft)</label>
-                            <input className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all" placeholder="e.g. 2500" type="number" />
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            <label className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-semibold leading-normal">Home Size (Sq Ft)</label>
+                            <input className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all" placeholder="e.g. 2500" type="number" />
                           </div>
                         </div>
 
@@ -231,29 +231,29 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
                         <h3 className="text-[#0d1b0f] dark:text-white tracking-tight text-2xl font-bold leading-tight">Final Details</h3>
                       </div>
 
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-6">
-                          <div className="flex flex-col gap-2">
-                            <label className="font-bold">First Name</label>
-                            <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 focus:ring-primary focus:border-primary" placeholder="John" type="text" />
+                      <div className="space-y-4 md:space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            <label className="font-bold text-sm md:text-base">First Name</label>
+                            <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary" placeholder="John" type="text" />
                           </div>
-                          <div className="flex flex-col gap-2">
-                            <label className="font-bold">Last Name</label>
-                            <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 focus:ring-primary focus:border-primary" placeholder="Doe" type="text" />
+                          <div className="flex flex-col gap-1.5 md:gap-2">
+                            <label className="font-bold text-sm md:text-base">Last Name</label>
+                            <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary" placeholder="Doe" type="text" />
                           </div>
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="font-bold">Email Address</label>
-                          <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 focus:ring-primary focus:border-primary" placeholder="john@example.com" type="email" />
+                        <div className="flex flex-col gap-1.5 md:gap-2">
+                          <label className="font-bold text-sm md:text-base">Email Address</label>
+                          <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary" placeholder="john@example.com" type="email" />
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                          <label className="font-bold">Phone Number</label>
-                          <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-14 px-4 focus:ring-primary focus:border-primary" placeholder="(555) 123-4567" type="tel" />
+                        <div className="flex flex-col gap-1.5 md:gap-2">
+                          <label className="font-bold text-sm md:text-base">Phone Number</label>
+                          <input className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary" placeholder="(555) 123-4567" type="tel" />
                         </div>
 
-                        <div className="flex items-start gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-lg text-sm text-gray-500">
+                        <div className="flex items-start gap-3 p-3 md:p-4 bg-gray-50 dark:bg-white/5 rounded-lg text-xs md:text-sm text-gray-500">
                           <input type="checkbox" className="mt-1 size-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
                           <p>By clicking submit, I authorize Greenlife Solar to contact me via email or phone. I agree to the <a href="#" className="underline hover:text-primary">Privacy Policy</a>.</p>
                         </div>
@@ -280,25 +280,25 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
 
                 {/* Form Navigation */}
                 {step < 4 && (
-                  <div className="px-8 py-6 bg-[#f8fcf8] dark:bg-[#102212] border-t border-[#e7f3e8] dark:border-[#1a351c] flex items-center justify-between">
+                  <div className="px-6 md:px-8 py-4 md:py-6 bg-[#f8fcf8] dark:bg-[#102212] border-t border-[#e7f3e8] dark:border-[#1a351c] flex items-center justify-between">
                     <button
                       onClick={handleBack}
-                      className={`text-[#4c9a52] font-semibold flex items-center gap-2 hover:text-[#0d1b0f] transition-colors ${step === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`text-[#4c9a52] text-sm md:text-base font-semibold flex items-center gap-1.5 md:gap-2 hover:text-[#0d1b0f] transition-colors ${step === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                       disabled={step === 1}
                     >
-                      <span className="material-symbols-outlined">arrow_back</span> Back
+                      <span className="material-symbols-outlined text-base md:text-xl">arrow_back</span> Back
                     </button>
 
                     {step < 3 ? (
-                      <button onClick={handleNext} className="bg-primary text-forest px-10 py-3 rounded-lg font-bold hover:bg-opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2 active:scale-95">
-                        Next Step <span className="material-symbols-outlined">arrow_forward</span>
+                      <button onClick={handleNext} className="bg-primary text-forest px-6 md:px-10 py-2.5 md:py-3 text-sm md:text-base rounded-lg font-bold hover:bg-opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center gap-1.5 md:gap-2 active:scale-95">
+                        Next Step <span className="material-symbols-outlined text-base md:text-xl">arrow_forward</span>
                       </button>
                     ) : (
-                      <button onClick={handleSubmit} disabled={isSubmitting} className="bg-forest text-white px-10 py-3 rounded-lg font-bold hover:bg-opacity-90 shadow-lg transition-all flex items-center gap-2 active:scale-95">
+                      <button onClick={handleSubmit} disabled={isSubmitting} className="bg-forest text-white px-6 md:px-10 py-2.5 md:py-3 text-sm md:text-base rounded-lg font-bold hover:bg-opacity-90 shadow-lg transition-all flex items-center gap-1.5 md:gap-2 active:scale-95">
                         {isSubmitting ? (
-                          <span className="animate-spin material-symbols-outlined">progress_activity</span>
+                          <span className="animate-spin material-symbols-outlined text-base md:text-xl">progress_activity</span>
                         ) : (
-                          <>Submit Request <span className="material-symbols-outlined">send</span></>
+                          <>Submit Request <span className="material-symbols-outlined text-base md:text-xl">send</span></>
                         )}
                       </button>
                     )}

@@ -151,26 +151,26 @@ const MySystems: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in">
+        <div className="space-y-4 md:space-y-6 animate-in fade-in">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold dark:text-white">My Systems</h2>
+                <h2 className="text-xl md:text-2xl font-bold dark:text-white">My Systems</h2>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="bg-primary text-forest font-bold px-4 py-2 rounded-lg hover:brightness-105 transition-all flex items-center gap-1.5 text-sm"
+                    className="bg-primary text-forest font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:brightness-105 transition-all flex items-center gap-1.5 text-xs md:text-sm"
                 >
-                    <span className="material-symbols-outlined text-lg">{showAddForm ? 'close' : 'add_circle'}</span>
+                    <span className="material-symbols-outlined text-base md:text-lg">{showAddForm ? 'close' : 'add_circle'}</span>
                     {showAddForm ? 'Cancel' : 'Add Existing System'}
                 </button>
             </div>
 
             {/* Add Existing System Form */}
             {showAddForm && (
-                <div className="bg-white dark:bg-[#152a17] p-6 rounded-2xl border border-primary/20 dark:border-primary/10 shadow-sm animate-in fade-in slide-in-from-top-2">
-                    <h3 className="font-bold text-lg text-forest dark:text-white mb-1">Add Existing System</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">Register a solar system you already have installed.</p>
+                <div className="bg-white dark:bg-[#152a17] p-4 md:p-6 rounded-2xl border border-primary/20 dark:border-primary/10 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <h3 className="font-bold text-base md:text-lg text-forest dark:text-white mb-1">Add Existing System</h3>
+                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4 md:mb-5">Register a solar system you already have installed.</p>
 
-                    <form onSubmit={handleAddSystem} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <form onSubmit={handleAddSystem} className="space-y-3 md:space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold uppercase text-gray-500">System Name</label>
                                 <input
@@ -231,19 +231,19 @@ const MySystems: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-2">
+                        <div className="flex justify-end gap-2 md:gap-3 pt-2">
                             <button
                                 type="button" onClick={() => setShowAddForm(false)}
-                                className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                                className="px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-bold text-xs md:text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className={`bg-primary text-forest px-6 py-2.5 rounded-xl font-bold text-sm hover:brightness-105 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`bg-primary text-forest px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-bold text-xs md:text-sm hover:brightness-105 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
-                                <span className="material-symbols-outlined text-lg">add</span>
+                                <span className="material-symbols-outlined text-base md:text-lg">add</span>
                                 {saving ? 'Saving...' : 'Add System'}
                             </button>
                         </div>
@@ -265,46 +265,46 @@ const MySystems: React.FC = () => {
                     </button>
                 </div>
             ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-3 md:gap-4">
                     {dbSystems.map((system, index) => (
-                        <div key={system.id} className="bg-white dark:bg-white/5 p-6 rounded-xl border border-gray-100 dark:border-white/10 shadow-sm relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                                <span className="material-symbols-outlined text-9xl">solar_power</span>
+                        <div key={system.id} className="bg-white dark:bg-white/5 p-4 md:p-6 rounded-xl border border-gray-100 dark:border-white/10 shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-4 md:p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <span className="material-symbols-outlined text-7xl md:text-9xl">solar_power</span>
                             </div>
 
-                            <div className="flex justify-between items-start mb-6 relative z-10">
+                            <div className="flex justify-between items-start mb-4 md:mb-6 relative z-10">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-xl font-bold text-forest dark:text-white">{system.name}</h3>
+                                        <h3 className="text-lg md:text-xl font-bold text-forest dark:text-white">{system.name}</h3>
                                         {index === 0 && (
-                                            <span className="text-[10px] font-bold uppercase bg-primary/10 text-primary px-2 py-0.5 rounded-full">Primary</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold uppercase bg-primary/10 text-primary px-1.5 md:px-2 py-0.5 rounded-full">Primary</span>
                                         )}
                                     </div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-                                        <span className="material-symbols-outlined text-sm">location_on</span>
+                                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5 md:mt-1">
+                                        <span className="material-symbols-outlined text-xs md:text-sm">location_on</span>
                                         {system.address || 'No address provided'}
                                     </p>
                                 </div>
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadge(system.status)}`}>
+                                <span className={`px-2 py-1 md:px-3 md:py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider ${getStatusBadge(system.status)}`}>
                                     {system.status}
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm relative z-10">
-                                <div className="bg-background-light dark:bg-background-dark p-3 rounded-lg">
-                                    <p className="text-[#4c9a66] text-xs uppercase font-bold mb-1">System Size</p>
-                                    <p className="font-bold text-lg">{system.systemSize}</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-xs md:text-sm relative z-10">
+                                <div className="bg-background-light dark:bg-background-dark p-2 md:p-3 rounded-lg">
+                                    <p className="text-[#4c9a66] text-[10px] md:text-xs uppercase font-bold mb-0.5 md:mb-1">System Size</p>
+                                    <p className="font-bold text-base md:text-lg">{system.systemSize}</p>
                                 </div>
-                                <div className="bg-background-light dark:bg-background-dark p-3 rounded-lg">
-                                    <p className="text-[#4c9a66] text-xs uppercase font-bold mb-1">Inverter</p>
+                                <div className="bg-background-light dark:bg-background-dark p-2 md:p-3 rounded-lg">
+                                    <p className="text-[#4c9a66] text-[10px] md:text-xs uppercase font-bold mb-0.5 md:mb-1">Inverter</p>
                                     <p className="font-semibold">{system.inverterType}</p>
                                 </div>
-                                <div className="bg-background-light dark:bg-background-dark p-3 rounded-lg">
-                                    <p className="text-[#4c9a66] text-xs uppercase font-bold mb-1">Battery Bank</p>
+                                <div className="bg-background-light dark:bg-background-dark p-2 md:p-3 rounded-lg">
+                                    <p className="text-[#4c9a66] text-[10px] md:text-xs uppercase font-bold mb-0.5 md:mb-1">Battery Bank</p>
                                     <p className="font-semibold">{system.batteryType}</p>
                                 </div>
-                                <div className="bg-background-light dark:bg-background-dark p-3 rounded-lg">
-                                    <p className="text-[#4c9a66] text-xs uppercase font-bold mb-1">Installed</p>
+                                <div className="bg-background-light dark:bg-background-dark p-2 md:p-3 rounded-lg">
+                                    <p className="text-[#4c9a66] text-[10px] md:text-xs uppercase font-bold mb-0.5 md:mb-1">Installed</p>
                                     <p className="font-semibold">{system.installDate || 'N/A'}</p>
                                 </div>
                             </div>

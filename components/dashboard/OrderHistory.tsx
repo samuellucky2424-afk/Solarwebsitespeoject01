@@ -55,31 +55,33 @@ const OrderHistory: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in">
-            <h2 className="text-2xl font-bold">Order History</h2>
+        <div className="space-y-4 md:space-y-6 animate-in fade-in">
+            <h2 className="text-xl md:text-2xl font-bold">Order History</h2>
             <div className="bg-white dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-black/20 border-b border-gray-100 dark:border-white/10">
-                        <tr>
-                            <th className="p-4 text-xs font-bold uppercase text-gray-500">Order ID</th>
-                            <th className="p-4 text-xs font-bold uppercase text-gray-500">Product</th>
-                            <th className="p-4 text-xs font-bold uppercase text-gray-500">Date</th>
-                            <th className="p-4 text-xs font-bold uppercase text-gray-500">Status</th>
-                            <th className="p-4 text-xs font-bold uppercase text-gray-500 text-right">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                        {orders.map(order => (
-                            <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                <td className="p-4 font-mono text-xs">{order.id}</td>
-                                <td className="p-4 font-bold">{order.product_name}</td>
-                                <td className="p-4 text-sm text-gray-500">{order.created_at}</td>
-                                <td className={`p-4 text-sm ${getStatusColor(order.status)}`}>{order.status}</td>
-                                <td className="p-4 text-right font-bold">₦{order.amount.toLocaleString()}</td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-[600px]">
+                        <thead className="bg-gray-50 dark:bg-black/20 border-b border-gray-100 dark:border-white/10">
+                            <tr>
+                                <th className="p-3 md:p-4 text-[10px] md:text-xs font-bold uppercase text-gray-500">Order ID</th>
+                                <th className="p-3 md:p-4 text-[10px] md:text-xs font-bold uppercase text-gray-500">Product</th>
+                                <th className="p-3 md:p-4 text-[10px] md:text-xs font-bold uppercase text-gray-500">Date</th>
+                                <th className="p-3 md:p-4 text-[10px] md:text-xs font-bold uppercase text-gray-500">Status</th>
+                                <th className="p-3 md:p-4 text-[10px] md:text-xs font-bold uppercase text-gray-500 text-right">Amount</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                            {orders.map(order => (
+                                <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                    <td className="p-3 md:p-4 font-mono text-[10px] md:text-xs">{order.id}</td>
+                                    <td className="p-3 md:p-4 font-bold text-xs md:text-sm">{order.product_name}</td>
+                                    <td className="p-3 md:p-4 text-xs md:text-sm text-gray-500">{order.created_at}</td>
+                                    <td className={`p-3 md:p-4 text-xs md:text-sm ${getStatusColor(order.status)}`}>{order.status}</td>
+                                    <td className="p-3 md:p-4 text-right font-bold text-xs md:text-sm">₦{order.amount.toLocaleString()}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

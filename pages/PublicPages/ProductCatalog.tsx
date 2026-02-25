@@ -136,9 +136,9 @@ const ProductCatalog: React.FC = () => {
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
 
       {/* Full width container */}
-      <main className="w-full max-w-[1920px] mx-auto px-4 lg:px-12 py-8 flex-1">
+      <main className="w-full max-w-[1920px] mx-auto px-4 lg:px-6 py-6 flex-1">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 mb-8 text-sm">
+        <div className="flex items-center gap-2 mb-6 text-sm">
           <Link to="/" className="text-primary-dark hover:underline">Home</Link>
           <span className="material-symbols-outlined text-xs text-slate-400">chevron_right</span>
           <span className="text-slate-500 dark:text-slate-400">Solar Product Catalog</span>
@@ -155,15 +155,15 @@ const ProductCatalog: React.FC = () => {
           </button>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar Filters */}
-          <aside className={`filter-sidebar ${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-72 shrink-0 space-y-8 animate-in fade-in slide-in-from-top-4 duration-300 lg:animate-none`}>
+          <aside className={`filter-sidebar ${isFilterOpen ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0 space-y-6 animate-in fade-in slide-in-from-top-4 duration-300 lg:animate-none`}>
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-lg flex items-center gap-2 text-forest dark:text-white">
-                <span className="material-symbols-outlined text-primary-dark">filter_list</span>
+              <h2 className="font-bold text-base flex items-center gap-2 text-forest dark:text-white">
+                <span className="material-symbols-outlined text-primary-dark text-lg">filter_list</span>
                 Filters
               </h2>
-              <button onClick={handleReset} className="text-xs text-primary-dark font-bold hover:underline">Reset All</button>
+              <button onClick={handleReset} className="text-[10px] uppercase tracking-wider text-primary-dark font-bold hover:underline">Reset All</button>
             </div>
 
             {/* Search */}
@@ -187,8 +187,8 @@ const ProductCatalog: React.FC = () => {
             )}
 
             {/* Category Section */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Category</h3>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-slate-500">Category</h3>
               <div className="space-y-2">
                 {uniqueCategories.map((cat) => (
                   <label key={cat} className="flex items-center gap-3 cursor-pointer group">
@@ -206,9 +206,9 @@ const ProductCatalog: React.FC = () => {
               </div>
             </div>
             {/* Price Range Slider */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Max Price</h3>
+                <h3 className="font-semibold text-xs uppercase tracking-wider text-slate-500">Max Price</h3>
                 <span className="text-xs font-bold text-primary-dark">₦{priceMax.toLocaleString()}</span>
               </div>
               <div className="relative pt-1 px-2">
@@ -231,8 +231,8 @@ const ProductCatalog: React.FC = () => {
               </div>
             </div>
             {/* Brand Section */}
-            <div className="space-y-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-slate-500">Brand</h3>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-xs uppercase tracking-wider text-slate-500">Brand</h3>
               <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
                 {uniqueBrands.map(brand => (
                   <label key={brand} className="flex items-center gap-3 cursor-pointer">
@@ -254,10 +254,10 @@ const ProductCatalog: React.FC = () => {
           {/* Main Content Area */}
           <div className="flex-1">
             {/* Grid Controls */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-forest dark:text-white">Solar Products</h1>
-                <p className="text-slate-500 text-sm">
+                <h1 className="text-xl font-bold text-forest dark:text-white">Solar Products</h1>
+                <p className="text-slate-500 text-xs">
                   Showing {paginatedProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, sortedProducts.length)} of {sortedProducts.length} products
                 </p>
               </div>
@@ -278,7 +278,7 @@ const ProductCatalog: React.FC = () => {
 
             {/* Product Grid - Responsive Columns */}
             {paginatedProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 lg:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 lg:gap-5">
                 {paginatedProducts.map((product) => (
                   <div key={product.id} className="product-item group bg-white dark:bg-white/5 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 hover:border-primary-dark/50 transition-all hover:shadow-xl flex flex-col">
                     <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
@@ -294,29 +294,29 @@ const ProductCatalog: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    <div className="p-3 md:p-4 flex flex-col flex-1">
-                      <div className="text-primary-dark text-[10px] md:text-xs font-bold uppercase mb-1 truncate">{product.series}</div>
-                      <Link to={`/product/${product.id}`} className="text-xs md:text-sm lg:text-base font-bold mb-2 group-hover:text-primary-dark transition-colors text-forest dark:text-white leading-tight line-clamp-2" title={product.name}>{product.name}</Link>
+                    <div className="p-3 flex flex-col flex-1">
+                      <div className="text-primary-dark text-[9px] md:text-[10px] font-bold uppercase mb-1 truncate">{product.series}</div>
+                      <Link to={`/product/${product.id}`} className="text-[11px] md:text-sm font-bold mb-2 group-hover:text-primary-dark transition-colors text-forest dark:text-white leading-tight line-clamp-2" title={product.name}>{product.name}</Link>
 
-                      <div className="flex gap-2 md:gap-4 mb-2 md:mb-4 mt-auto">
-                        <div className="text-[10px] md:text-[11px] text-slate-500 flex-1 min-w-0">
+                      <div className="flex gap-2 md:gap-3 mb-2 md:mb-3 mt-auto">
+                        <div className="text-[9px] md:text-[10px] text-slate-500 flex-1 min-w-0">
                           <span className="block font-bold text-slate-800 dark:text-slate-200 truncate">{product.eff}</span>
                           <span className="hidden sm:inline">Efficiency</span>
                           <span className="sm:hidden">Eff</span>
                         </div>
-                        <div className="text-[10px] md:text-[11px] text-slate-500 border-l border-slate-200 dark:border-white/10 pl-2 md:pl-4 flex-1 min-w-0">
+                        <div className="text-[9px] md:text-[10px] text-slate-500 border-l border-slate-200 dark:border-white/10 pl-2 md:pl-3 flex-1 min-w-0">
                           <span className="block font-bold text-slate-800 dark:text-slate-200 truncate">{product.spec}</span>
                           Specs
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 md:pt-4 border-t border-slate-50 dark:border-white/5 mt-2 md:mt-4">
-                        <div className="text-sm md:text-xl font-bold text-forest dark:text-white">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-50 dark:border-white/5 mt-2">
+                        <div className="text-sm md:text-lg font-bold text-forest dark:text-white">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-1.5 md:p-2 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"
+                          className="bg-primary-dark text-forest hover:bg-[#0dbb1d] p-1 md:p-1.5 rounded-lg transition-all flex items-center justify-center hover:scale-105 active:scale-95"
                         >
-                          <span className="material-symbols-outlined text-base md:text-xl">add_shopping_cart</span>
+                          <span className="material-symbols-outlined text-sm md:text-base">add_shopping_cart</span>
                         </button>
                       </div>
                     </div>

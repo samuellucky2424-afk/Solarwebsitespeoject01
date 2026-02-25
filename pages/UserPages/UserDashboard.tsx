@@ -27,10 +27,10 @@ const SidebarLink: React.FC<{
 }> = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-left transition-colors ${active ? 'bg-primary text-forest font-semibold shadow-sm' : 'hover:bg-primary/10 text-[#4c9a66] dark:text-gray-300 font-medium'}`}
+    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors ${active ? 'bg-primary text-forest font-semibold shadow-sm' : 'hover:bg-primary/10 text-[#4c9a66] dark:text-gray-300 font-medium'}`}
   >
-    <span className="material-symbols-outlined">{icon}</span>
-    <span>{label}</span>
+    <span className="material-symbols-outlined text-lg">{icon}</span>
+    <span className="text-sm">{label}</span>
   </button>
 );
 
@@ -324,15 +324,15 @@ const UserDashboard: React.FC = () => {
 
       <div className="flex min-h-screen">
         {/* Sidebar */}
-        <aside className="w-72 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-screen sticky top-0 hidden lg:flex shrink-0">
-          <div className="p-6 flex flex-col h-full">
-            <div className="flex items-center gap-3 mb-10 px-2">
-              <div className="size-10 flex items-center justify-center">
+        <aside className="w-64 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-screen sticky top-0 hidden lg:flex shrink-0">
+          <div className="p-4 flex flex-col h-full">
+            <div className="flex items-center gap-2.5 mb-8 px-2">
+              <div className="size-8 flex items-center justify-center">
                 <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <div>
-                <h1 className="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight">Greenlife Solar</h1>
-                <p className="text-[#4c9a66] text-xs font-medium">Customer App</p>
+                <h1 className="text-[#0d1b12] dark:text-white text-base font-bold leading-tight">Greenlife Solar</h1>
+                <p className="text-[#4c9a66] text-[10px] font-medium">Customer App</p>
               </div>
             </div>
 
@@ -401,15 +401,15 @@ const UserDashboard: React.FC = () => {
               />
             </nav>
 
-            <div className="mt-auto pt-6 border-t border-[#e7f3eb] dark:border-white/10">
-              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 py-3 rounded-lg text-sm font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors mb-6">
-                <span className="material-symbols-outlined text-lg">logout</span> Log Out
+            <div className="mt-auto pt-4 border-t border-[#e7f3eb] dark:border-white/10">
+              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 py-2.5 rounded-md text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors mb-4">
+                <span className="material-symbols-outlined text-base">logout</span> Log Out
               </button>
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-full bg-cover border border-gray-200 dark:border-white/10" style={{ backgroundImage: `url('${activeUser.avatar}')` }}></div>
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-full bg-cover border border-gray-200 dark:border-white/10" style={{ backgroundImage: `url('${activeUser.avatar}')` }}></div>
                 <div>
-                  <p className="text-sm font-bold dark:text-white line-clamp-1">{activeUser.fullName}</p>
-                  <p className="text-xs text-[#4c9a66]">{activeUser.plan}</p>
+                  <p className="text-xs font-bold dark:text-white line-clamp-1">{activeUser.fullName}</p>
+                  <p className="text-[10px] text-[#4c9a66]">{activeUser.plan}</p>
                 </div>
               </div>
             </div>
@@ -419,8 +419,8 @@ const UserDashboard: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
           {/* Header */}
-          <header className="h-20 bg-white dark:bg-[#1a2e21] border-b border-[#e7f3eb] dark:border-white/10 px-8 flex items-center justify-between sticky top-0 z-30">
-            <h2 className="text-xl font-bold dark:text-white capitalize hidden md:block">
+          <header className="h-16 bg-white dark:bg-[#1a2e21] border-b border-[#e7f3eb] dark:border-white/10 px-6 flex items-center justify-between sticky top-0 z-30">
+            <h2 className="text-lg font-bold dark:text-white capitalize hidden md:block">
               {currentView.replace('-', ' ')}
             </h2>
 
@@ -457,9 +457,9 @@ const UserDashboard: React.FC = () => {
                   )}
                 </button>
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a2e21] rounded-xl shadow-2xl border border-gray-100 dark:border-white/10 overflow-hidden z-50 animate-in slide-in-from-top-2">
-                    <div className="p-4 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5">
-                      <h3 className="font-bold text-sm dark:text-white">Notifications</h3>
+                  <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#1a2e21] rounded-xl shadow-2xl border border-gray-100 dark:border-white/10 overflow-hidden z-50 animate-in slide-in-from-top-2">
+                    <div className="p-3 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5">
+                      <h3 className="font-bold text-xs dark:text-white">Notifications</h3>
                       {unreadCount > 0 && <span className="bg-primary text-forest text-[10px] px-2 py-0.5 rounded-full font-bold">{unreadCount} New</span>}
                     </div>
                     <div className="max-h-80 overflow-y-auto">
@@ -495,7 +495,7 @@ const UserDashboard: React.FC = () => {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
             {currentView === 'overview' && (
               <DashboardOverview
                 handleBookService={handleBookService}

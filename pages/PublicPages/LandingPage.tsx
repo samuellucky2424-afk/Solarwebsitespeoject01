@@ -176,29 +176,29 @@ const LandingPage: React.FC = () => {
       <PublicHeader />
       <main>
         {/* Hero Section */}
-        <section className="relative w-full px-4 lg:px-8 py-6 max-w-[1920px] mx-auto">
-          <div className="relative overflow-hidden rounded-[2rem] min-h-[70vh] flex items-center shadow-2xl">
+        <section className="relative w-full px-4 lg:px-6 py-4 max-w-[1920px] mx-auto">
+          <div className="relative overflow-hidden rounded-[2rem] min-h-[60vh] flex items-center shadow-2xl">
             <div className="absolute inset-0 z-0">
               <div className="absolute inset-0 bg-gradient-to-r from-forest/90 via-forest/40 to-transparent z-10"></div>
               {/* Dynamic Hero Image */}
               <div className="w-full h-full bg-cover bg-center transition-all duration-1000"
                 style={{ backgroundImage: `url('${heroImages[currentSlide]?.url || heroImages[0].url}')` }}></div>
             </div>
-            <div className="relative z-20 px-8 md:px-16 max-w-3xl flex flex-col gap-6">
-              <div className="hero-badge inline-flex w-fit items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold tracking-wider uppercase backdrop-blur-sm">
+            <div className="relative z-20 px-8 md:px-12 max-w-3xl flex flex-col gap-4">
+              <div className="hero-badge inline-flex w-fit items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-[10px] md:text-xs font-bold tracking-wider uppercase backdrop-blur-sm">
                 <span className="material-symbols-outlined text-sm">verified</span> Eco-Certified Excellence
               </div>
-              <h1 className="hero-title text-white text-5xl md:text-8xl font-bold leading-[1.1] tracking-tight">
+              <h1 className="hero-title text-white text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight">
                 Powering Your Future with <span className="text-primary">Clean Energy</span>
               </h1>
-              <p className="hero-desc text-white/80 text-lg md:text-2xl font-normal leading-relaxed max-w-2xl">
+              <p className="hero-desc text-white/80 text-base md:text-xl font-normal leading-relaxed max-w-2xl">
                 {heroImages[currentSlide]?.description || "Sustainable solar solutions for modern homes and businesses. Save money while saving the planet."}
               </p>
-              <div className="hero-actions flex flex-wrap gap-4 pt-4">
-                <button onClick={() => navigate('/consultation')} className="bg-primary hover:bg-primary/90 text-forest px-10 py-5 rounded-xl text-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
-                  Get a Free Quote <span className="material-symbols-outlined">arrow_forward</span>
+              <div className="hero-actions flex flex-wrap gap-4 pt-2">
+                <button onClick={() => navigate('/consultation')} className="bg-primary hover:bg-primary/90 text-forest px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+                  Get a Free Quote <span className="material-symbols-outlined text-xl">arrow_forward</span>
                 </button>
-                <button onClick={() => navigate('/gallery')} className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-10 py-5 rounded-xl text-xl font-bold transition-all hover:scale-105 active:scale-95">
+                <button onClick={() => navigate('/gallery')} className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95">
                   View Our Work
                 </button>
               </div>
@@ -232,8 +232,8 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Stats Bar */}
-        <section className="stats-section max-w-[1600px] mx-auto px-6 lg:px-12 -mt-16 relative z-30 mb-20">
-          <div className="bg-white dark:bg-forest border border-forest/10 dark:border-white/10 rounded-2xl p-8 grid grid-cols-2 md:grid-cols-4 gap-8 shadow-xl shadow-forest/5 backdrop-blur-lg">
+        <section className="stats-section max-w-[1600px] mx-auto px-6 lg:px-8 -mt-12 relative z-30 mb-16">
+          <div className="bg-white dark:bg-forest border border-forest/10 dark:border-white/10 rounded-2xl p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 shadow-xl shadow-forest/5 backdrop-blur-lg">
             {[
               { label: "Installations", value: "12k+" },
               { label: "Energy Produced", value: "15MW" },
@@ -241,15 +241,15 @@ const LandingPage: React.FC = () => {
               { label: "Saved by Clients", value: "$40M" }
             ].map((stat, idx) => (
               <div key={idx} className="stats-item text-center">
-                <p className="text-primary text-3xl font-bold">{stat.value}</p>
-                <p className="text-forest/60 dark:text-white/60 text-sm font-medium">{stat.label}</p>
+                <p className="text-primary text-2xl md:text-3xl font-bold">{stat.value}</p>
+                <p className="text-forest/60 dark:text-white/60 text-xs md:text-sm font-medium">{stat.label}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Services Section */}
-        <section className="services-section max-w-[1600px] mx-auto px-6 lg:px-12 py-10" id="services">
+        <section className="services-section max-w-[1600px] mx-auto px-6 lg:px-8 py-8" id="services">
           {/* ... (Keeping Services Section Static as it describes core business) ... */}
           {/* ... (Previous code for services cards) ... */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -259,14 +259,14 @@ const LandingPage: React.FC = () => {
               { icon: "build", title: "Maintenance", text: "Proactive monitoring and maintenance.", bg: "bg-primary/10", textCol: "text-primary", onClick: handleMaintenanceClick },
               { icon: "package_2", title: "Solar Packages", text: "Curated energy bundles for homes and businesses.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow", onClick: () => navigate('/packages') }
             ].map((service, idx) => (
-              <div key={idx} onClick={service.onClick} className="service-card group relative p-10 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300">
+              <div key={idx} onClick={service.onClick} className="service-card group relative p-6 md:p-8 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300">
                 {/* ... (Card decoration logic) ... */}
                 <div className="relative z-10">
-                  <div className={`size-16 rounded-2xl ${service.bg} ${service.textCol} flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300`}>
-                    <span className="material-symbols-outlined text-4xl">{service.icon}</span>
+                  <div className={`size-12 md:size-14 rounded-xl md:rounded-2xl ${service.bg} ${service.textCol} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <span className="material-symbols-outlined text-3xl">{service.icon}</span>
                   </div>
-                  <h4 className="text-2xl font-bold mb-4">{service.title}</h4>
-                  <p className="text-forest/60 dark:text-white/60 leading-relaxed text-lg">{service.text}</p>
+                  <h4 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">{service.title}</h4>
+                  <p className="text-forest/60 dark:text-white/60 leading-relaxed text-sm md:text-base">{service.text}</p>
                 </div>
               </div>
             ))}
@@ -274,11 +274,11 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Enhanced Gallery Section (Dynamic) */}
-        <section className="gallery-section w-full py-20 bg-gradient-to-b from-transparent to-forest/5 dark:to-white/5 overflow-hidden" id="gallery">
-          <div className="max-w-[1600px] mx-auto px-6 lg:px-12 mb-12 flex flex-col md:flex-row items-end justify-between gap-6">
+        <section className="gallery-section w-full py-16 bg-gradient-to-b from-transparent to-forest/5 dark:to-white/5 overflow-hidden" id="gallery">
+          <div className="max-w-[1600px] mx-auto px-6 lg:px-8 mb-8 flex flex-col md:flex-row items-end justify-between gap-6">
             <div className="max-w-2xl">
-              <h2 className="text-primary font-bold tracking-widest uppercase text-sm mb-4">Our Projects</h2>
-              <h3 className="text-3xl md:text-5xl font-bold text-forest dark:text-white leading-tight">Recent Installations</h3>
+              <h2 className="text-primary font-bold tracking-widest uppercase text-[10px] md:text-xs mb-2 md:mb-3">Our Projects</h2>
+              <h3 className="text-2xl md:text-4xl font-bold text-forest dark:text-white leading-tight">Recent Installations</h3>
             </div>
             <div className="flex items-center gap-4">
               <button onClick={() => handleGalleryNav('prev')} className="size-14 rounded-full border border-forest/10 dark:border-white/10 bg-white dark:bg-[#152a17] hover:bg-primary transition-all"><span className="material-symbols-outlined">arrow_back</span></button>
@@ -288,41 +288,41 @@ const LandingPage: React.FC = () => {
 
           <div className="gallery-track-container w-full overflow-hidden">
             {images.length > 0 ? (
-              <div ref={galleryTrackRef} className="flex gap-8 px-6 lg:px-12 w-max">
+              <div ref={galleryTrackRef} className="flex gap-6 px-6 lg:px-8 w-max">
                 {images.map((img) => (
-                  <div key={img.id} onClick={() => navigate('/gallery')} className="group relative bg-white dark:bg-[#152a17] rounded-3xl overflow-hidden shadow-lg cursor-pointer w-[85vw] md:w-[450px] aspect-[4/3] shrink-0 transform transition-all duration-500 hover:scale-[1.02]">
+                  <div key={img.id} onClick={() => navigate('/gallery')} className="group relative bg-white dark:bg-[#152a17] rounded-3xl overflow-hidden shadow-lg cursor-pointer w-[80vw] md:w-[350px] lg:w-[400px] aspect-[4/3] shrink-0 transform transition-all duration-500 hover:scale-[1.02]">
                     <img src={img.url} alt={img.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-90"></div>
-                    <div className="absolute top-6 right-6 z-10">
-                      <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold uppercase px-3 py-1 rounded-full border border-white/10">{img.category}</span>
+                    <div className="absolute top-4 right-4 z-10">
+                      <span className="bg-white/20 backdrop-blur-md text-white text-[8px] md:text-[10px] font-bold uppercase px-2 py-1 rounded-full border border-white/10">{img.category}</span>
                     </div>
-                    <div className="absolute bottom-0 left-0 w-full p-8 flex flex-col items-start">
-                      <h4 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">{img.title}</h4>
-                      <p className="text-white/70 text-sm line-clamp-2 mb-6 max-w-sm">{img.description}</p>
+                    <div className="absolute bottom-0 left-0 w-full p-6 flex flex-col items-start">
+                      <h4 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight">{img.title}</h4>
+                      <p className="text-white/70 text-xs md:text-sm line-clamp-2 mb-4 max-w-sm">{img.description}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="w-full text-center py-20 text-gray-500">No projects to display yet.</div>
+              <div className="w-full text-center py-12 text-gray-500 text-sm">No projects to display yet.</div>
             )}
           </div>
         </section>
 
         {/* Featured Products (Dynamic) */}
-        <section className="products-section bg-forest dark:bg-black/20 py-24 my-20" id="products">
-          <div className="max-w-[1600px] mx-auto px-6 lg:px-12">
+        <section className="products-section bg-forest dark:bg-black/20 py-16 my-16" id="products">
+          <div className="max-w-[1600px] mx-auto px-6 lg:px-8">
             <SectionHeader sub="Product Showcase" title="Advanced Solar Technology" dark={true} />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {featuredProducts.map((prod) => (
-                <div key={prod.id} className="product-card flex flex-col gap-4 bg-white/5 p-6 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group">
+                <div key={prod.id} className="product-card flex flex-col gap-3 bg-white/5 p-4 md:p-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group">
                   <div className="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden" style={{ backgroundImage: `url('${prod.img}')` }}></div>
                   <div className="flex-1 flex flex-col">
-                    <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1">{prod.category}</p>
-                    <h4 className="text-white text-xl font-bold mb-2 line-clamp-1">{prod.name}</h4>
-                    <p className="text-white/60 mb-4 text-sm line-clamp-2 flex-1">{prod.description || `${prod.brand} ${prod.series} - ${prod.spec}`}</p>
-                    <Link to={`/product/${prod.id}`} className="text-primary font-bold flex items-center gap-2 group-hover:gap-3 transition-all text-sm mt-auto">
-                      Learn More <span className="material-symbols-outlined text-sm">arrow_right_alt</span>
+                    <p className="text-primary text-[10px] font-bold uppercase tracking-widest mb-1">{prod.category}</p>
+                    <h4 className="text-white text-lg font-bold mb-1 line-clamp-1">{prod.name}</h4>
+                    <p className="text-white/60 mb-3 text-xs md:text-sm line-clamp-2 flex-1">{prod.description || `${prod.brand} ${prod.series} - ${prod.spec}`}</p>
+                    <Link to={`/product/${prod.id}`} className="text-primary font-bold flex items-center gap-2 group-hover:gap-3 transition-all text-xs md:text-sm mt-auto">
+                      Learn More <span className="material-symbols-outlined text-[10px] md:text-sm">arrow_right_alt</span>
                     </Link>
                   </div>
                 </div>
@@ -336,12 +336,12 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="cta-section max-w-[1600px] mx-auto px-6 lg:px-12 py-10 mb-20">
+        <section className="cta-section max-w-[1600px] mx-auto px-6 lg:px-8 py-8 mb-16">
           {/* ... (Keeping existing CTA) ... */}
-          <div className="cta-container bg-primary rounded-[3rem] p-12 md:p-24 text-center flex flex-col items-center gap-8 relative overflow-hidden shadow-2xl shadow-primary/20">
+          <div className="cta-container bg-primary rounded-[2.5rem] p-8 md:p-16 text-center flex flex-col items-center gap-6 relative overflow-hidden shadow-2xl shadow-primary/20">
             {/* ... */}
-            <h2 className="text-4xl md:text-7xl font-bold text-forest max-w-4xl leading-tight relative z-10">Ready to switch?</h2>
-            <button onClick={() => navigate('/consultation')} className="bg-forest text-white px-12 py-6 rounded-2xl text-xl font-bold hover:scale-105 transition-transform shadow-2xl">Claim Quote</button>
+            <h2 className="text-3xl md:text-5xl font-bold text-forest max-w-3xl leading-tight relative z-10">Ready to switch?</h2>
+            <button onClick={() => navigate('/consultation')} className="bg-forest text-white px-8 py-4 rounded-xl text-lg font-bold hover:scale-105 transition-transform shadow-2xl">Claim Quote</button>
           </div>
         </section>
       </main>

@@ -10,38 +10,36 @@ const RequestsList: React.FC = () => {
     ];
 
     return (
-        <div className="space-y-6 animate-in fade-in">
+        <div className="space-y-4 md:space-y-6 animate-in fade-in">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">My Requests</h2>
-                <button className="flex items-center gap-2 bg-primary text-forest font-bold px-4 py-2 rounded-lg hover:brightness-105">
-                    <span className="material-symbols-outlined">add</span> New Request
+                <h2 className="text-xl md:text-2xl font-bold">My Requests</h2>
+                <button className="flex items-center gap-1.5 bg-primary text-forest font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:brightness-105 text-xs md:text-sm">
+                    <span className="material-symbols-outlined text-base md:text-lg">add</span> New Request
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {requests.map((req, i) => (
-                    <div key={i} className={`group bg-white dark:bg-[#0d1b0f] rounded-xl border ${req.alert ? 'border-red-100 dark:border-red-900/30' : 'border-[#e7f3e8] dark:border-[#1a331c]'} overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
-                        <div className="flex flex-col md:flex-row">
-                            <div className="flex-1 p-5 flex flex-col justify-between">
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${req.statusStyle}`}>{req.status}</span>
-                                        <span className="text-[10px] text-[#4c9a52] font-medium">{req.date}</span>
-                                    </div>
-                                    <h3 className="text-lg font-bold">{req.id}</h3>
-                                    <p className="text-sm text-[#4c9a52] mt-1 font-medium">{req.title}</p>
-                                    <div className={`mt-4 flex items-center gap-2 text-xs ${req.alert ? 'text-red-600 font-semibold' : 'text-[#4c9a52]'}`}>
-                                        <span className="material-symbols-outlined text-sm">{req.alert ? 'warning' : 'inventory_2'}</span>
-                                        <span>{req.type}</span>
-                                    </div>
+                    <div key={i} className={`group flex flex-col md:flex-row bg-white dark:bg-[#0d1b0f] rounded-xl border ${req.alert ? 'border-red-100 dark:border-red-900/30' : 'border-[#e7f3e8] dark:border-[#1a331c]'} overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+                        <div className="flex-1 p-4 md:p-5 flex flex-col justify-between order-2 md:order-1">
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`px-2 py-0.5 rounded text-[9px] md:text-[10px] font-bold uppercase tracking-widest ${req.statusStyle}`}>{req.status}</span>
+                                    <span className="text-[9px] md:text-[10px] text-[#4c9a52] font-medium">{req.date}</span>
                                 </div>
-                                <button className={`mt-6 flex items-center justify-center gap-2 w-full ${req.alert ? 'bg-red-50 dark:bg-red-900/20 text-red-600' : 'bg-background-light dark:bg-[#1a331c] text-[#0d1b0f] dark:text-white'} hover:brightness-95 rounded-lg py-2 text-sm font-bold transition-all`}>
-                                    <span>{req.alert ? 'Respond Now' : 'View Details'}</span>
-                                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                                </button>
+                                <h3 className="text-base md:text-lg font-bold">{req.id}</h3>
+                                <p className="text-xs md:text-sm text-[#4c9a52] mt-1 font-medium">{req.title}</p>
+                                <div className={`mt-3 md:mt-4 flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs ${req.alert ? 'text-red-600 font-semibold' : 'text-[#4c9a52]'}`}>
+                                    <span className="material-symbols-outlined text-xs md:text-sm">{req.alert ? 'warning' : 'inventory_2'}</span>
+                                    <span>{req.type}</span>
+                                </div>
                             </div>
-                            <div className="w-full md:w-40 h-40 md:h-auto bg-cover bg-center" style={{ backgroundImage: `url('${req.img}')` }}></div>
+                            <button className={`mt-4 md:mt-6 flex items-center justify-center gap-1.5 md:gap-2 w-full ${req.alert ? 'bg-red-50 dark:bg-red-900/20 text-red-600' : 'bg-background-light dark:bg-[#1a331c] text-[#0d1b0f] dark:text-white'} hover:brightness-95 rounded-lg py-1.5 md:py-2 text-xs md:text-sm font-bold transition-all`}>
+                                <span>{req.alert ? 'Respond Now' : 'View Details'}</span>
+                                <span className="material-symbols-outlined text-xs md:text-sm">arrow_forward</span>
+                            </button>
                         </div>
+                        <div className="w-full h-32 md:h-auto md:w-32 lg:w-40 bg-cover bg-center order-1 md:order-2 shrink-0" style={{ backgroundImage: `url('${req.img}')` }}></div>
                     </div>
                 ))}
             </div>
