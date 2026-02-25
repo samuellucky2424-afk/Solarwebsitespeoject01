@@ -51,6 +51,14 @@ const AdminOverview: React.FC = () => {
         }
     };
 
+    // Safely render a value that might be an object (from greenlife_hub metadata)
+    const safeText = (val: unknown): string => {
+        if (val == null) return '—';
+        if (typeof val === 'string') return val || '—';
+        if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+        try { return JSON.stringify(val); } catch { return '—'; }
+    };
+
     return (
         <div className="space-y-6 md:space-y-10 animate-in fade-in">
             {/* Quick Stats */}
@@ -205,19 +213,19 @@ const AdminOverview: React.FC = () => {
                             <div className={`absolute top-0 left-0 w-1 h-full ${req.priority === 'High' ? 'bg-red-500' : 'bg-blue-500'}`}></div>
                             <div className="flex flex-col gap-1 flex-1 min-w-0 pl-1.5 md:pl-2">
                                 <div className="flex justify-between items-start">
-                                    <h3 className="text-base md:text-lg font-bold truncate">{req.title}</h3>
-                                    <span className={`text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded uppercase shrink-0 ${req.priority === 'High' ? 'bg-red-100 dark:bg-red-900/30 text-red-600' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'}`}>{req.type}</span>
+                                    <h3 className="text-base md:text-lg font-bold truncate">{safeText(req.title)}</h3>
+                                    <span className={`text-[9px] md:text-[10px] font-bold px-1.5 md:px-2 py-0.5 rounded uppercase shrink-0 ${req.priority === 'High' ? 'bg-red-100 dark:bg-red-900/30 text-red-600' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600'}`}>{safeText(req.type)}</span>
                                 </div>
-                                <p className="text-xs md:text-sm font-bold text-forest dark:text-white">{req.customer}</p>
+                                <p className="text-xs md:text-sm font-bold text-forest dark:text-white">{safeText(req.customer)}</p>
                                 <div className="text-[10px] md:text-xs text-forest/70 dark:text-gray-400 mt-1 space-y-0.5">
-                                    <p className="font-semibold">{req.address}</p>
+                                    <p className="font-semibold">{safeText(req.address)}</p>
                                     <div className="flex gap-2 md:gap-3">
-                                        <span>{req.phone}</span>
+                                        <span>{safeText(req.phone)}</span>
                                         <span>•</span>
-                                        <span className="truncate">{req.email}</span>
+                                        <span className="truncate">{safeText(req.email)}</span>
                                     </div>
                                 </div>
-                                <p className="text-[#4c9a52] text-[10px] md:text-xs leading-relaxed line-clamp-2 mt-1.5 md:mt-2 italic">"{req.description}"</p>
+                                <p className="text-[#4c9a52] text-[10px] md:text-xs leading-relaxed line-clamp-2 mt-1.5 md:mt-2 italic">"{safeText(req.description)}"</p>
                                 <div className="mt-3 md:mt-4 flex gap-2 md:gap-3">
                                     <button onClick={() => handleApprove(req.id)} className="px-3 md:px-4 py-1.5 bg-blue-600 text-white text-[10px] md:text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors">Approve</button>
                                     <button onClick={() => handleDismiss(req.id)} className="px-3 md:px-4 py-1.5 border border-[#cfe7d1] text-[#4c9a52] text-[10px] md:text-xs font-bold rounded-lg hover:bg-background-light dark:hover:bg-[#1d351f] transition-colors">Dismiss</button>

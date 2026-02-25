@@ -545,7 +545,16 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateRequestStatus = async (id: string, status: ServiceRequest['status']) => {
-    await supabase.from('greenlife_hub').update({ status }).eq('id', id);
+    // Optimistic local update for instant UI feedback
+    setRequests((prev: ServiceRequest[]) =>
+      prev.map((r: ServiceRequest) => (r.id === id ? { ...r, status } : r))
+    );
+    const { error } = await supabase.from('greenlife_hub').update({ status }).eq('id', id);
+    if (error) {
+      console.error('Error updating request status:', error);
+    }
+    // Refresh from DB to stay in sync
+    fetchData();
   };
 
   const deleteRequest = async (id: string) => {
