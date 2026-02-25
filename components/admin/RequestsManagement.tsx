@@ -55,6 +55,14 @@ interface RequestsManagementProps {
   onOpenPackage?: (packageId: string) => void;
 }
 
+// Safely render a value that might be an object (from greenlife_hub metadata)
+const safeText = (val: unknown): string => {
+  if (val == null) return '—';
+  if (typeof val === 'string') return val || '—';
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  try { return JSON.stringify(val); } catch { return '—'; }
+};
+
 const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }) => {
   const { requests, packages, updateRequestStatus, deleteRequest } = useAdmin();
   const [activeTab, setActiveTab] = useState<RequestTab>('All');
@@ -170,16 +178,16 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
                     <tr key={r.id} className="hover:bg-background-light/60 dark:hover:bg-black/10 transition-colors">
                       <td className="px-6 py-4">
                         <div className="min-w-0">
-                          <p className="font-bold truncate">{r.customer || '—'}</p>
+                          <p className="font-bold truncate">{safeText(r.customer)}</p>
                           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-0.5">
-                            <p className="truncate">{r.email || '—'}</p>
-                            <p className="truncate">{r.phone || '—'}</p>
+                            <p className="truncate">{safeText(r.email)}</p>
+                            <p className="truncate">{safeText(r.phone)}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-bold text-sm">{r.title}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1 max-w-[420px]">{r.description || '—'}</p>
+                        <p className="font-bold text-sm">{safeText(r.title)}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-1 max-w-[420px]">{safeText(r.description)}</p>
                       </td>
                       <td className="px-6 py-4">
                         {r.packageId ? (

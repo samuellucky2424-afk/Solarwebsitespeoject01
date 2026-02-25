@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { Product } from '../data/products';
 
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -22,21 +22,45 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const CART_KEY_PREFIX = 'greenlife_cart_';
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const prevUserIdRef = useRef<string | null>(null);
 
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    // Load from local storage if available
-    const savedCart = localStorage.getItem('greenlife_cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  // Build per-user storage key
+  const userId = user?.id || null;
+  const storageKey = userId ? `${CART_KEY_PREFIX}${userId}` : null;
+
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Load cart from localStorage when user changes (login/logout)
   useEffect(() => {
-    localStorage.setItem('greenlife_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (userId && userId !== prevUserIdRef.current) {
+      // User logged in — load their cart
+      try {
+        const saved = localStorage.getItem(`${CART_KEY_PREFIX}${userId}`);
+        setCartItems(saved ? JSON.parse(saved) : []);
+      } catch {
+        setCartItems([]);
+      }
+    } else if (!userId && prevUserIdRef.current) {
+      // User logged out — clear displayed cart (data stays in localStorage for next login)
+      setCartItems([]);
+      setIsCartOpen(false);
+    }
+    prevUserIdRef.current = userId;
+  }, [userId]);
+
+  // Save cart to localStorage whenever it changes (only for logged-in users)
+  useEffect(() => {
+    if (storageKey && userId) {
+      localStorage.setItem(storageKey, JSON.stringify(cartItems));
+    }
+  }, [cartItems, storageKey, userId]);
 
   const addToCart = (product: Product, quantity: number): boolean => {
     if (!isAuthenticated) {
@@ -53,8 +77,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return [...prev, { ...product, quantity }];
     });
-    // Optional: Open cart when adding
-    // setIsCartOpen(true); 
     return true;
   };
 
