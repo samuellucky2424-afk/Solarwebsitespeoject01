@@ -558,12 +558,18 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const deleteRequest = async (id: string) => {
+    // Optimistic local removal for instant UI feedback
+    setRequests((prev: ServiceRequest[]) => prev.filter((r: ServiceRequest) => r.id !== id));
     const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
-    if (!error) {
+    if (error) {
+      console.error('Error deleting request:', error);
+      // Revert by re-fetching from DB
       fetchData();
-      return true;
+      return false;
     }
-    return false;
+    // Refresh to stay in sync
+    fetchData();
+    return true;
   };
 
   const addPackage = async (pkg: Omit<SolarPackage, 'id'>) => {
