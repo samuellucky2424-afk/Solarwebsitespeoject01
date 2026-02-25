@@ -20,7 +20,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
     };
 
     return (
-        <aside className="w-56 md:w-64 border-r border-[#e7f3e8] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] flex flex-col shrink-0 hidden md:flex h-full">
+        <aside className="w-56 md:w-64 border-r border-[#e7f3e8] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] flex flex-col shrink-0 h-full">
             <div className="p-4 md:p-6">
                 <Link to="/" className="flex items-center gap-2 md:gap-3">
                     <div className="size-8 md:size-10 flex items-center justify-center">

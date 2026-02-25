@@ -23,7 +23,7 @@ const AdminDashboard: React.FC = () => {
       <div className="bg-background-light dark:bg-background-dark text-[#0d1b0f] dark:text-white font-display flex h-screen overflow-hidden transition-colors duration-200">
          {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
-         {/* Sidebar */}
+         {/* Sidebar - hidden on mobile, visible on md+ */}
          <div className="hidden md:flex">
             <AdminSidebar activeView={activeView} setActiveView={setActiveView} />
          </div>
