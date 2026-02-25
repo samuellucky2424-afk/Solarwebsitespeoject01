@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
+import TermsAndConditions from '../../components/TermsAndConditions';
 import { supabase } from '../../config/supabaseClient';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
@@ -25,6 +26,8 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState<{ msg: string } | null>(null);
+    const [tcAgreed, setTcAgreed] = useState(false);
+    const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -172,7 +175,10 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                                 totalAmount: totalPrice,
                                 notes: formData.notes,
                                 orderId: order_id,
-                                tx_ref
+                                tx_ref,
+                                tcAgreed: true,
+                                tcAgreedAt: new Date().toISOString(),
+                                paymentConfirmed: true
                             },
                             address: {
                                 street: formData.address,
@@ -298,9 +304,16 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                         <textarea name="notes" rows={3} value={formData.notes} onChange={handleChange} className="w-full p-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Any special instructions..." />
                     </div>
 
+                    {/* Terms & Conditions */}
+                    <TermsAndConditions
+                        onAgreedChange={setTcAgreed}
+                        onPaymentConfirmedChange={setPaymentConfirmed}
+                        showPaymentConfirmation={true}
+                    />
+
                     <button
                         type="submit"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !tcAgreed || !paymentConfirmed}
                         className="w-full bg-primary text-forest h-14 rounded-xl font-bold text-lg hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-4"
                     >
                         {isSubmitting ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : "Place Order"}

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { PublicHeader, PublicFooter } from '../../components/SharedComponents';
+import TermsAndConditions from '../../components/TermsAndConditions';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -10,6 +11,8 @@ interface ConsultationFormProps {
 const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false }) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tcAgreed, setTcAgreed] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleNext = () => {
@@ -257,6 +260,13 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
                           <input type="checkbox" className="mt-1 size-4 rounded border-gray-300 text-primary focus:ring-primary" defaultChecked />
                           <p>By clicking submit, I authorize Greenlife Solar to contact me via email or phone. I agree to the <a href="#" className="underline hover:text-primary">Privacy Policy</a>.</p>
                         </div>
+
+                        {/* Terms & Conditions */}
+                        <TermsAndConditions
+                          onAgreedChange={setTcAgreed}
+                          onPaymentConfirmedChange={setPaymentConfirmed}
+                          showPaymentConfirmation={true}
+                        />
                       </div>
                     </div>
                   </div>
@@ -294,7 +304,7 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
                         Next Step <span className="material-symbols-outlined text-base md:text-xl">arrow_forward</span>
                       </button>
                     ) : (
-                      <button onClick={handleSubmit} disabled={isSubmitting} className="bg-forest text-white px-6 md:px-10 py-2.5 md:py-3 text-sm md:text-base rounded-lg font-bold hover:bg-opacity-90 shadow-lg transition-all flex items-center gap-1.5 md:gap-2 active:scale-95">
+                      <button onClick={handleSubmit} disabled={isSubmitting || !tcAgreed || !paymentConfirmed} className="bg-forest text-white px-6 md:px-10 py-2.5 md:py-3 text-sm md:text-base rounded-lg font-bold hover:bg-opacity-90 shadow-lg transition-all flex items-center gap-1.5 md:gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                         {isSubmitting ? (
                           <span className="animate-spin material-symbols-outlined text-base md:text-xl">progress_activity</span>
                         ) : (

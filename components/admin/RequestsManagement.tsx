@@ -123,6 +123,7 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
             className="px-4 py-2 bg-white dark:bg-[#152a17] border border-[#cfe7d1] dark:border-[#2a3d2c] rounded-lg text-sm font-semibold outline-none hover:bg-background-light dark:hover:bg-black/10"
+            aria-label="Filter by status"
           >
             <option value="All">All statuses</option>
             <option value="New">New</option>
@@ -137,11 +138,10 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
           <button
             key={t}
             onClick={() => setActiveTab(t)}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${
-              activeTab === t
-                ? 'bg-primary text-forest border-primary'
-                : 'bg-white dark:bg-[#152a17] border-[#cfe7d1] dark:border-[#2a3d2c] text-[#4c9a52] hover:bg-background-light dark:hover:bg-black/10'
-            }`}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${activeTab === t
+              ? 'bg-primary text-forest border-primary'
+              : 'bg-white dark:bg-[#152a17] border-[#cfe7d1] dark:border-[#2a3d2c] text-[#4c9a52] hover:bg-background-light dark:hover:bg-black/10'
+              }`}
           >
             {t}
           </button>
@@ -158,6 +158,7 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Package</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Type</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Status</th>
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">T&C / Payment</th>
                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52] text-right">Actions</th>
               </tr>
             </thead>
@@ -208,6 +209,24 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
                           {r._status}
                         </span>
                       </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          {(r as any).metadata?.tcAgreed ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <span className="material-symbols-outlined text-xs">check_circle</span> T&C ✓
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-gray-400">T&C —</span>
+                          )}
+                          {(r as any).metadata?.paymentConfirmed ? (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                              <span className="material-symbols-outlined text-xs">payments</span> Paid ✓
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-gray-400">Paid —</span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="inline-flex items-center gap-2">
                           <select
@@ -239,7 +258,7 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
                 })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
                     No requests match your filters.
                   </td>
                 </tr>
