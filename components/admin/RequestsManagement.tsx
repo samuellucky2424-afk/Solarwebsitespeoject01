@@ -156,7 +156,96 @@ const RequestsManagement: React.FC<RequestsManagementProps> = ({ onOpenPackage }
         ))}
       </div>
 
-      <div className="bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] shadow-sm overflow-hidden">
+      {/* ── Mobile Card Layout (below lg) ── */}
+      <div className="lg:hidden space-y-3">
+        {rows.length > 0 ? (
+          rows.map((r) => {
+            const pkg = r.packageId ? packageById.get(r.packageId) : undefined;
+            return (
+              <div key={r.id} className="bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] shadow-sm p-4 space-y-3">
+                {/* Header: Customer + Status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-sm truncate">{safeText(r.customer)}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate">{safeText(r.email)}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">{safeText(r.phone)}</p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${statusPill(r._status)}`}>
+                    {r._status}
+                  </span>
+                </div>
+
+                {/* Request details */}
+                <div>
+                  <p className="font-bold text-xs">{safeText(r.title)}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">{safeText(r.description)}</p>
+                </div>
+
+                {/* Type + Package + T&C row */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-background-light dark:bg-white/5 text-[#4c9a52] text-[9px] font-black uppercase tracking-wider">
+                    {r._type}
+                  </span>
+                  {r.packageId && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenPackage?.(r.packageId!)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[9px] font-black"
+                      title="Open package"
+                    >
+                      <span className="material-symbols-outlined text-[10px]">link</span>
+                      {pkg?.name || r.packageId}
+                    </button>
+                  )}
+                  {(r as any).metadata?.tcAgreed && (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="material-symbols-outlined text-[10px]">check_circle</span>T&C
+                    </span>
+                  )}
+                  {(r as any).metadata?.paymentConfirmed && (
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="material-symbols-outlined text-[10px]">payments</span>Paid
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-1 border-t border-[#e7f3e8] dark:border-[#2a3d2c]">
+                  <select
+                    value={r._status}
+                    onChange={(e) => {
+                      const next = e.target.value as ReturnType<typeof normalizeStatusLabel>;
+                      updateRequestStatus(r.id, next);
+                    }}
+                    className="flex-1 px-3 py-2 text-xs font-bold rounded-lg border border-[#cfe7d1] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] outline-none"
+                    aria-label="Update request status"
+                  >
+                    <option value="New">New</option>
+                    <option value="In-progress">In-progress</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Delete this request?')) deleteRequest(r.id);
+                    }}
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    title="Delete request"
+                  >
+                    <span className="material-symbols-outlined text-lg">delete</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="py-10 text-center text-gray-500 bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c]">
+            No requests match your filters.
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop Table Layout (lg and up) ── */}
+      <div className="hidden lg:block bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left min-w-[1100px]">
             <thead className="bg-[#e7f3e8] dark:bg-[#1a331c]">
