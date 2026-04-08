@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
+import { PublicHeader, Toast } from '../../components/SharedComponents';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -222,7 +222,6 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEmbedded = fa
         </div>
         {formContent}
       </main>
-      <PublicFooter />
     </div>
   );
 };

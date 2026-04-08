@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
-import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
+import { PublicHeader, Toast } from '../../components/SharedComponents';
 import TermsAndConditions from '../../components/TermsAndConditions';
 import { supabase } from '../../config/supabaseClient';
 import { useAdmin } from '../../context/AdminContext';
@@ -232,13 +232,12 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
             <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-body">
                 <PublicHeader />
                 {EmptyContent}
-                <PublicFooter />
             </div>
         );
     }
 
     const MainContent = (
-        <main className={`flex-1 max-w-7xl mx-auto w-full ${isEmbedded ? '' : 'px-6 py-12'} grid grid-cols-1 lg:grid-cols-2 gap-12`}>
+        <main className={`flex-1 w-full ${isEmbedded ? '' : 'px-6 py-12'} grid grid-cols-1 lg:grid-cols-2 gap-12`}>
             {/* Order Summary */}
             <div className="order-2 lg:order-1">
                 <h2 className="text-2xl font-bold text-forest dark:text-white mb-6">Order Summary</h2>
@@ -337,7 +336,6 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
             <PublicHeader />
             {toast && <Toast message={toast.msg} onClose={() => setToast(null)} />}
             {MainContent}
-            <PublicFooter />
         </div>
     );
 };

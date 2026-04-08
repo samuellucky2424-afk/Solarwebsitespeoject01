@@ -35,6 +35,8 @@ const LandingPage: React.FC = () => {
   // Testimonials Carousel State
   const [testiIndex, setTestiIndex] = useState(0);
   const swipeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [serviceIndex, setServiceIndex] = useState(0);
+  const servicesCarouselRef = useRef<HTMLDivElement>(null);
 
   const handleMaintenanceClick = () => {
     if (isAuthenticated) {
@@ -50,6 +52,13 @@ const LandingPage: React.FC = () => {
     { name: "Marcus Chen", role: "Eco-Architect", quote: "I recommend Greenlife to all my clients. Their engineering precision is unmatched in the solar industry.", rating: 5 },
     { name: "Elena Rodriguez", role: "TechCorp CEO", quote: "Converting our headquarters to solar was seamless. The ROI analysis was spot on.", rating: 5 },
     { name: "David Okonkwo", role: "Small Business Owner", quote: "The best investment for my factory. Consistent power supply has improved our productivity by 40%.", rating: 5 }
+  ];
+
+  const services = [
+    { icon: "solar_power", title: "Expert Installation", text: "Precision residential and commercial solar panel installation.", bg: "bg-primary/10", textCol: "text-primary", onClick: () => navigate('/installers') },
+    { icon: "shopping_cart", title: "Premium Products", text: "High-efficiency Tier 1 panels, smart inverters, and battery storage.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow", onClick: () => navigate('/products') },
+    { icon: "build", title: "Maintenance", text: "Proactive monitoring and maintenance.", bg: "bg-primary/10", textCol: "text-primary", onClick: handleMaintenanceClick },
+    { icon: "package_2", title: "Solar Packages", text: "Curated energy bundles for homes and businesses.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow", onClick: () => navigate('/packages') }
   ];
 
   // --- Hero Slider Logic ---
@@ -142,6 +151,31 @@ const LandingPage: React.FC = () => {
     startTestiTimer();
   };
 
+  useEffect(() => {
+    if (services.length <= 1) return;
+
+    const interval = setInterval(() => {
+      if (window.innerWidth >= 768) return;
+      setServiceIndex(prev => (prev + 1) % services.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [services.length]);
+
+  useEffect(() => {
+    const container = servicesCarouselRef.current;
+    if (!container || window.innerWidth >= 768) return;
+
+    const cards = container.querySelectorAll<HTMLElement>('[data-service-card]');
+    const activeCard = cards[serviceIndex];
+    if (!activeCard) return;
+
+    container.scrollTo({
+      left: activeCard.offsetLeft,
+      behavior: 'smooth'
+    });
+  }, [serviceIndex]);
+
 
   useGSAP(() => {
     // Hero Animation
@@ -176,43 +210,43 @@ const LandingPage: React.FC = () => {
       <PublicHeader />
       <main>
         {/* Hero Section */}
-        <section className="relative w-full px-4 lg:px-6 py-4 max-w-[1920px] mx-auto">
-          <div className="relative overflow-hidden rounded-[2rem] min-h-[60vh] flex items-center shadow-2xl">
+        <section className="relative w-full px-0 py-2 md:py-4 max-w-none mx-0">
+          <div className="relative overflow-hidden min-h-[58vh] sm:min-h-[58vh] md:min-h-[60vh] flex items-center">
             <div className="absolute inset-0 z-0">
               <div className="absolute inset-0 bg-gradient-to-r from-forest/90 via-forest/40 to-transparent z-10"></div>
               {/* Dynamic Hero Image */}
               <div className="w-full h-full bg-cover bg-center transition-all duration-1000"
                 style={{ backgroundImage: `url('${heroImages[currentSlide]?.url || heroImages[0].url}')` }}></div>
             </div>
-            <div className="relative z-20 px-8 md:px-12 max-w-3xl flex flex-col gap-4">
-              <div className="hero-badge inline-flex w-fit items-center gap-2 px-3 py-1 rounded-full bg-primary/20 text-primary border border-primary/30 text-[10px] md:text-xs font-bold tracking-wider uppercase backdrop-blur-sm">
+            <div className="relative z-20 px-5 sm:px-8 md:px-12 pt-8 pb-16 sm:py-10 md:py-12 max-w-3xl flex flex-col gap-3 md:gap-4">
+              <div className="hero-badge inline-flex w-fit items-center gap-2 px-2.5 py-1 sm:px-3 bg-primary/20 text-primary border border-primary/30 text-[9px] sm:text-[10px] md:text-xs font-bold tracking-wider uppercase backdrop-blur-sm">
                 <span className="material-symbols-outlined text-sm">verified</span> Eco-Certified Excellence
               </div>
-              <h1 className="hero-title text-white text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight">
+              <h1 className="hero-title text-white text-[2rem] sm:text-4xl md:text-6xl font-bold leading-[1.05] md:leading-[1.1] tracking-tight">
                 Powering Your Future with <span className="text-primary">Clean Energy</span>
               </h1>
-              <p className="hero-desc text-white/80 text-base md:text-xl font-normal leading-relaxed max-w-2xl">
+              <p className="hero-desc text-white/80 text-sm sm:text-base md:text-xl font-normal leading-relaxed max-w-2xl">
                 {heroImages[currentSlide]?.description || "Sustainable solar solutions for modern homes and businesses. Save money while saving the planet."}
               </p>
-              <div className="hero-actions flex flex-wrap gap-4 pt-2">
-                <button onClick={() => navigate('/consultation')} className="bg-primary hover:bg-primary/90 text-forest px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
+              <div className="hero-actions flex flex-col sm:flex-row sm:flex-wrap items-start gap-3 pt-1 md:pt-2">
+                <button onClick={() => navigate('/consultation')} className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/90 text-forest px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl text-sm sm:text-base md:text-lg font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
                   Get a Free Quote <span className="material-symbols-outlined text-xl">arrow_forward</span>
                 </button>
-                <button onClick={() => navigate('/gallery')} className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-6 py-3 md:px-8 md:py-4 rounded-xl text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95">
+                <button onClick={() => navigate('/gallery')} className="w-full sm:w-auto inline-flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl text-sm sm:text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95">
                   View Our Work
                 </button>
               </div>
             </div>
 
             {/* Slider Indicators */}
-            <div className="absolute bottom-10 right-10 z-20 flex gap-4">
+            <div className="absolute bottom-5 right-5 md:bottom-10 md:right-10 z-20 flex gap-2 md:gap-4">
               {heroImages.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`relative size-12 flex items-center justify-center transition-all ${currentSlide === idx ? 'scale-110' : 'opacity-40 hover:opacity-100'}`}
+                  className={`relative size-9 md:size-12 flex items-center justify-center transition-all ${currentSlide === idx ? 'scale-110' : 'opacity-40 hover:opacity-100'}`}
                 >
-                  <span className="text-white text-sm font-black">{idx + 1}</span>
+                  <span className="text-white text-xs md:text-sm font-black">{idx + 1}</span>
                   {currentSlide === idx && (
                     <svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 48 48">
                       <circle
@@ -238,7 +272,7 @@ const LandingPage: React.FC = () => {
               { label: "Installations", value: "12k+" },
               { label: "Energy Produced", value: "15MW" },
               { label: "Warranty", value: "25yrs" },
-              { label: "Saved by Clients", value: "$40M" }
+              { label: "Saved by Clients", value: "NGN 64B" }
             ].map((stat, idx) => (
               <div key={idx} className="stats-item text-center">
                 <p className="text-primary text-2xl md:text-3xl font-bold">{stat.value}</p>
@@ -252,14 +286,17 @@ const LandingPage: React.FC = () => {
         <section className="services-section max-w-[1600px] mx-auto px-6 lg:px-8 py-8" id="services">
           {/* ... (Keeping Services Section Static as it describes core business) ... */}
           {/* ... (Previous code for services cards) ... */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: "solar_power", title: "Expert Installation", text: "Precision residential and commercial solar panel installation.", bg: "bg-primary/10", textCol: "text-primary", onClick: () => navigate('/installers') },
-              { icon: "shopping_cart", title: "Premium Products", text: "High-efficiency Tier 1 panels, smart inverters, and battery storage.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow", onClick: () => navigate('/products') },
-              { icon: "build", title: "Maintenance", text: "Proactive monitoring and maintenance.", bg: "bg-primary/10", textCol: "text-primary", onClick: handleMaintenanceClick },
-              { icon: "package_2", title: "Solar Packages", text: "Curated energy bundles for homes and businesses.", bg: "bg-accent-yellow/10", textCol: "text-accent-yellow", onClick: () => navigate('/packages') }
-            ].map((service, idx) => (
-              <div key={idx} onClick={service.onClick} className="service-card group relative p-6 md:p-8 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300">
+          <div
+            ref={servicesCarouselRef}
+            className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none -mx-6 px-6 lg:mx-0 lg:px-0 pb-2 scroll-smooth"
+          >
+            {services.map((service, idx) => (
+              <div
+                key={idx}
+                data-service-card
+                onClick={service.onClick}
+                className="service-card group relative min-w-[85vw] sm:min-w-[340px] md:min-w-0 p-6 md:p-8 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300 snap-center"
+              >
                 {/* ... (Card decoration logic) ... */}
                 <div className="relative z-10">
                   <div className={`size-12 md:size-14 rounded-xl md:rounded-2xl ${service.bg} ${service.textCol} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
@@ -269,6 +306,16 @@ const LandingPage: React.FC = () => {
                   <p className="text-forest/60 dark:text-white/60 leading-relaxed text-sm md:text-base">{service.text}</p>
                 </div>
               </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center justify-center gap-2 md:hidden">
+            {services.map((service, idx) => (
+              <button
+                key={service.title}
+                onClick={() => setServiceIndex(idx)}
+                className={`h-2 rounded-full transition-all ${serviceIndex === idx ? 'w-8 bg-primary' : 'w-2 bg-forest/20 dark:bg-white/20'}`}
+                aria-label={`Show ${service.title}`}
+              />
             ))}
           </div>
         </section>

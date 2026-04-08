@@ -145,10 +145,10 @@ export const PublicHeader: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-forest/10 dark:border-white/10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md">
-        {/* Increased max-width to 1600px for wider fit */}
-        <div className="max-w-[1600px] mx-auto px-6 lg:px-12 py-4 flex items-center justify-between">
+        {/* Full width header */}
+        <div className="w-full flex items-center justify-between px-6 lg:px-12 py-4">
           <Link to="/" className="flex items-center gap-3 relative z-50">
-            <div className="size-10 flex items-center justify-center">
+            <div className="size-10 rounded-full flex items-center justify-center">
               <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
             </div>
             <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
@@ -258,12 +258,12 @@ export const PublicHeader: React.FC = () => {
 };
 
 export const PublicFooter: React.FC = () => (
-  <footer className="bg-background-light dark:bg-black py-20 border-t border-forest/5 dark:border-white/5">
-    {/* Increased Width */}
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+  <footer className="bg-background-light dark:bg-black border-t border-forest/5 dark:border-white/5">
+    {/* Full width footer */}
+    <div className="w-full px-6 lg:px-12 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
-          <div className="size-10 flex items-center justify-center">
+          <div className="size-10 rounded-full flex items-center justify-center">
             <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
           </div>
           <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
@@ -306,7 +306,7 @@ export const PublicFooter: React.FC = () => (
         </ul>
       </div>
     </div>
-    <div className="max-w-[1600px] mx-auto px-6 lg:px-12 mt-20 pt-8 border-t border-forest/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+    <div className="w-full px-6 lg:px-12 mt-20 pt-8 border-t border-forest/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
       <p className="text-forest/40 dark:text-white/40 text-sm">© 2024 Greenlife Solar Solutions LTD. All rights reserved.</p>
     </div>
   </footer>

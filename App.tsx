@@ -19,8 +19,10 @@ const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
 const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
 const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestForm'));
+const OrderDetailPage = lazy(() => import('./pages/UserPages/OrderDetailPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));
 const CheckoutPage = lazy(() => import('./pages/UserPages/CheckoutPage'));
+const PackageDetailPage = lazy(() => import('./pages/PublicPages/PackageDetailPage'));
 
 // Admin Sub-pages are now integrated into AdminDashboard
 // const ProductInventory = lazy(() => import('./pages/AdminPages/ProductInventory'));
@@ -54,7 +56,7 @@ const PageLoader = () => (
   <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background-light dark:bg-background-dark fixed inset-0 z-[100]">
     <div className="flex flex-col items-center gap-6">
       <div className="relative">
-        <div className="size-20 bg-primary/10 rounded-2xl flex items-center justify-center border border-primary/20 shadow-xl shadow-primary/10">
+        <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 shadow-xl shadow-primary/10">
           <img src="/logo.png" alt="Loading..." className="w-12 h-12 object-contain animate-pulse" />
         </div>
         <div className="absolute -bottom-2 -right-2 size-6 bg-forest text-primary rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark animate-spin">
@@ -75,7 +77,7 @@ const PageLoader = () => (
 
 const App: React.FC = () => {
   return (
-    <HashRouter>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <AdminProvider>
           <GalleryProvider>
@@ -93,6 +95,7 @@ const App: React.FC = () => {
                   <Route path="/packages" element={<PackagesPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/packages/:packageId" element={<PackageDetailPage />} />
 
                   {/* Auth Routes */}
                   <Route path="/login" element={<UserLogin />} />
@@ -100,6 +103,8 @@ const App: React.FC = () => {
 
                   {/* User Protected Routes */}
                   <Route path="/dashboard" element={<UserDashboard />} />
+                  <Route path="/shop/:productId" element={<UserDashboard />} />
+                  <Route path="/order/:orderId" element={<OrderDetailPage />} />
                   <Route path="/requests" element={<Navigate to="/dashboard?view=requests" replace />} />
                   <Route path="/service-request" element={<ServiceRequestForm />} />
 

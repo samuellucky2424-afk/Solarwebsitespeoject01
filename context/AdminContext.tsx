@@ -119,6 +119,7 @@ interface AdminContextType {
   inventory: Product[];
   requests: ServiceRequest[];
   packages: SolarPackage[];
+  packagesLoading: boolean;
   activeUser: UserProfile;
   referrals: Referral[];
   notifications: Notification[];
@@ -168,6 +169,12 @@ const DEMO_USER: UserProfile = {
   avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCgMyvPvI1r63Wv2p6ujv8_KbGcV-p94fgN0glHmuWokq901pP_Q9wynjwqM4R-nJpGN4XiVkvbFUk-eCFjnJytYN5BBTVUws__2aKEcKT1L-T_nRjsaBUcysTx4qt4_8KcZgHNVmbQ_h9oqxdh_wgtF0YfLurvL9YtnfHQQs7cfcdwyF8ZVZQxj3yxY8amxxUSR2t923D3oY5Ii5lRlYdL6dESPd331HVCOzw83ZmUTP7TJRMTU-7UdXA2gjcjyXlUFe2eFwul-hw",
   referralCode: "ALEX-SOLAR-24"
 };
+
+const LEGACY_DEMO_PACKAGE_IDS = new Set([
+  '11111111-1111-1111-1111-111111111111',
+  '22222222-2222-2222-2222-222222222222',
+  '33333333-3333-3333-3333-333333333333'
+]);
 
 const DEMO_PACKAGES: SolarPackage[] = [
   {
@@ -298,6 +305,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [inventory, setInventory] = useState<Product[]>([]);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [packages, setPackages] = useState<SolarPackage[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
   const [usingDemoData, setUsingDemoData] = useState(false);
   const [enableRealtime, setEnableRealtime] = useState(false);
 
@@ -308,11 +316,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
 
+  const stripLegacyDemoPackages = (items: SolarPackage[]) =>
+    items.filter((pkg) => !LEGACY_DEMO_PACKAGE_IDS.has(String(pkg.id)));
+
   const loadDemoData = () => {
     setUsingDemoData(true);
     setEnableRealtime(false);
     setActiveUser(DEMO_USER);
-    setPackages(DEMO_PACKAGES);
+    setPackages([]);
     setRequests(DEMO_REQUESTS);
     setGallery(DEMO_GALLERY);
     setAllUsers([DEMO_USER]);
@@ -320,6 +331,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   // --- Real-time Data Fetching ---
   const fetchData = async () => {
+    setPackagesLoading(true);
+
     try {
       if (!isSupabaseConfigured) {
         loadDemoData();
@@ -349,7 +362,9 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setUsingDemoData(false);
         setEnableRealtime(true);
         const mappedInventory = data.filter((i: any) => i.type === 'product').map(mapToProduct);
-        const mappedPackages = data.filter((i: any) => i.type === 'package').map(mapToPackage);
+        const mappedPackages = stripLegacyDemoPackages(
+          data.filter((i: any) => i.type === 'package').map(mapToPackage)
+        );
         const mappedRequests = data.filter((i: any) => i.type === 'request').map(mapToRequest);
         const mappedGallery = data.filter((i: any) => i.type === 'gallery').map(mapToGallery);
         const mappedUsers = data.filter((i: any) => i.type === 'user_profile').map(mapToUserProfile);
@@ -369,6 +384,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       // If anything unexpected happens (network, permissions, missing tables), stay usable.
       loadDemoData();
       console.error("Unexpected fetch error:", err);
+    } finally {
+      setPackagesLoading(false);
     }
   };
 
@@ -833,9 +850,6 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const mapToUserProfile = (data: any): UserProfile => {
-    // Debug log to see incoming data
-    console.log("Mapping user data:", data);
-
     // Support both snake_case (from DB) and camelCase (legacy) column names
     const fullName = data.full_name || data.fullName || data.title || 'User';
     return {
@@ -867,9 +881,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     };
   };
 
+
+
   return (
     <AdminContext.Provider value={{
-      inventory, requests, packages, stats, activeUser: activeUser as UserProfile, referrals, notifications, gallery,
+      inventory, requests, packages, packagesLoading, stats, activeUser: activeUser as UserProfile, referrals, notifications, gallery,
       // @ts-ignore
       allUsers, installers,
       addProduct, updateProduct, deleteProduct,

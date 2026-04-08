@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Toast } from '../../components/SharedComponents';
 import { useAuth } from '../../context/AuthContext';
 import { useAdmin } from '../../context/AdminContext';
@@ -8,6 +8,7 @@ import MySystems from '../../components/dashboard/MySystems';
 import OrderHistory from '../../components/dashboard/OrderHistory';
 import RequestsList from '../../components/dashboard/RequestsList';
 import DashboardShop from '../../components/dashboard/DashboardShop';
+import DashboardProductDetail from '../../components/dashboard/DashboardProductDetail';
 import UpgradeRequest from '../../components/dashboard/UpgradeRequest';
 import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
@@ -17,7 +18,7 @@ import ServiceRequestForm from './ServiceRequestForm';
 import CheckoutPage from './CheckoutPage';
 
 // --- Types (Local) ---
-type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout';
+type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'shop-product' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout';
 
 const SidebarLink: React.FC<{
   active: boolean,
@@ -37,6 +38,7 @@ const SidebarLink: React.FC<{
 const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { productId } = useParams<{ productId: string }>();
   const { signOut, user: authUser } = useAuth();
   const { activeUser, notifications, markNotificationRead } = useAdmin();
 
@@ -66,12 +68,16 @@ const UserDashboard: React.FC = () => {
   // --- Effects (MUST be above the early return to satisfy Rules of Hooks) ---
   // Handle Query Params for Deep Linking
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const viewParam = params.get('view');
-    if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout'].includes(viewParam)) {
-      setCurrentView(viewParam as DashboardView);
+    if (productId) {
+      setCurrentView('shop-product');
+    } else {
+      const params = new URLSearchParams(location.search);
+      const viewParam = params.get('view');
+      if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout'].includes(viewParam)) {
+        setCurrentView(viewParam as DashboardView);
+      }
     }
-  }, [location.search]);
+  }, [location.search, productId]);
 
   // --- Close Dropdown on click outside ---
   useEffect(() => {
@@ -228,7 +234,7 @@ const UserDashboard: React.FC = () => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-10 px-2 justify-between">
               <div className="flex items-center gap-3">
-                <div className="size-10 flex items-center justify-center">
+                <div className="size-10 rounded-full flex items-center justify-center">
                   <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
                 </div>
                 <div>
@@ -327,7 +333,7 @@ const UserDashboard: React.FC = () => {
         <aside className="w-64 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-screen sticky top-0 hidden lg:flex shrink-0">
           <div className="p-4 flex flex-col h-full">
             <div className="flex items-center gap-2.5 mb-8 px-2">
-              <div className="size-8 flex items-center justify-center">
+              <div className="size-8 rounded-full flex items-center justify-center">
                 <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
               <div>
@@ -505,6 +511,7 @@ const UserDashboard: React.FC = () => {
             )}
             {/* New Views */}
             {currentView === 'shop' && <DashboardShop />}
+            {currentView === 'shop-product' && <DashboardProductDetail />}
             {currentView === 'packages' && <DashboardPackages />}
             {currentView === 'gallery' && <DashboardGallery />}
             {currentView === 'consultation' && <ConsultationForm isEmbedded={true} />}
