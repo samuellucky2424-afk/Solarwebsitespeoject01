@@ -1,31 +1,47 @@
 import React from 'react';
-import { useAdmin } from '../../context/AdminContext';
-import { useCart } from '../../context/CartContext';
+import { useAdmin, ServiceRequest, SolarPackage } from '../../context/AdminContext';
+import { useAuth } from '../../context/AuthContext';
 import { Toast } from '../../components/SharedComponents';
 
 const DashboardPackages: React.FC = () => {
-    const { packages } = useAdmin();
-    const { addToCart } = useCart();
+    const { packages, addRequest, activeUser } = useAdmin();
+    const { user } = useAuth();
     const [toastMessage, setToastMessage] = React.useState<string | null>(null);
-    const [selectedPackage, setSelectedPackage] = React.useState<any | null>(null);
+    const [selectedPackage, setSelectedPackage] = React.useState<SolarPackage | null>(null);
+    const [requestingPackageId, setRequestingPackageId] = React.useState<string | null>(null);
 
-    const handleAddToCart = (pkg: any, e?: React.MouseEvent) => {
+    const buildPackageRequest = (pkg: SolarPackage): ServiceRequest => ({
+        id: `REQ-${Date.now()}`,
+        type: 'Package Request',
+        title: `Package request for ${pkg.name}`,
+        customer: activeUser?.fullName || user?.user_metadata?.full_name || user?.email || 'Greenlife customer',
+        email: activeUser?.email || user?.email || '',
+        phone: activeUser?.phone || user?.phone || user?.user_metadata?.phone || '',
+        address: activeUser?.address || user?.user_metadata?.address || 'Address to be confirmed',
+        date: new Date().toLocaleDateString(),
+        status: 'New',
+        priority: 'Normal',
+        description: `Requested package: ${pkg.name}${pkg.powerCapacity ? ` (${pkg.powerCapacity})` : ''}.`,
+        packageId: pkg.id
+    });
+
+    const handleRequestPackage = async (pkg: SolarPackage, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
-        // Map package to a product-like structure for the cart
-        const cartItem: any = {
-            id: pkg.id,
-            name: pkg.name,
-            price: pkg.price,
-            img: pkg.img || 'https://via.placeholder.com/150?text=Package',
-            category: 'Solar Package',
-            brand: 'Greenlife', // Default brand
-            series: 'Package', // Default series
-            eff: 'High', // Default
-            spec: pkg.description // Use desc as spec
-        };
-        addToCart(cartItem, 1);
-        setToastMessage(`Added ${pkg.name} to cart`);
-        setSelectedPackage(null);
+
+        setRequestingPackageId(pkg.id);
+        const success = await addRequest(buildPackageRequest(pkg));
+
+        setToastMessage(
+            success
+                ? `Package request sent for ${pkg.name}`
+                : `Unable to submit request for ${pkg.name}`
+        );
+
+        if (success) {
+            setSelectedPackage(null);
+        }
+
+        setRequestingPackageId(null);
     };
 
     return (
@@ -41,57 +57,64 @@ const DashboardPackages: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {packages.length > 0 ? (
-                    packages.map((pkg) => (
-                        <div
-                            key={pkg.id}
-                            onClick={() => setSelectedPackage(pkg)}
-                            className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-sm hover:shadow-md hover:border-primary/50 transition-all group cursor-pointer"
-                        >
-                            <div className="h-48 bg-gray-50 dark:bg-black/20 relative overflow-hidden">
-                                {pkg.img ? (
-                                    <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                        <span className="material-symbols-outlined text-4xl">inventory_2</span>
-                                    </div>
-                                )}
-                                <div className="absolute top-4 right-4 bg-primary text-forest text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                                    {pkg.powerCapacity || 'Custom'}
-                                </div>
-                            </div>
+                    packages.map((pkg) => {
+                        const isSubmitting = requestingPackageId === pkg.id;
 
-                            <div className="p-6">
-                                <h3 className="text-xl font-bold dark:text-white mb-2">{pkg.name}</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{pkg.description}</p>
-
-                                <div className="space-y-2 mb-6">
-                                    {pkg.appliances.slice(0, 3).map((appliance, idx) => (
-                                        <div key={idx} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
-                                            <span className="material-symbols-outlined text-sm text-primary">check_circle</span>
-                                            {appliance}
+                        return (
+                            <div
+                                key={pkg.id}
+                                onClick={() => setSelectedPackage(pkg)}
+                                className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-sm hover:shadow-md hover:border-primary/50 transition-all group cursor-pointer"
+                            >
+                                <div className="h-48 bg-gray-50 dark:bg-black/20 relative overflow-hidden">
+                                    {pkg.img ? (
+                                        <img src={pkg.img} alt={pkg.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                            <span className="material-symbols-outlined text-4xl">inventory_2</span>
                                         </div>
-                                    ))}
-                                    {pkg.appliances.length > 3 && (
-                                        <p className="text-xs text-primary font-bold pl-6">+ {pkg.appliances.length - 3} more items</p>
                                     )}
+                                    <div className="absolute top-4 right-4 bg-primary text-forest text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                                        {pkg.powerCapacity || 'Custom'}
+                                    </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/10">
-                                    <div>
-                                        <p className="text-xs text-gray-400 uppercase font-bold">Price</p>
-                                        <p className="text-lg font-bold text-forest dark:text-white">₦{pkg.price.toLocaleString()}</p>
+                                <div className="p-6">
+                                    <h3 className="text-xl font-bold dark:text-white mb-2">{pkg.name}</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{pkg.description}</p>
+
+                                    <div className="space-y-2 mb-6">
+                                        {pkg.appliances.slice(0, 3).map((appliance, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                                                <span className="material-symbols-outlined text-sm text-primary">check_circle</span>
+                                                {appliance}
+                                            </div>
+                                        ))}
+                                        {pkg.appliances.length > 3 && (
+                                            <p className="text-xs text-primary font-bold pl-6">+ {pkg.appliances.length - 3} more items</p>
+                                        )}
                                     </div>
-                                    <button
-                                        onClick={(e) => handleAddToCart(pkg, e)}
-                                        className="bg-primary text-forest px-4 py-2 rounded-lg font-bold text-sm hover:brightness-105 transition-all flex items-center gap-2"
-                                    >
-                                        <span className="material-symbols-outlined text-lg">add_shopping_cart</span>
-                                        Add to Cart
-                                    </button>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-white/10 gap-4">
+                                        <div>
+                                            <p className="text-xs text-gray-400 uppercase font-bold">Price</p>
+                                            <p className="text-lg font-bold text-forest dark:text-white">NGN {pkg.price.toLocaleString()}</p>
+                                        </div>
+                                        <button
+                                            onClick={(e) => handleRequestPackage(pkg, e)}
+                                            disabled={isSubmitting}
+                                            className="bg-primary text-forest px-4 py-2 rounded-lg font-bold text-sm hover:brightness-105 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">
+                                                {isSubmitting ? 'progress_activity' : 'assignment_add'}
+                                            </span>
+                                            {isSubmitting ? 'Submitting...' : 'Request Package'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 ) : (
                     <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl">
                         <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">package</span>
@@ -100,7 +123,6 @@ const DashboardPackages: React.FC = () => {
                 )}
             </div>
 
-            {/* Package Details Modal */}
             {selectedPackage && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div
@@ -142,7 +164,7 @@ const DashboardPackages: React.FC = () => {
                                 </h2>
 
                                 <div className="text-2xl font-bold text-forest dark:text-white mb-6">
-                                    ₦{selectedPackage.price.toLocaleString()}
+                                    NGN {selectedPackage.price.toLocaleString()}
                                 </div>
 
                                 <div className="flex-1">
@@ -157,7 +179,7 @@ const DashboardPackages: React.FC = () => {
                                             Supported Appliances
                                         </h4>
                                         <ul className="space-y-2 bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-gray-100 dark:border-white/10">
-                                            {selectedPackage.appliances.map((appliance: string, idx: number) => (
+                                            {selectedPackage.appliances.map((appliance, idx) => (
                                                 <li key={idx} className="flex items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
                                                     <span className="material-symbols-outlined text-primary text-base mt-0.5">check_circle</span>
                                                     <span>{appliance}</span>
@@ -171,11 +193,14 @@ const DashboardPackages: React.FC = () => {
                                 </div>
 
                                 <button
-                                    onClick={() => handleAddToCart(selectedPackage)}
-                                    className="w-full bg-primary text-forest py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 mt-4 shadow-lg shadow-primary/20 shrink-0"
+                                    onClick={() => handleRequestPackage(selectedPackage)}
+                                    disabled={requestingPackageId === selectedPackage.id}
+                                    className="w-full bg-primary text-forest py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 mt-4 shadow-lg shadow-primary/20 shrink-0 disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    <span className="material-symbols-outlined">add_shopping_cart</span>
-                                    Add Package to Cart
+                                    <span className="material-symbols-outlined">
+                                        {requestingPackageId === selectedPackage.id ? 'progress_activity' : 'assignment_add'}
+                                    </span>
+                                    {requestingPackageId === selectedPackage.id ? 'Submitting...' : 'Request Package'}
                                 </button>
                             </div>
                         </div>

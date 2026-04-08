@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const container = useRef<HTMLDivElement>(null);
   const { images } = useGallery();
-  const { inventory } = useAdmin(); // Get inventory from Admin Context
+  const { inventory, packages, packagesLoading } = useAdmin();
   const { isAuthenticated } = useAuth();
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -26,6 +26,7 @@ const LandingPage: React.FC = () => {
 
   // Featured Products: Show all products marked as featured
   const featuredProducts = inventory;
+  const featuredPackages = packages.slice(0, 3);
 
   // Gallery Carousel State
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -188,8 +189,8 @@ const LandingPage: React.FC = () => {
         .fromTo(".hero-actions > button", { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.1, duration: 0.6, ease: "back.out(1.7)" }, "-=0.4");
     }
 
-    // Stats, Services, Gallery, Products Animations...
-    const sections = [".stats-item", ".service-card", ".gallery-track-container", ".product-card", ".cta-container"];
+    // Stats, Services, Gallery, Products, Packages Animations...
+    const sections = [".stats-item", ".service-card", ".homepage-package-card", ".gallery-track-container", ".product-card", ".cta-container"];
     sections.forEach(selector => {
       const elements = document.querySelectorAll(selector);
       if (elements.length > 0) {
@@ -203,7 +204,7 @@ const LandingPage: React.FC = () => {
       }
     });
 
-  }, { scope: container, dependencies: [inventory] }); // Re-run when inventory changes to catch product cards
+  }, { scope: container, dependencies: [inventory, packages, packagesLoading] });
 
   return (
     <div ref={container} className="min-h-screen flex flex-col overflow-x-hidden">
@@ -318,6 +319,104 @@ const LandingPage: React.FC = () => {
               />
             ))}
           </div>
+        </section>
+
+        <section className="packages-section max-w-[1600px] mx-auto px-6 lg:px-8 py-12" id="packages">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
+            <div className="max-w-2xl">
+              <h2 className="text-primary font-bold tracking-widest uppercase text-[10px] md:text-xs mb-2 md:mb-3">Package Plans</h2>
+              <h3 className="text-2xl md:text-4xl font-bold text-forest dark:text-white leading-tight">Supabase-powered solar packages, straight from the dashboard</h3>
+              <p className="text-forest/60 dark:text-white/60 mt-3 text-sm md:text-base">
+                The landing page is now reading the same package records as the user dashboard, including package images, power capacity, pricing, and appliance coverage.
+              </p>
+            </div>
+            <Link to="/packages" className="inline-flex items-center gap-2 text-forest dark:text-white font-bold hover:text-primary transition-colors">
+              Browse all packages
+              <span className="material-symbols-outlined text-base">arrow_forward</span>
+            </Link>
+          </div>
+
+          {packagesLoading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {[0, 1, 2].map((card) => (
+                <div key={card} className="homepage-package-card overflow-hidden rounded-[2rem] bg-[#10311f] border border-white/5 animate-pulse">
+                  <div className="aspect-[4/3] bg-white/5"></div>
+                  <div className="p-6 space-y-4">
+                    <div className="h-4 w-28 bg-white/10 rounded"></div>
+                    <div className="h-8 w-2/3 bg-white/10 rounded"></div>
+                    <div className="h-4 w-full bg-white/10 rounded"></div>
+                    <div className="h-4 w-5/6 bg-white/10 rounded"></div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="h-9 bg-white/10 rounded-xl"></div>
+                      <div className="h-9 bg-white/10 rounded-xl"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : featuredPackages.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {featuredPackages.map((pkg) => (
+                <Link
+                  key={pkg.id}
+                  to={`/packages/${pkg.id}`}
+                  className="homepage-package-card group overflow-hidden rounded-[2rem] bg-[#10311f] text-white border border-forest/10 shadow-xl shadow-forest/5 hover:-translate-y-2 transition-all"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#0b2417]">
+                    {pkg.img ? (
+                      <img
+                        src={pkg.img}
+                        alt={pkg.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/30">
+                        <span className="material-symbols-outlined text-6xl">solar_power</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#10311f] via-[#10311f]/20 to-transparent"></div>
+                    <div className="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-forest">
+                      <span className="material-symbols-outlined text-sm">bolt</span>
+                      {pkg.powerCapacity || 'Custom build'}
+                    </div>
+                  </div>
+
+                  <div className="p-6 flex flex-col gap-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-primary text-[10px] font-black uppercase tracking-[0.25em] mb-2">Solar Package</p>
+                        <h4 className="text-2xl font-bold leading-tight">{pkg.name}</h4>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold">Starting at</p>
+                        <p className="text-xl font-black text-primary mt-1">NGN {pkg.price.toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-white/70 line-clamp-3 min-h-[60px]">{pkg.description}</p>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {pkg.appliances.slice(0, 4).map((appliance, idx) => (
+                        <div key={idx} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80">
+                          {appliance}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 text-primary font-bold pt-2">
+                      Request Package
+                      <span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">arrow_forward</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[2rem] border border-dashed border-forest/15 dark:border-white/10 p-10 text-center">
+              <span className="material-symbols-outlined text-5xl text-primary/70">inventory_2</span>
+              <p className="text-forest/70 dark:text-white/70 mt-4">No package data is available on the homepage yet.</p>
+            </div>
+          )}
         </section>
 
         {/* Enhanced Gallery Section (Dynamic) */}

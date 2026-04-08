@@ -76,9 +76,14 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEmbedded = fa
       priority: isMaintenance ? 'High' as any : 'Normal' as any,
     };
 
-    await addRequest(newRequest);
+    const success = await addRequest(newRequest);
 
     setIsSubmitting(false);
+    if (!success) {
+      setToast({ msg: "Unable to submit request. Please try again." });
+      return;
+    }
+
     setToast({ msg: "Request submitted successfully!" });
 
     setTimeout(() => {

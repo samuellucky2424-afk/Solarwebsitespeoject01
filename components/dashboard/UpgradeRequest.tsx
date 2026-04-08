@@ -50,7 +50,7 @@ const UpgradeRequest: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 break;
         }
 
-        setTimeout(() => {
+        setTimeout(async () => {
             const newRequest: ServiceRequest = {
                 id: `REQ-${Date.now()}`,
                 title: `${upgradeType} Upgrade Request`,
@@ -65,8 +65,13 @@ const UpgradeRequest: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 description: `${specs}.\n\nAdditional Notes: ${description}`
             };
 
-            addRequest(newRequest);
+            const success = await addRequest(newRequest);
             setLoading(false);
+            if (!success) {
+                setToast("Unable to submit upgrade request. Please try again.");
+                return;
+            }
+
             setToast("Upgrade request submitted successfully!");
             setTimeout(() => {
                 onSuccess();

@@ -129,7 +129,7 @@ interface AdminContextType {
   deleteProduct: (id: any) => Promise<boolean>;
   updateRequestStatus: (id: string, status: ServiceRequest['status']) => void;
   deleteRequest: (id: string) => Promise<boolean>;
-  addRequest: (request: ServiceRequest) => void;
+  addRequest: (request: ServiceRequest) => Promise<boolean>;
   addPackage: (pkg: Omit<SolarPackage, 'id'>) => Promise<boolean>;
   deletePackage: (id: string) => Promise<boolean>;
   updateUserSystem: (updates: Partial<UserProfile>) => void;
@@ -300,6 +300,23 @@ const DEMO_GALLERY: GalleryImage[] = [
   }
 ];
 
+const normalizePackageAppliances = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item).trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+};
+
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const { session } = useAuth();
   const [inventory, setInventory] = useState<Product[]>([]);
@@ -323,7 +340,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     setUsingDemoData(true);
     setEnableRealtime(false);
     setActiveUser(DEMO_USER);
-    setPackages([]);
+    setPackages(DEMO_PACKAGES);
     setRequests(DEMO_REQUESTS);
     setGallery(DEMO_GALLERY);
     setAllUsers([DEMO_USER]);
@@ -538,6 +555,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addRequest = async (req: ServiceRequest) => {
+    if (!isSupabaseConfigured) {
+      setRequests((prev: ServiceRequest[]) => [req, ...prev]);
+      if (activeUser) {
+        addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
+      }
+      return true;
+    }
+
     const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'request',
       title: req.title,
@@ -553,12 +578,20 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       }
     }]);
 
-    if (!error && activeUser) {
+    if (error) {
+      console.error("Error adding request:", error);
+      return false;
+    }
+
+    if (activeUser) {
       addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
       setTimeout(() => {
         addNotification(activeUser.id, "Support", "We have received your request and will contact you shortly.", "success");
       }, 3000);
     }
+
+    await fetchData();
+    return true;
   };
 
   const updateRequestStatus = async (id: string, status: ServiceRequest['status']) => {
@@ -768,12 +801,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const mapToPackage = (item: any): SolarPackage => ({
     id: item.id,
-    name: item.name,
-    price: item.price,
-    description: item.description,
-    img: item.image_url,
-    appliances: item.metadata?.appliances || [],
-    powerCapacity: item.metadata?.powerCapacity
+    name: item.name || item.title || 'Solar Package',
+    price: typeof item.price === 'number' ? item.price : Number(item.price || 0),
+    description: item.description || item.metadata?.description || '',
+    img: item.image_url || item.img,
+    appliances: normalizePackageAppliances(item.metadata?.appliances ?? item.appliances),
+    powerCapacity: item.metadata?.powerCapacity || item.power_capacity || item.metadata?.capacity
   });
 
   const mapToRequest = (item: any): ServiceRequest => ({

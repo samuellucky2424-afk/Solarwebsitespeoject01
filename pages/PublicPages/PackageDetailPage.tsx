@@ -55,7 +55,7 @@ const PackageDetailPage: React.FC = () => {
     setIsRequesting(true);
 
     try {
-      await addRequest({
+      const success = await addRequest({
         id: `REQ-${Date.now()}`,
         type: 'Package Request',
         title: `Package request for ${packageDetails.name}`,
@@ -70,7 +70,11 @@ const PackageDetailPage: React.FC = () => {
         packageId: packageDetails.id
       });
 
-      setToast({ msg: `Package request sent for ${packageDetails.name}` });
+      setToast({
+        msg: success
+          ? `Package request sent for ${packageDetails.name}`
+          : `Unable to submit request for ${packageDetails.name}`
+      });
     } catch (error) {
       console.error('Failed to submit package request:', error);
       setToast({ msg: `Unable to submit request for ${packageDetails.name}` });

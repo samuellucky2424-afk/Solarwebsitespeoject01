@@ -14,7 +14,7 @@ const PackagesPage: React.FC = () => {
       y: 50,
       opacity: 0,
       duration: 0.8,
-      stagger: 0.2,
+      stagger: 0.15,
       ease: "power2.out",
     });
   }, { scope: containerRef });
@@ -22,82 +22,105 @@ const PackagesPage: React.FC = () => {
   return (
     <div ref={containerRef} className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-body">
       <PublicHeader />
-      
+
       <main className="w-full max-w-[1920px] mx-auto px-4 lg:px-12 py-12 flex-1">
         <div className="text-center mb-16">
           <SectionHeader sub="Solar Solutions" title="Curated Energy Packages" />
-          <p className="text-forest/70 dark:text-white/70 max-w-2xl mx-auto text-lg mt-4">
-            Choose from our expertly designed solar packages tailored to meet diverse energy needs, from basic backup to full home independence.
+          <p className="text-forest/70 dark:text-white/70 max-w-3xl mx-auto text-lg mt-4">
+            Browse the same Supabase-backed package records used on the dashboard, with full pricing, capacity, imagery, and appliance coverage.
           </p>
         </div>
 
         {packagesLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6 xl:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8">
             {[0, 1, 2, 3].map((card) => (
-              <div key={card} className="package-card flex flex-col bg-white dark:bg-[#152a17] rounded-none p-4 sm:p-8 shadow-xl border border-forest/5 dark:border-white/5 animate-pulse">
-                <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="space-y-3 flex-1">
-                    <div className="h-6 sm:h-8 w-2/3 bg-forest/10 dark:bg-white/10 rounded"></div>
-                    <div className="h-4 w-full bg-forest/10 dark:bg-white/10 rounded"></div>
-                    <div className="h-4 w-4/5 bg-forest/10 dark:bg-white/10 rounded"></div>
-                  </div>
-                  <div className="size-10 sm:size-12 bg-primary/10 rounded-full shrink-0"></div>
-                </div>
-
-                <div className="mb-6 sm:mb-8 space-y-3">
-                  <div className="h-4 w-24 bg-forest/10 dark:bg-white/10 rounded"></div>
-                  <div className="h-8 sm:h-10 w-24 sm:w-32 bg-forest/10 dark:bg-white/10 rounded"></div>
-                </div>
-
-                <div className="flex-1 bg-gray-50 dark:bg-black/20 rounded-none p-4 sm:p-6 space-y-3">
-                  <div className="h-4 w-28 bg-forest/10 dark:bg-white/10 rounded"></div>
+              <div key={card} className="package-card overflow-hidden rounded-[2rem] bg-white dark:bg-[#152a17] shadow-xl border border-forest/5 dark:border-white/5 animate-pulse">
+                <div className="aspect-[4/3] bg-forest/10 dark:bg-white/10"></div>
+                <div className="p-6 space-y-4">
+                  <div className="h-5 w-28 bg-forest/10 dark:bg-white/10 rounded"></div>
+                  <div className="h-9 w-3/4 bg-forest/10 dark:bg-white/10 rounded"></div>
                   <div className="h-4 w-full bg-forest/10 dark:bg-white/10 rounded"></div>
                   <div className="h-4 w-5/6 bg-forest/10 dark:bg-white/10 rounded"></div>
-                  <div className="h-4 w-3/4 bg-forest/10 dark:bg-white/10 rounded"></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="h-9 bg-forest/10 dark:bg-white/10 rounded-xl"></div>
+                    <div className="h-9 bg-forest/10 dark:bg-white/10 rounded-xl"></div>
+                    <div className="h-9 bg-forest/10 dark:bg-white/10 rounded-xl"></div>
+                    <div className="h-9 bg-forest/10 dark:bg-white/10 rounded-xl"></div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ) : packages.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 md:gap-6 xl:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8">
             {packages.map((pkg) => (
-              <div key={pkg.id} className="package-card relative flex flex-col bg-white dark:bg-[#152a17] rounded-none p-4 sm:p-8 shadow-xl border border-forest/5 dark:border-white/5 hover:border-primary/50 transition-all hover:-translate-y-2">
-                <div className="absolute top-0 right-0 p-4 sm:p-8">
-                   <div className="size-10 sm:size-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                      <span className="material-symbols-outlined text-xl sm:text-2xl">solar_power</span>
-                   </div>
-                </div>
-                
-                <h3 className="text-lg md:text-xl xl:text-2xl font-black text-forest dark:text-white mb-2 pr-10 sm:pr-12 leading-tight">{pkg.name}</h3>
-                <p className="text-forest/60 dark:text-white/60 text-xs sm:text-sm mb-4 sm:mb-6 min-h-[40px] line-clamp-3">{pkg.description}</p>
-                
-                <div className="mb-6 sm:mb-8">
-                   <span className="text-[10px] sm:text-sm text-forest/50 dark:text-white/50 font-bold uppercase tracking-wider">Starting at</span>
-                   <div className="text-2xl md:text-3xl xl:text-4xl font-black text-primary mt-1">₦{pkg.price.toLocaleString()}</div>
+              <Link
+                key={pkg.id}
+                to={`/packages/${pkg.id}`}
+                className="package-card group overflow-hidden rounded-[2rem] bg-white dark:bg-[#152a17] shadow-xl border border-forest/5 dark:border-white/5 hover:border-primary/50 hover:-translate-y-2 transition-all"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-50 dark:bg-black/20">
+                  {pkg.img ? (
+                    <img
+                      src={pkg.img}
+                      alt={pkg.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <span className="material-symbols-outlined text-6xl">solar_power</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>
+                  <div className="absolute top-5 left-5 inline-flex items-center gap-2 rounded-full bg-primary px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-forest">
+                    <span className="material-symbols-outlined text-sm">bolt</span>
+                    {pkg.powerCapacity || 'Custom build'}
+                  </div>
                 </div>
 
-                <div className="flex-1 bg-gray-50 dark:bg-black/20 rounded-none p-4 sm:p-6 mb-6 sm:mb-8">
-                   <p className="font-bold text-xs sm:text-sm mb-3 sm:mb-4 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-primary">bolt</span> What it powers:
-                   </p>
-                   <ul className="space-y-2 sm:space-y-3">
-                      {pkg.appliances.map((app, i) => (
-                         <li key={i} className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-forest/80 dark:text-white/80">
-                            <span className="size-1.5 rounded-full bg-primary shrink-0"></span>
-                            {app}
-                         </li>
+                <div className="p-6 flex flex-col gap-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-primary text-[10px] font-black uppercase tracking-[0.25em] mb-2">Solar Package</p>
+                      <h3 className="text-2xl font-black text-forest dark:text-white leading-tight">{pkg.name}</h3>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-[10px] text-forest/50 dark:text-white/50 font-bold uppercase tracking-[0.2em]">Starting at</span>
+                      <div className="text-2xl font-black text-primary mt-1">NGN {pkg.price.toLocaleString()}</div>
+                    </div>
+                  </div>
+
+                  <p className="text-forest/60 dark:text-white/60 text-sm line-clamp-3 min-h-[60px]">{pkg.description}</p>
+
+                  <div className="rounded-[1.5rem] bg-gray-50 dark:bg-black/20 p-5">
+                    <p className="font-bold text-xs sm:text-sm mb-3 flex items-center gap-2 text-forest dark:text-white">
+                      <span className="material-symbols-outlined text-primary">bolt</span>
+                      What it powers
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {pkg.appliances.slice(0, 4).map((app, i) => (
+                        <div key={i} className="rounded-xl border border-forest/5 dark:border-white/10 bg-white/70 dark:bg-white/5 px-3 py-2 text-xs sm:text-sm text-forest/80 dark:text-white/80">
+                          {app}
+                        </div>
                       ))}
-                   </ul>
-                </div>
+                    </div>
+                    {pkg.appliances.length > 4 && (
+                      <p className="text-xs font-bold text-primary mt-3">+ {pkg.appliances.length - 4} more appliances</p>
+                    )}
+                  </div>
 
-                <Link to={`/packages/${pkg.id}`} className="absolute inset-0 z-10" />
-              </div>
+                  <div className="inline-flex items-center gap-2 text-primary font-bold">
+                    View details
+                    <span className="material-symbols-outlined text-base transition-transform group-hover:translate-x-1">arrow_forward</span>
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         ) : (
           <div className="text-center py-20 opacity-50">
-             <span className="material-symbols-outlined text-6xl mb-4">inventory_2</span>
-             <p className="text-xl">No packages currently available from the database.</p>
+            <span className="material-symbols-outlined text-6xl mb-4">inventory_2</span>
+            <p className="text-xl">No packages currently available from the database.</p>
           </div>
         )}
       </main>
