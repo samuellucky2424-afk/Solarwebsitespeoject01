@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdmin, ServiceRequest } from '../../context/AdminContext';
 import { Toast } from '../../components/SharedComponents';
+import { sendUpgradeEmail } from '../../src/lib/sendUpgradeEmail';
 
 // --- Constants ---
 const BATTERY_TYPES = ['Tubular', 'Lithium Ion'];
@@ -71,6 +72,18 @@ const UpgradeRequest: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 setToast("Unable to submit upgrade request. Please try again.");
                 return;
             }
+
+            // Immediately send the notification email to the admin
+            sendUpgradeEmail({
+                customerName: activeUser?.fullName || 'Unknown Customer',
+                customerEmail: activeUser?.email || '',
+                customerPhone: activeUser?.phone || '',
+                propertyAddress: activeUser?.address || '',
+                upgradeType: upgradeType,
+                specifications: specs,
+                description: description,
+                submissionDate: new Date().toISOString()
+            }).catch(e => console.error("Could not send upgrade email", e));
 
             setToast("Upgrade request submitted successfully!");
             setTimeout(() => {

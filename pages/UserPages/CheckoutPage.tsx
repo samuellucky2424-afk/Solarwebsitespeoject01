@@ -6,6 +6,7 @@ import TermsAndConditions from '../../components/TermsAndConditions';
 import { supabase, getConfig } from '../../config/supabaseClient';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
+import { sendOrderEmails } from '../../src/lib/sendOrderEmail';
 
 declare global {
     interface Window {
@@ -193,6 +194,22 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                         if (hubError) {
                             console.warn("Non-critical: Could not log order to hub:", hubError);
                         }
+
+                        // Send confirmation emails to BOTH Admin and Customer (sign-up email)
+                        sendOrderEmails({
+                            customerName: formData.name,
+                            customerEmail: formData.email, // using sign-up/checkout email
+                            customerPhone: formData.phone,
+                            orderId: order_id,
+                            transactionRef: tx_ref,
+                            items: cartItems.map(item => ({
+                                name: item.name,
+                                quantity: item.quantity,
+                                price: item.price
+                            })),
+                            totalAmount: totalPrice,
+                            orderDate: new Date().toISOString()
+                        }).catch(err => console.error("Could not send order emails:", err));
 
                         setToast({ msg: "✅ Payment successful! Your order has been placed." });
                         clearCart();

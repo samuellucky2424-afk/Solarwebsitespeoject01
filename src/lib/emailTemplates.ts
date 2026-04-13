@@ -330,3 +330,208 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
 </html>
   `;
 }
+
+// -------------------------------------------------------------
+// UPGRADE REQUEST TEMPLATES
+// -------------------------------------------------------------
+export interface UpgradeEmailData {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  propertyAddress: string;
+  upgradeType: string;
+  specifications: string;
+  description: string;
+  submissionDate: string;
+}
+
+export function generateUpgradeAdminEmailHTML(data: UpgradeEmailData): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .header { background: #1a351c; color: white; padding: 30px 20px; text-align: center; }
+    .content { padding: 30px; }
+    .info-box { background: #f8fcf8; border-left: 4px solid #4c9a52; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    .label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold; }
+    .value { font-size: 15px; font-weight: 500; margin-bottom: 15px; }
+    .specs { white-space: pre-wrap; background: #fff; border: 1px solid #e7f3e8; padding: 15px; border-radius: 8px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin:0; font-size: 24px;">⬆️ System Upgrade Request</h1>
+    </div>
+    <div class="content">
+      <div class="info-box">
+        <div class="label">Customer</div>
+        <div class="value">${data.customerName}</div>
+        
+        <div class="label">Contact</div>
+        <div class="value"><a href="mailto:${data.customerEmail}">${data.customerEmail}</a> | ${data.customerPhone}</div>
+        
+        <div class="label">Address</div>
+        <div class="value">${data.propertyAddress}</div>
+        
+        <div class="label">Date Requested</div>
+        <div class="value">${new Date(data.submissionDate).toLocaleString()}</div>
+      </div>
+
+      <h3 style="color: #1a351c; margin-top: 25px;">Upgrade Details: ${data.upgradeType}</h3>
+      <div class="specs">
+        <strong>Specifications:</strong><br/>
+        ${data.specifications}
+        
+        <br/><br/>
+        <strong>Customer Notes:</strong><br/>
+        ${data.description || 'None provided'}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+// -------------------------------------------------------------
+// PRODUCT ORDER TEMPLATES
+// -------------------------------------------------------------
+export interface OrderEmailData {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  orderId: string;
+  transactionRef: string;
+  items: Array<{ name: string; quantity: number; price: number }>;
+  totalAmount: number;
+  orderDate: string;
+}
+
+export function generateOrderAdminEmailHTML(data: OrderEmailData): string {
+  const itemsHtml = data.items.map(item => 
+    `<tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦${item.price.toLocaleString()}</td>
+    </tr>`
+  ).join('');
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .header { background: #0d1b0f; color: white; padding: 30px 20px; text-align: center; }
+    .content { padding: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #f8fcf8; padding: 10px; text-align: left; font-size: 13px; color: #666; border-bottom: 2px solid #e7f3e8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin:0; font-size: 24px;">🛒 New Paid Order</h1>
+      <p style="margin: 5px 0 0 0; opacity: 0.9;">Order #${data.orderId}</p>
+    </div>
+    <div class="content">
+      <p><strong>Customer:</strong> ${data.customerName}</p>
+      <p><strong>Email:</strong> ${data.customerEmail} | <strong>Phone:</strong> ${data.customerPhone}</p>
+      <p><strong>Transaction Ref:</strong> ${data.transactionRef}</p>
+      <p><strong>Date:</strong> ${new Date(data.orderDate).toLocaleString()}</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th style="text-align: center;">Qty</th>
+            <th style="text-align: right;">Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+          <tr>
+            <td colspan="2" style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333;">Total Amount:</td>
+            <td style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333; color: #4c9a52;">₦${data.totalAmount.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+export function generateOrderCustomerEmailHTML(data: OrderEmailData): string {
+  const itemsHtml = data.items.map(item => 
+    `<tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦${item.price.toLocaleString()}</td>
+    </tr>`
+  ).join('');
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .header { background: #4c9a52; color: white; padding: 30px 20px; text-align: center; }
+    .content { padding: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th { background: #f8fcf8; padding: 10px; text-align: left; font-size: 13px; color: #666; border-bottom: 2px solid #e7f3e8; }
+    .footer { background: #f8fcf8; padding: 20px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e7f3e8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin:0; font-size: 24px;">Thank You For Your Order!</h1>
+      <p style="margin: 5px 0 0 0; opacity: 0.9;">Greenlife Solar Solutions</p>
+    </div>
+    <div class="content">
+      <p>Dear ${data.customerName.split(' ')[0]},</p>
+      <p>We've successfully received your payment and are currently processing your order <strong>#${data.orderId}</strong>.</p>
+      
+      <div style="background: #f0f5f1; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="margin-top: 0; color: #1a351c;">Order Summary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th style="text-align: center;">Qty</th>
+              <th style="text-align: right;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+            <tr>
+              <td colspan="2" style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333;">Total Paid:</td>
+              <td style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333; color: #4c9a52;">₦${data.totalAmount.toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <p>If you have any questions about this order, reply to this email or call our support line.</p>
+    </div>
+    <div class="footer">
+      <p>Greenlife Solar Solutions Limited</p>
+      <p>📞 0903 657 0294 | 📧 infogreenlifetechnology@gmail.com</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
