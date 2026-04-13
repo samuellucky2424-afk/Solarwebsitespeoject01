@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { isSupabaseConfigured, supabase } from '../config/supabaseClient';
+import { isSupabaseConfigured, supabase, loadConfig, getIsSupabaseConfigured } from '../config/supabaseClient';
 import { useAuth } from './AuthContext';
 
 // Types
@@ -34,6 +34,7 @@ export interface ServiceRequest {
   phone?: string;
   email?: string;
   packageId?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface GalleryImage {
@@ -351,7 +352,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     setPackagesLoading(true);
 
     try {
-      if (!isSupabaseConfigured) {
+      // Ensure runtime config is loaded before checking credentials
+      await loadConfig();
+
+      if (!getIsSupabaseConfigured()) {
         loadDemoData();
         return;
       }
@@ -461,7 +465,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    if (!isSupabaseConfigured) return;
+    if (!getIsSupabaseConfigured()) return;
 
     // Fetch Profile (session is guaranteed to have access_token here)
     if (mounted && session?.user) {
@@ -555,7 +559,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addRequest = async (req: ServiceRequest) => {
-    if (!isSupabaseConfigured) {
+    if (!getIsSupabaseConfigured()) {
       setRequests((prev: ServiceRequest[]) => [req, ...prev]);
       if (activeUser) {
         addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
@@ -574,7 +578,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         type: req.type,
         priority: req.priority,
         customer: req.customer,
-        packageId: req.packageId
+        packageId: req.packageId,
+        ...(req.metadata || {})
       }
     }]);
 
@@ -821,7 +826,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     status: item.status,
     priority: item.metadata?.priority || 'Normal',
     description: item.description,
-    packageId: item.metadata?.packageId
+    packageId: item.metadata?.packageId,
+    metadata: item.metadata || {}
   });
 
   const addNotification = (userId: string, title: string, message: string, type: Notification['type']) => {

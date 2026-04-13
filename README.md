@@ -1,20 +1,55 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Greenlife Solar Solutions
 
-# Run and deploy your AI Studio app
+React + Vite storefront for Greenlife Solar Solutions with Supabase for data/auth and Flutterwave for payments.
 
-This contains everything you need to run your app locally.
+## Run locally
 
-View your app in AI Studio: https://ai.studio/apps/drive/1foh4T8qNFl2THKkYDjNJzNgoJdKuEDM6
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
+Prerequisites:
+- Node.js
+- A Supabase project
+- Flutterwave public and secret keys
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Fill the frontend env in [.env](.env)
+3. Add the server-side secrets from [supabase/.env.example](supabase/.env.example) to your Supabase Edge Functions environment
+4. Start the app:
    `npm run dev`
+
+## Frontend env
+
+The Vite app reads these values from [.env](.env):
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_FUNCTION_URL`
+- `VITE_FLUTTERWAVE_PUBLIC_KEY`
+
+## Vercel env
+
+If you deploy this project on Vercel, add the variables from [.env.vercel.example](.env.vercel.example) in Vercel Project Settings.
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_FUNCTION_URL`
+- `VITE_FLUTTERWAVE_PUBLIC_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+
+## Supabase function secrets
+
+These are required by the Edge Functions used for orders, admin access, and Flutterwave payment verification:
+
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `FLUTTERWAVE_SECRET_KEY`
+- `FLUTTERWAVE_WEBHOOK_SECRET_HASH`
+
+## Payment flow
+
+- The frontend opens the Flutterwave checkout modal with `VITE_FLUTTERWAVE_PUBLIC_KEY`
+- `create-order` creates a pending order in Supabase
+- `verify-flutterwave` confirms the transaction with Flutterwave using `FLUTTERWAVE_SECRET_KEY`
+- `flutterwave-webhook` can also confirm payments asynchronously with `FLUTTERWAVE_WEBHOOK_SECRET_HASH`
+- Flutterwave backend secrets belong in Supabase Edge Functions, not in Vercel

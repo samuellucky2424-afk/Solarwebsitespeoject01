@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { PublicHeader, Toast } from '../../components/SharedComponents';
 import TermsAndConditions from '../../components/TermsAndConditions';
-import { supabase } from '../../config/supabaseClient';
+import { supabase, getConfig } from '../../config/supabaseClient';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -13,9 +13,10 @@ declare global {
     }
 }
 
-const FLW_PUBLIC_KEY = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY as string | undefined;
-
-const FUNCTIONS_BASE_URL =
+// These are read at render time — by then loadConfig() has resolved.
+const getFLWPublicKey = () => getConfig()?.flutterwavePublicKey || import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '';
+const getFunctionsBaseUrl = () =>
+    getConfig()?.supabaseFunctionUrl ||
     import.meta.env.VITE_SUPABASE_FUNCTION_URL ||
     'https://xqvapaavywmqswtccfqu.functions.supabase.co';
 
@@ -67,7 +68,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
         }
 
         // Guard: Flutterwave key missing
-        if (!FLW_PUBLIC_KEY) {
+        if (!getFLWPublicKey()) {
             setToast({ msg: "❌ Payment not configured — Flutterwave public key is missing. Contact support." });
             return;
         }
@@ -114,7 +115,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
 
             // Step 2 — Open Flutterwave payment modal
             window.FlutterwaveCheckout({
-                public_key: FLW_PUBLIC_KEY,
+                public_key: getFLWPublicKey(),
                 tx_ref,
                 amount: totalPrice,
                 currency: "NGN",
