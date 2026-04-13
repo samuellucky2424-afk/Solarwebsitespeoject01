@@ -1,4 +1,4 @@
-import { QuoteRecommendation } from '../data/consultationQuotes';
+import { QuoteRecommendation } from '../../data/consultationQuotes';
 
 interface ConsultationEmailData {
   customerName: string;
@@ -187,7 +187,7 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
               <div style="background: #fffbea; border-left: 3px solid #ffc107; padding: 12px; border-radius: 6px; margin-top: 15px;">
                 <strong style="color: #995400;">Notes:</strong>
                 <ul style="margin-top: 8px; padding-left: 20px; font-size: 13px; color: #666;">
-                  ${data.selectedQuote.notes.map(note => `<li>${note}</li>`).join('')}
+                  ${data.selectedQuote.notes.map((note: string) => `<li>${note}</li>`).join('')}
                 </ul>
               </div>
             ` : ''}

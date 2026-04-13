@@ -1,4 +1,4 @@
-import { QuoteRecommendation } from '../data/consultationQuotes';
+import { QuoteRecommendation } from '../../data/consultationQuotes';
 import { generateAdminEmailHTML, generateCustomerEmailHTML } from './emailTemplates';
 
 export interface SendConsultationEmailParams {
