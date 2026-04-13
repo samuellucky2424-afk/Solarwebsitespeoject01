@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { supabase } from '../../config/supabaseClient';
+import { getSupabase } from '../../config/supabaseClient';
 import { useAuth } from '../../context/AuthContext';
 
 const UserLogin: React.FC = () => {
@@ -61,7 +61,7 @@ const UserLogin: React.FC = () => {
         }
 
         // 1. Sign Up with Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await getSupabase().auth.signUp({
           email: signUpData.email,
           password: signUpData.password,
           options: {
@@ -78,7 +78,7 @@ const UserLogin: React.FC = () => {
         if (authData.user) {
           // The trigger auto-creates a minimal row in 'profiles' (id, email, role, created_at).
           // Now update that row with additional signup details using snake_case column names.
-          const { error: profileError } = await supabase.from('profiles').upsert({
+          const { error: profileError } = await getSupabase().from('profiles').upsert({
             id: authData.user.id,
             full_name: signUpData.fullName,
             email: signUpData.email,
@@ -138,7 +138,7 @@ const UserLogin: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await getSupabase().auth.signInWithPassword({
         email,
         password
       });
@@ -242,7 +242,7 @@ const UserLogin: React.FC = () => {
             {/* Social Login (Google) - Placeholder for now, or use Supabase OAuth */}
             <div className="mb-8">
               <button
-                onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}
+                onClick={() => getSupabase().auth.signInWithOAuth({ provider: 'google' })}
                 className="flex w-full items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
                 type="button"
               >

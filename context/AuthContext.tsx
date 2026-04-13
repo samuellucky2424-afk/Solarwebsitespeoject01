@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../config/supabaseClient';
+import { getSupabase, loadConfig } from '../config/supabaseClient';
 import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -22,44 +22,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+    let subscription: any;
 
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    }).catch((err) => {
-      if (mounted) {
-        // More robust dismissal of AbortError
-        const isAbort = err.name === 'AbortError' || err.message?.includes('AbortError') || err.message?.includes('signal is aborted');
-        if (!isAbort) {
-          console.error("Auth session check error:", err);
+    const initAuth = async () => {
+      try {
+        // Wait for robust runtime config to load
+        await loadConfig();
+        const client = getSupabase();
+
+        // Check active session
+        const { data: { session: initSession } } = await client.auth.getSession();
+        if (mounted) {
+          setSession(initSession);
+          setUser(initSession?.user ?? null);
+          setLoading(false);
         }
-        setLoading(false);
-      }
-    });
 
-    // Listen for changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (mounted) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+        // Listen for changes
+        const { data } = client.auth.onAuthStateChange((_event, currentSession) => {
+          if (mounted) {
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            setLoading(false);
+          }
+        });
+        subscription = data.subscription;
+
+      } catch (err: any) {
+        if (mounted) {
+          const isAbort = err.name === 'AbortError' || err.message?.includes('AbortError') || err.message?.includes('signal is aborted');
+          if (!isAbort) {
+            console.error("Auth session check error:", err);
+          }
+          setLoading(false);
+        }
       }
-    });
+    };
+
+    initAuth();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const client = getSupabase();
+    await client.auth.signOut();
     navigate('/login');
   };
 
