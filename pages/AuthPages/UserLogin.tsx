@@ -1,18 +1,28 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { supabase } from '../../config/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Auth Mode: 'signin' or 'signup'
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
+
+  // Automatically redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from || '/dashboard';
+      navigate(from);
+    }
+  }, [isAuthenticated, navigate, location.state]);
 
   // Sign Up Form State
   const [signUpData, setSignUpData] = useState({
@@ -135,9 +145,7 @@ const UserLogin: React.FC = () => {
 
       if (error) throw error;
 
-      // Redirect handled by AuthContext or explicit navigate
-      const from = location.state?.from || '/dashboard';
-      navigate(from);
+      // Redirect is now handled by the useEffect watching isAuthenticated!
 
     } catch (err: any) {
       console.error("Login error:", err);
