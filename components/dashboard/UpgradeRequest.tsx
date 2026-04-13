@@ -83,7 +83,7 @@ const UpgradeRequest: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 specifications: specs,
                 description: description,
                 submissionDate: new Date().toISOString()
-            }).catch(e => console.error("Could not send upgrade email", e));
+            }).catch((e: any) => console.error("Could not send upgrade email", e));
 
             setToast("Upgrade request submitted successfully!");
             setTimeout(() => {

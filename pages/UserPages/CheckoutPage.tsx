@@ -209,7 +209,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             })),
                             totalAmount: totalPrice,
                             orderDate: new Date().toISOString()
-                        }).catch(err => console.error("Could not send order emails:", err));
+                        }).catch((err: any) => console.error("Could not send order emails:", err));
 
                         setToast({ msg: "✅ Payment successful! Your order has been placed." });
                         clearCart();
