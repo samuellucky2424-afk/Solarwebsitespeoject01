@@ -9,9 +9,10 @@ import RequestsManagement from '../../components/admin/RequestsManagement';
 import AnalyticsInsights from '../../components/admin/AnalyticsInsights';
 import SettingsPanel from '../../components/admin/SettingsPanel';
 import UserManagement from '../../components/admin/UserManagement';
+import AdminLiveChat from '../../components/admin/AdminLiveChat';
 
 // Define View Type (matching AdminSidebar)
-type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings';
+type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
 
 const AdminDashboard: React.FC = () => {
    const [activeView, setActiveView] = useState<AdminView>('overview');
@@ -93,6 +94,7 @@ const AdminDashboard: React.FC = () => {
                )}
                {activeView === 'analytics' && <AnalyticsInsights />}
                {activeView === 'settings' && <SettingsPanel />}
+               {activeView === 'live-chat' && <AdminLiveChat />}
             </main>
          </div>
       </div>

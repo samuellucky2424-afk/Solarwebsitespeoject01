@@ -5,6 +5,7 @@ import { GalleryProvider } from './context/GalleryContext';
 import { AdminProvider } from './context/AdminContext';
 import { AuthProvider } from './context/AuthContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
+import LiveChatWidget from './components/LiveChatWidget';
 
 // Lazy load components
 const LandingPage = lazy(() => import('./pages/PublicPages/LandingPage'));
@@ -120,6 +121,7 @@ const App: React.FC = () => {
               </Suspense>
               <CartDrawer />
               <FloatingCartButton />
+              <LiveChatWidget />
             </CartProvider>
           </GalleryProvider>
         </AdminProvider>
