@@ -175,7 +175,12 @@ export async function sendLowStockAlert(
   try {
     const emailHTML = generateLowStockAdminEmailHTML(data);
 
-    const response = await fetch('/api/send-email', {
+    // Use local API server in development, production endpoint in production
+    const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3001/api/send-email'  // Local development
+      : '/api/send-email';  // Production (Vercel)
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
