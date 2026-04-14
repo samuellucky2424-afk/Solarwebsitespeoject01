@@ -15,6 +15,7 @@ const GalleryPage = lazy(() => import('./pages/PublicPages/GalleryPage'));
 const InstallersPage = lazy(() => import('./pages/PublicPages/InstallersPage'));
 const PackagesPage = lazy(() => import('./pages/PublicPages/PackagesPage'));
 const ContactPage = lazy(() => import('./pages/PublicPages/ContactPage'));
+const SupportPage = lazy(() => import('./pages/PublicPages/SupportPage'));
 const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
 const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
@@ -94,6 +95,7 @@ const App: React.FC = () => {
                   <Route path="/installers" element={<InstallersPage />} />
                   <Route path="/packages" element={<PackagesPage />} />
                   <Route path="/contact" element={<ContactPage />} />
+                  <Route path="/support" element={<SupportPage />} />
                   <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/packages/:packageId" element={<PackageDetailPage />} />
 
