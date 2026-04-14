@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; }
+    .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+    .email-wrapper { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: linear-gradient(135deg, #0d1b0f 0%, #1a351c 100%); color: white; padding: 30px 20px; text-align: center; }
+    .header h1 { font-size: 24px; margin-bottom: 5px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    .priority-badge { display: inline-block; background: #d1ecf1; color: #17a2b8; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 10px; }
+    .content { padding: 25px; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 14px; font-weight: 700; color: #0d1b0f; margin-bottom: 12px; border-bottom: 2px solid #4c9a52; padding-bottom: 8px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .info-item { background: #f8fcf8; padding: 12px; border-radius: 6px; border-left: 3px solid #4c9a52; }
+    .info-label { font-size: 11px; color: #666; text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
+    .info-value { font-size: 13px; color: #0d1b0f; font-weight: 500; }
+    .info-value a { color: #4c9a52; text-decoration: none; }
+    .description-box { background: #f8fcf8; padding: 15px; border-radius: 6px; border: 1px solid #e7f3e8; }
+    .description-box strong { color: #0d1b0f; display: block; margin-bottom: 8px; }
+    .description-box p { font-size: 13px; color: #666; line-height: 1.5; white-space: pre-wrap; }
+    .action-section { background: #f8fcf8; padding: 20px; border-radius: 6px; text-align: center; margin-top: 25px; border-left: 4px solid #4c9a52; }
+    .action-button { display: inline-block; background: #4c9a52; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: 600; margin: 8px 5px; font-size: 13px; }
+    .action-button:hover { background: #0d1b0f; }
+    .footer { background: #f8fcf8; padding: 20px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #e7f3e8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="email-wrapper">
+      <div class="header">
+        <h1>🔧 New Service Request</h1>
+        <p>Site Survey Request</p>
+        <div class="priority-badge">Normal Priority</div>
+      </div>
+
+      <div class="content">
+        <!-- Customer Information -->
+        <div class="section">
+          <h2 class="section-title">👤 Customer Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Name</div>
+              <div class="info-value">Chioma Okafor</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Request ID</div>
+              <div class="info-value">SVC-2026-04-002</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Email</div>
+              <div class="info-value"><a href="mailto:chioma.okafor@email.com">chioma.okafor@email.com</a></div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Phone</div>
+              <div class="info-value"><a href="tel:+234 701-234-5678">+234 701-234-5678</a></div>
+            </div>
+            <div class="info-item" style="grid-column: 1 / -1;">
+              <div class="info-label">Service Address</div>
+              <div class="info-value">456 Green Avenue, Abuja, Nigeria</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Request Details -->
+        <div class="section">
+          <h2 class="section-title">📋 Request Details</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Request Type</div>
+              <div class="info-value">Site Survey Request</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Submitted</div>
+              <div class="info-value">4/14/2026, 3:59:18 AM</div>
+            </div>
+            
+              <div class="info-item">
+                <div class="info-label">Preferred Time</div>
+                <div class="info-value">2:00 PM - 4:00 PM</div>
+              </div>
+            
+            
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="section">
+          <h2 class="section-title">📝 Description</h2>
+          <div class="description-box">
+            <p>I want to install a solar system on my 4-bedroom house. Need a professional assessment of my roof and power requirements.</p>
+          </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+          <h3 style="color: #0d1b0f; margin-bottom: 12px; font-size: 14px;">Next Steps</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Please contact the customer to confirm the service appointment and provide more details.</p>
+          <a href="mailto:chioma.okafor@email.com?subject=Re: Your Service Request" class="action-button">📧 Reply to Customer</a>
+          <a href="#" class="action-button">📊 View Dashboard</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p><strong>Greenlife Solar Solutions Limited</strong></p>
+        <p>Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
+        <p>📞 0903 657 0294 | 📧 support@greenlifesolarsolution.com</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  

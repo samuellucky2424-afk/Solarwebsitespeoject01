@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.4; color: #333; background: #f5f7fa; }
+    .container { width: 100%; margin: 0; padding: 0; background: #f5f7fa; }
+    .email-wrapper { background: white; width: 100%; margin: 0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #0d1b0f 0%, #1a351c 100%); color: white; padding: 30px 20px; text-align: center; width: 100%; }
+    .header h1 { font-size: 22px; margin-bottom: 8px; }
+    .header p { font-size: 12px; opacity: 0.9; }
+    .content { padding: 20px; width: 100%; }
+    .section { margin-bottom: 20px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #0d1b0f; margin-bottom: 10px; border-bottom: 2px solid #4c9a52; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th { background: #4c9a52; color: white; padding: 8px; text-align: left; font-size: 11px; font-weight: 600; }
+    td { padding: 8px; border-bottom: 1px solid #e7f3e8; font-size: 12px; }
+    tr:nth-child(even) { background: #f8fcf8; }
+    .label { font-weight: 600; color: #0d1b0f; width: 40%; }
+    .value { color: #666; }
+    .product-item { background: #f8fcf8; padding: 15px; margin-bottom: 12px; border-radius: 6px; border-left: 3px solid #4c9a52; }
+    .product-header { display: flex; gap: 12px; margin-bottom: 10px; }
+    .product-image { width: 60px; height: 60px; border-radius: 4px; overflow: hidden; background: white; border: 1px solid #e7f3e8; flex-shrink: 0; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; }
+    .product-info { flex: 1; }
+    .product-name { font-size: 12px; font-weight: 600; color: #0d1b0f; margin-bottom: 3px; }
+    .product-category { font-size: 10px; color: #4c9a52; margin-bottom: 5px; }
+    .product-details { font-size: 11px; color: #666; line-height: 1.4; }
+    .product-details strong { color: #0d1b0f; }
+    .order-summary { background: #f8fcf8; border: 1px solid #e7f3e8; border-radius: 6px; padding: 15px; margin-top: 15px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #e7f3e8; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-label { font-weight: 600; color: #0d1b0f; }
+    .summary-value { color: #666; }
+    .total-row { font-size: 14px; font-weight: 700; color: #4c9a52; display: flex; justify-content: space-between; }
+    .badge { display: inline-block; background: #4c9a52; color: white; padding: 3px 10px; border-radius: 15px; font-size: 10px; font-weight: 600; margin-right: 5px; }
+    .action-section { background: #f8fcf8; padding: 15px; border-radius: 6px; text-align: center; margin-top: 20px; border: 1px solid #e7f3e8; }
+    .approval-banner { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .approval-banner h3 { color: #856404; font-size: 13px; margin-bottom: 8px; }
+    .approval-banner p { font-size: 11px; color: #856404; line-height: 1.5; margin-bottom: 5px; }
+    .approval-button { display: inline-block; background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 12px; margin-right: 5px; }
+    .reject-button { display: inline-block; background: #dc3545; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 12px; }
+    .footer { background: #f8fcf8; padding: 15px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #e7f3e8; width: 100%; }
+    .footer p { margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="email-wrapper">
+      <div class="header">
+        <h1>New Product Order Received</h1>
+        <p>Action Required: Order Awaiting Your Approval</p>
+      </div>
+
+      <div class="content">
+        <!-- Approval Banner -->
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+          <h3 style="color: #856404; font-size: 13px; margin-bottom: 8px; font-weight: 600;">APPROVAL REQUIRED</h3>
+          <p style="font-size: 11px; color: #856404; line-height: 1.5; margin-bottom: 8px;">This order is pending your approval. Customer will NOT receive confirmation email until you approve this order in the admin dashboard.</p>
+          <p style="font-size: 11px; color: #856404;"><strong>Order Status:</strong> Pending Approval</p>
+        </div>
+
+        <!-- Order Information -->
+        <div class="section">
+          <h2 class="section-title">Order Information</h2>
+          <table>
+            <tr>
+              <td class="label">Order ID</td>
+              <td class="value">ORD-2026-04-001</td>
+            </tr>
+            <tr>
+              <td class="label">Order Date</td>
+              <td class="value">4/14/2026, 3:54:41 AM</td>
+            </tr>
+            <tr>
+              <td class="label">Total Items</td>
+              <td class="value">3 Products</td>
+            </tr>
+            <tr>
+              <td class="label">Order Status</td>
+              <td class="value"><span class="badge">Pending Approval</span></td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Customer Details -->
+        <div class="section">
+          <h2 class="section-title">Customer Details</h2>
+          <table>
+            <tr>
+              <td class="label">Full Name</td>
+              <td class="value">Samuel Lucky</td>
+            </tr>
+            <tr>
+              <td class="label">Email Address</td>
+              <td class="value"><a href="mailto:samuellucky2424@gmail.com" style="color: #4c9a52; text-decoration: none;">samuellucky2424@gmail.com</a></td>
+            </tr>
+            <tr>
+              <td class="label">Phone Number</td>
+              <td class="value"><a href="tel:+234 803-123-4567" style="color: #4c9a52; text-decoration: none;">+234 803-123-4567</a></td>
+            </tr>
+            <tr>
+              <td class="label">Delivery Address</td>
+              <td class="value">123 Lekki Phase 1, Lagos, Nigeria</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Ordered Products -->
+        <div class="section">
+          <h2 class="section-title">Ordered Products</h2>
+          
+            <div class="product-item">
+              <div class="product-header" style="display: flex; gap: 10px; margin-bottom: 8px;">
+                <div class="product-image" style="width: 40px; height: 40px; border-radius: 3px; overflow: hidden; background: white; border: 1px solid #e7f3e8; flex-shrink: 0;">
+                  <img src="https://images.pexels.com/photos/4195325/pexels-photo-4195325.jpeg?auto=compress&cs=tinysrgb&w=100" alt="Ultra High-Efficiency Solar Panel" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-size: 11px; font-weight: 600; color: #0d1b0f; margin-bottom: 2px;">Ultra High-Efficiency Solar Panel</div>
+                  <div style="font-size: 9px; color: #4c9a52; margin-bottom: 3px;">EcoVolt - Solar Panels</div>
+                  <div style="font-size: 10px; color: #666; line-height: 1.3;">
+                    <strong>ID:</strong> 1 | <strong>Price:</strong> ₦461000 | <strong>Qty:</strong> 4 | <strong>Total:</strong> ₦1844000.00
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="product-item">
+              <div class="product-header" style="display: flex; gap: 10px; margin-bottom: 8px;">
+                <div class="product-image" style="width: 40px; height: 40px; border-radius: 3px; overflow: hidden; background: white; border: 1px solid #e7f3e8; flex-shrink: 0;">
+                  <img src="https://images.pexels.com/photos/8566570/pexels-photo-8566570.jpeg?auto=compress&cs=tinysrgb&w=100" alt="LiFePO4 Home Battery Storage" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-size: 11px; font-weight: 600; color: #0d1b0f; margin-bottom: 2px;">LiFePO4 Home Battery Storage</div>
+                  <div style="font-size: 9px; color: #4c9a52; margin-bottom: 3px;">Lumina Solar - Batteries</div>
+                  <div style="font-size: 10px; color: #666; line-height: 1.3;">
+                    <strong>ID:</strong> 3 | <strong>Price:</strong> ₦6480000 | <strong>Qty:</strong> 1 | <strong>Total:</strong> ₦6480000.00
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="product-item">
+              <div class="product-header" style="display: flex; gap: 10px; margin-bottom: 8px;">
+                <div class="product-image" style="width: 40px; height: 40px; border-radius: 3px; overflow: hidden; background: white; border: 1px solid #e7f3e8; flex-shrink: 0;">
+                  <img src="https://images.pexels.com/photos/3962286/pexels-photo-3962286.jpeg?auto=compress&cs=tinysrgb&w=100" alt="Smart Hybrid Power Inverter" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-size: 11px; font-weight: 600; color: #0d1b0f; margin-bottom: 2px;">Smart Hybrid Power Inverter</div>
+                  <div style="font-size: 9px; color: #4c9a52; margin-bottom: 3px;">SunMaster - Inverters</div>
+                  <div style="font-size: 10px; color: #666; line-height: 1.3;">
+                    <strong>ID:</strong> 2 | <strong>Price:</strong> ₦2237000 | <strong>Qty:</strong> 1 | <strong>Total:</strong> ₦2237000.00
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+        </div>
+
+        <!-- Order Summary -->
+        <div class="section">
+          <h2 class="section-title">Order Summary</h2>
+          <div class="order-summary">
+            <div class="summary-row">
+              <span class="summary-label">Subtotal (3 items)</span>
+              <span class="summary-value">₦10561000.00</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Tax (7.5%)</span>
+              <span class="summary-value">₦792075.00</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Shipping</span>
+              <span class="summary-value">₦50000.00</span>
+            </div>
+            <div class="summary-row total-row">
+              <span>TOTAL</span>
+              <span>₦11403075.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+          <h3 style="color: #0d1b0f; margin-bottom: 10px; font-size: 13px;">Admin Actions</h3>
+          <p style="font-size: 11px; color: #666; margin-bottom: 12px;">Click a button below or go to your admin dashboard to approve or reject this order.</p>
+          <a href="https://www.greenlifesolarsolution.com/#/php/greenlife/privatelog?action=approve&orderId=ORD-2026-04-001" style="display: inline-block; background: #28a745; color: white; padding: 10px 18px; border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 12px; margin-right: 5px;">Approve Order</a>
+          <a href="https://www.greenlifesolarsolution.com/#/php/greenlife/privatelog?action=reject&orderId=ORD-2026-04-001" style="display: inline-block; background: #dc3545; color: white; padding: 10px 18px; border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 12px;">Reject Order</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p><strong>Greenlife Solar Solutions</strong></p>
+        <p>Order Management System</p>
+        <p>Customer will be notified after you approve this order.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  

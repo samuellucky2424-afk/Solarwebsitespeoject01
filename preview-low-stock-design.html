@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Low Stock Alert - Table-Based Design Preview</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      margin: 0;
+    }
+    .preview-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 40px;
+      max-width: 800px;
+    }
+    .preview-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f8f8f8;
+      border-left: 3px solid #4c9a52;
+    }
+
+    /* Email Template Styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    .wrapper { width: 100%; max-width: 700px; margin: 0 auto; background: white; }
+    .header { width: 100%; background: #0d1b0f; color: white; padding: 20px; text-align: center; }
+    .header-title { font-size: 20px; font-weight: bold; margin: 0; padding: 0; }
+    .content { padding: 20px; }
+    .product-table { width: 100%; border: 1px solid #ddd; margin-bottom: 15px; }
+    .product-table td { border: 1px solid #ddd; padding: 10px; font-size: 11px; }
+    .product-label { background: #f8f8f8; font-weight: bold; color: #0d1b0f; width: 35%; }
+    .product-value { color: #333; }
+    .stock-alert { padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; }
+    .stock-label { font-size: 10px; font-weight: bold; color: #0d1b0f; text-transform: uppercase; margin-bottom: 6px; }
+    .stock-value { font-size: 16px; font-weight: bold; color: #0d1b0f; }
+    .action-buttons { width: 100%; text-align: center; margin: 20px 0; padding: 20px 0; border-top: 1px solid #ddd; border-bottom: 1px solid #ddd; }
+    .btn { display: inline-block; padding: 8px 15px; margin: 5px; font-size: 11px; font-weight: bold; text-decoration: none; color: white; background: #4c9a52; border: none; }
+    .btn.danger { background: #cc0000; }
+    .footer { background: #f8f8f8; padding: 15px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+
+<!-- LOW STOCK ALERT PREVIEW -->
+<div class="preview-container">
+  <div class="preview-title">LOW STOCK ALERT - Table-Based Design</div>
+  
+  <table class="wrapper">
+    <tr>
+      <td class="header">
+        <p class="header-title">Inventory Alert</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="content">
+        <table style="background: #ffffcc; border-top: 3px solid #0d1b0f; padding: 15px; margin-bottom: 15px; width: 100%;">
+          <tr>
+            <td>
+              <div class="stock-label" style="margin: 0 0 8px 0;">LOW STOCK: Ultra High-Efficiency Solar Panel</div>
+              <div style="font-size: 11px; color: #333; line-height: 1.4;">This product is running low on inventory. Only 2 units remaining. Restock immediately.</div>
+            </td>
+          </tr>
+        </table>
+
+        <table class="product-table">
+          <tr>
+            <td class="product-label">Product Name</td>
+            <td class="product-value">Ultra High-Efficiency Solar Panel</td>
+          </tr>
+          <tr>
+            <td class="product-label">Brand</td>
+            <td class="product-value">SolarTech Pro</td>
+          </tr>
+          <tr>
+            <td class="product-label">Product ID</td>
+            <td class="product-value">PROD-PANEL-001</td>
+          </tr>
+          <tr>
+            <td class="product-label">Category</td>
+            <td class="product-value">Solar Panels</td>
+          </tr>
+          <tr>
+            <td class="product-label">Price</td>
+            <td class="product-value">₦461,000</td>
+          </tr>
+        </table>
+
+        <table class="stock-alert" style="background: #ffffcc;">
+          <tr>
+            <td>
+              <div class="stock-label">Current Stock Level</div>
+              <div class="stock-value">2 units</div>
+              <p style="margin-top: 6px; font-size: 11px; color: #333;">Estimated stockout in 1 day</p>
+            </td>
+          </tr>
+        </table>
+
+        <table class="action-buttons">
+          <tr>
+            <td style="text-align: center;">
+              <a href="#" class="btn">RESTOCK NOW</a>
+              <a href="#" class="btn">VIEW INVENTORY</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="footer">
+        <p>Greenlife Solar Solutions Limited</p>
+        <p>Automatic Inventory Management System</p>
+        <p>© 2026 All rights reserved</p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- OUT OF STOCK ALERT PREVIEW -->
+<div class="preview-container">
+  <div class="preview-title">OUT OF STOCK ALERT - Auto Remove Product</div>
+  
+  <table class="wrapper">
+    <tr>
+      <td class="header">
+        <p class="header-title">Inventory Alert</p>
+      </td>
+    </tr>
+    <tr>
+      <td class="content">
+        <table style="background: #ffcccc; border-top: 3px solid #0d1b0f; padding: 15px; margin-bottom: 15px; width: 100%;">
+          <tr>
+            <td>
+              <div class="stock-label" style="margin: 0 0 8px 0;">OUT OF STOCK: Smart Hybrid Power Inverter</div>
+              <div style="font-size: 11px; color: #333; line-height: 1.4;">This product has run out of stock and has been automatically removed from the product catalog.</div>
+            </td>
+          </tr>
+        </table>
+
+        <table class="product-table">
+          <tr>
+            <td class="product-label">Product Name</td>
+            <td class="product-value">Smart Hybrid Power Inverter</td>
+          </tr>
+          <tr>
+            <td class="product-label">Brand</td>
+            <td class="product-value">InvertPro</td>
+          </tr>
+          <tr>
+            <td class="product-label">Product ID</td>
+            <td class="product-value">PROD-INV-001</td>
+          </tr>
+          <tr>
+            <td class="product-label">Category</td>
+            <td class="product-value">Inverters</td>
+          </tr>
+          <tr>
+            <td class="product-label">Price</td>
+            <td class="product-value">₦2,237,000</td>
+          </tr>
+        </table>
+
+        <table class="stock-alert" style="background: #ffcccc;">
+          <tr>
+            <td>
+              <div class="stock-label">Current Stock Level</div>
+              <div class="stock-value">0 units</div>
+            </td>
+          </tr>
+        </table>
+
+        <table class="action-buttons">
+          <tr>
+            <td style="text-align: center;">
+              <a href="#" class="btn danger">RESTORE PRODUCT</a>
+              <a href="#" class="btn">VIEW INVENTORY</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td class="footer">
+        <p>Greenlife Solar Solutions Limited</p>
+        <p>Automatic Inventory Management System</p>
+        <p>© 2026 All rights reserved</p>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div style="max-width: 700px; margin: 20px auto; padding: 20px; background: #f0f0f0; border-left: 3px solid #4c9a52;">
+  <h3 style="margin-bottom: 10px;">Design Features</h3>
+  <ul style="font-size: 12px; line-height: 1.6; margin-left: 20px;">
+    <li>100% Table-based HTML structure (no flexbox/grid divs)</li>
+    <li>Sharp edges throughout - border: 1px solid #ddd (no border-radius)</li>
+    <li>Mobile-optimized max-width: 700px</li>
+    <li>Smaller font sizes: 10px (footer), 11px (details), 13px (labels), 16px (stock value)</li>
+    <li>No emojis or decorative elements</li>
+    <li>Product details in structured table format</li>
+    <li>Yellow background (#ffffcc) for low stock alerts</li>
+    <li>Light red background (#ffcccc) for out-of-stock alerts</li>
+    <li>Clear action buttons with system colors</li>
+    <li>Automatic product removal when stock reaches 0</li>
+  </ul>
+</div>
+
+</body>
+</html>

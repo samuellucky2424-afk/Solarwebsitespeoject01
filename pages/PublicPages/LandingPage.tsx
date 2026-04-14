@@ -270,10 +270,10 @@ const LandingPage: React.FC = () => {
         <section className="stats-section max-w-[1600px] mx-auto px-6 lg:px-8 -mt-12 relative z-30 mb-16">
           <div className="bg-white dark:bg-forest border border-forest/10 dark:border-white/10 rounded-2xl p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 shadow-xl shadow-forest/5 backdrop-blur-lg">
             {[
-              { label: "Installations", value: "12k+" },
-              { label: "Energy Produced", value: "15MW" },
-              { label: "Warranty", value: "25yrs" },
-              { label: "Saved by Clients", value: "NGN 64B" }
+              { label: "Installations", value: "2K+" },
+              { label: "Energy Produced", value: "20MW" },
+              { label: "Warranty", value: "3yrs" },
+              { label: "Saved by Clients", value: "NGN 23M" }
             ].map((stat, idx) => (
               <div key={idx} className="stats-item text-center">
                 <p className="text-primary text-2xl md:text-3xl font-bold">{stat.value}</p>

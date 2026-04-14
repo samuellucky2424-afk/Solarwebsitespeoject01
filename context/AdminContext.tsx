@@ -35,6 +35,7 @@ export interface ServiceRequest {
   email?: string;
   packageId?: string;
   metadata?: Record<string, any>;
+  userId?: string;
 }
 
 export interface GalleryImage {
@@ -827,7 +828,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     priority: item.metadata?.priority || 'Normal',
     description: item.description,
     packageId: item.metadata?.packageId,
-    metadata: item.metadata || {}
+    metadata: item.metadata || {},
+    userId: item.user_id
   });
 
   const addNotification = (userId: string, title: string, message: string, type: Notification['type']) => {

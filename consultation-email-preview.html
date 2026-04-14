@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.4; color: #333; background: #f5f7fa; }
+    .container { width: 100%; max-width: 100%; margin: 0; padding: 0; background: #f5f7fa; }
+    .email-wrapper { background: white; width: 100%; margin: 0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #0d1b0f 0%, #1a351c 100%); color: white; padding: 30px 20px; text-align: center; width: 100%; }
+    .header h1 { font-size: 22px; margin-bottom: 8px; }
+    .header p { font-size: 12px; opacity: 0.9; }
+    .content { padding: 20px; width: 100%; }
+    .section { margin-bottom: 20px; }
+    .section-title { font-size: 14px; font-weight: 600; color: #0d1b0f; margin-bottom: 10px; border-bottom: 2px solid #4c9a52; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th { background: #4c9a52; color: white; padding: 8px; text-align: left; font-size: 11px; font-weight: 600; }
+    td { padding: 8px; border-bottom: 1px solid #e7f3e8; font-size: 12px; }
+    tr:nth-child(even) { background: #f8fcf8; }
+    .label { font-weight: 600; color: #0d1b0f; width: 40%; }
+    .value { color: #666; }
+    .quote-card { background: linear-gradient(135deg, #f8fcf8 0%, #f0f5f1 100%); border-left: 3px solid #4c9a52; padding: 15px; border-radius: 6px; margin: 15px 0; }
+    .quote-title { font-size: 14px; font-weight: 600; color: #0d1b0f; margin-bottom: 8px; }
+    .quote-price { font-size: 18px; font-weight: 700; color: #4c9a52; margin: 8px 0; }
+    .quote-details { font-size: 11px; line-height: 1.5; }
+    .quote-details strong { color: #0d1b0f; }
+    .quote-tagline { color: #4c9a52; font-size: 11px; margin-bottom: 8px; font-style: italic; }
+    .badge { display: inline-block; background: #4c9a52; color: white; padding: 3px 10px; border-radius: 15px; font-size: 10px; font-weight: 600; margin-right: 5px; }
+    .action-section { background: #f8fcf8; padding: 15px; border-radius: 6px; text-align: center; margin-top: 20px; border: 1px solid #e7f3e8; }
+    .action-button { display: inline-block; background: #4c9a52; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: 600; font-size: 12px; }
+    .footer { background: #f8fcf8; padding: 15px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #e7f3e8; width: 100%; }
+    .footer p { margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="email-wrapper">
+      <div class="header">
+        <h1>New Consultation Request</h1>
+        <p>A customer has submitted their solar consultation form</p>
+      </div>
+
+      <div class="content">
+        <!-- Customer Information -->
+        <div class="section">
+          <h2 class="section-title">Customer Information</h2>
+          <table>
+            <tr>
+              <td class="label">Full Name</td>
+              <td class="value">Samuel Lucky</td>
+            </tr>
+            <tr>
+              <td class="label">Email Address</td>
+              <td class="value"><a href="mailto:samuellucky2424@gmail.com" style="color: #4c9a52; text-decoration: none;">samuellucky2424@gmail.com</a></td>
+            </tr>
+            <tr>
+              <td class="label">Phone Number</td>
+              <td class="value"><a href="tel:+234 803-123-4567" style="color: #4c9a52; text-decoration: none;">+234 803-123-4567</a></td>
+            </tr>
+            <tr>
+              <td class="label">Submission Date</td>
+              <td class="value">4/14/2026, 3:26:35 AM</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Property Details -->
+        <div class="section">
+          <h2 class="section-title">Property Details</h2>
+          <table>
+            <tr>
+              <td class="label">Property Address</td>
+              <td class="value">123 Lekki Phase 1, Lagos, Nigeria</td>
+            </tr>
+            <tr>
+              <td class="label">Roof Type</td>
+              <td class="value">Concrete (Flat)</td>
+            </tr>
+            <tr>
+              <td class="label">Housing Type</td>
+              <td class="value">bungalow</td>
+            </tr>
+            <tr>
+              <td class="label">Number of Bedrooms</td>
+              <td class="value">4</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Appliance Configuration -->
+        <div class="section">
+          <h2 class="section-title">Appliance Configuration</h2>
+          <table>
+            <tr>
+              <td class="label">Fans</td>
+              <td class="value">6</td>
+            </tr>
+            <tr>
+              <td class="label">TVs</td>
+              <td class="value">3</td>
+            </tr>
+            <tr>
+              <td class="label">Fridges (Type)</td>
+              <td class="value">2 (double-door)</td>
+            </tr>
+            <tr>
+              <td class="label">Air Conditioners (Type)</td>
+              <td class="value">2 (1.5hp)</td>
+            </tr>
+            <tr>
+              <td class="label">Washing Machines</td>
+              <td class="value">1</td>
+            </tr>
+            <tr>
+              <td class="label">Washing Machine Details</td>
+              <td class="value">fully-automatic / large</td>
+            </tr>
+            <tr>
+              <td class="label">Additional Appliances</td>
+              <td class="value">Electric cooker, Water heater</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Selected Quote Package -->
+        <div class="section">
+          <h2 class="section-title">Selected Solar Package</h2>
+          <div class="quote-card">
+            <div class="quote-title">10kVA 48V Hybrid System</div>
+            <div class="quote-tagline">Complete Solar Solution with Battery Backup</div>
+            <div class="quote-price">₦3,500,000</div>
+            
+            <table style="margin-top: 10px; font-size: 11px;">
+              <tr>
+                <td class="label">Inverter</td>
+                <td class="value">10kVA Hybrid Inverter</td>
+              </tr>
+              <tr>
+                <td class="label">Battery</td>
+                <td class="value">15kWh LiFePO₄ Battery</td>
+              </tr>
+              <tr>
+                <td class="label">Panels</td>
+                <td class="value">20 x 550W Solar Panels</td>
+              </tr>
+              <tr>
+                <td class="label">Recommended For</td>
+                <td class="value">4-5 Bedroom House</td>
+              </tr>
+              <tr>
+                <td class="label">Load Coverage</td>
+                <td class="value">Perfect for Family homes with AC, Refrigerator, Washing Machine</td>
+              </tr>
+            </table>
+
+            <div style="background: #fffbea; border-left: 2px solid #ffc107; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 11px;">
+              <strong style="color: #995400;">Notes:</strong>
+              <ul style="margin-top: 5px; padding-left: 18px; color: #666;">
+                <li>This package will comfortably handle all your appliances</li><li>The 15kWh battery provides 24-hour backup</li><li>Expandable to add more panels in the future</li>
+              </ul>
+            </div>
+
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #cfe7d1; font-size: 10px;">
+              <span style="color: #4c9a52; font-weight: 600;">Match Score: 92/100</span>
+              <span class="badge" style="background: #28a745; margin-left: 10px;">Strong Match</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+          <h3 style="color: #0d1b0f; margin-bottom: 10px; font-size: 13px;">Next Steps</h3>
+          <p style="font-size: 11px; color: #666; margin-bottom: 10px;">This is a qualified lead. Consider reaching out to discuss custom configurations or installation timeline.</p>
+          <a href="mailto:samuellucky2424@gmail.com" class="action-button">Reply to Customer</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p><strong>Greenlife Solar Solutions</strong></p>
+        <p>Solar Consultation Management System</p>
+        <p>This is an automated consultation submission notification.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  
