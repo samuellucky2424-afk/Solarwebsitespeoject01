@@ -1,5 +1,6 @@
 import { QuoteRecommendation } from '../../data/consultationQuotes';
 import { generateAdminEmailHTML, generateCustomerEmailHTML } from './emailTemplates';
+import { sendEmailRequest } from './sendEmailRequest';
 
 export interface SendConsultationEmailParams {
   customerName: string;
@@ -41,73 +42,53 @@ export async function sendConsultationEmails(params: SendConsultationEmailParams
       submissionDate,
     };
 
-    // Generate HTML emails
     const adminHTML = generateAdminEmailHTML(emailData);
     const customerHTML = generateCustomerEmailHTML(emailData);
 
-    // Send email to admin
-    const adminEmailResponse = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const adminEmailResponse = await sendEmailRequest({
+      to: params.adminEmail,
+      subject: `New Consultation Request - ${params.customerName}`,
+      html: adminHTML,
+      replyTo: params.customerEmail,
+      tags: {
+        category: 'consultation',
+        type: 'admin-notification',
+        customerEmail: params.customerEmail,
       },
-      body: JSON.stringify({
-        to: params.adminEmail,
-        subject: `📋 New Consultation Request - ${params.customerName}`,
-        html: adminHTML,
-        replyTo: params.customerEmail,
-        tags: {
-          category: 'consultation',
-          type: 'admin-notification',
-          customerEmail: params.customerEmail,
-        },
-      }),
     });
 
-    if (!adminEmailResponse.ok) {
-      console.error('Failed to send admin email:', await adminEmailResponse.text());
+    if (!adminEmailResponse.success) {
+      console.error('Failed to send admin email:', adminEmailResponse.error);
       return {
         success: false,
         error: 'Failed to send admin notification',
       };
     }
 
-    const adminData = await adminEmailResponse.json();
-
-    // Send confirmation email to customer
-    const customerEmailResponse = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const customerEmailResponse = await sendEmailRequest({
+      to: params.customerEmail,
+      subject: 'Your Solar Consultation Request - Greenlife Solar',
+      html: customerHTML,
+      tags: {
+        category: 'consultation',
+        type: 'customer-confirmation',
+        customerEmail: params.customerEmail,
       },
-      body: JSON.stringify({
-        to: params.customerEmail,
-        subject: '✅ Your Solar Consultation Request - Greenlife Solar',
-        html: customerHTML,
-        tags: {
-          category: 'consultation',
-          type: 'customer-confirmation',
-          customerEmail: params.customerEmail,
-        },
-      }),
     });
 
-    if (!customerEmailResponse.ok) {
-      console.error('Failed to send customer email:', await customerEmailResponse.text());
-      // Don't fail completely if customer email fails, admin got it
+    if (!customerEmailResponse.success) {
+      console.error('Failed to send customer email:', customerEmailResponse.error);
       return {
         success: true,
-        adminEmailId: adminData.id,
+        adminEmailId: adminEmailResponse.id,
         error: 'Admin email sent but customer confirmation failed',
       };
     }
 
-    const customerData = await customerEmailResponse.json();
-
     return {
       success: true,
-      adminEmailId: adminData.id,
-      customerEmailId: customerData.id,
+      adminEmailId: adminEmailResponse.id,
+      customerEmailId: customerEmailResponse.id,
     };
   } catch (error) {
     console.error('Error sending consultation emails:', error);
@@ -150,7 +131,7 @@ export async function sendConsultationEmailsViaResend(
     // const adminEmail = await resend.emails.send({
     //   from: 'Greenlife Solar <noreply@greenlifesolarsolution.com>',
     //   to: params.adminEmail,
-    //   subject: `📋 New Consultation Request - ${params.customerName}`,
+    //   subject: `New Consultation Request - ${params.customerName}`,
     //   html: adminHTML,
     //   tags: {
     //     category: 'consultation',
@@ -161,7 +142,7 @@ export async function sendConsultationEmailsViaResend(
     // const customerEmail = await resend.emails.send({
     //   from: 'Greenlife Solar <noreply@greenlifesolarsolution.com>',
     //   to: params.customerEmail,
-    //   subject: '✅ Your Solar Consultation Request - Greenlife Solar',
+    //   subject: 'Your Solar Consultation Request - Greenlife Solar',
     //   html: customerHTML,
     //   tags: {
     //     category: 'consultation',

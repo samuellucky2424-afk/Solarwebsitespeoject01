@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { PublicHeader, Toast } from '../../components/SharedComponents';
 import { useAdmin } from '../../context/AdminContext';
-import { useAuth } from '../../context/AuthContext';
+import { sendServiceRequestEmails } from '../../src/lib/sendServiceRequestEmail';
 
 interface ServiceRequestFormProps {
   isEmbedded?: boolean;
@@ -14,7 +14,6 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEmbedded = fa
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { addRequest, activeUser } = useAdmin();
-  const { user: authUser } = useAuth();
 
   // Use prop type if embedded, otherwise read from URL
   const type = requestType || searchParams.get('type') || 'maintenance';
@@ -61,6 +60,10 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEmbedded = fa
     setIsSubmitting(true);
 
     const requestTypeLabel = isMaintenance ? 'Maintenance Request' : 'Site Survey Request';
+    const submittedAt = new Date().toISOString();
+    const requestDescription = isMaintenance
+      ? formData.description
+      : `Site survey request - Preferred: ${formData.date} at ${formData.time}`;
 
     const newRequest = {
       id: `REQ-${Date.now()}`,
@@ -70,21 +73,44 @@ const ServiceRequestForm: React.FC<ServiceRequestFormProps> = ({ isEmbedded = fa
       email: formData.email,
       phone: formData.phone,
       address: formData.address,
-      date: new Date().toLocaleDateString(),
+      date: new Date(submittedAt).toLocaleDateString(),
       status: 'New' as any,
-      description: isMaintenance ? formData.description : `Site survey request — Preferred: ${formData.date} at ${formData.time}`,
+      description: requestDescription,
       priority: isMaintenance ? 'High' as any : 'Normal' as any,
     };
 
     const success = await addRequest(newRequest);
-
-    setIsSubmitting(false);
     if (!success) {
-      setToast({ msg: "Unable to submit request. Please try again." });
+      setIsSubmitting(false);
+      setToast({ msg: 'Unable to submit request. Please try again.' });
       return;
     }
 
-    setToast({ msg: "Request submitted successfully!" });
+    const emailResult = await sendServiceRequestEmails({
+      requestId: newRequest.id,
+      requestType: requestTypeLabel,
+      customerName: formData.name,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      address: formData.address,
+      date: submittedAt,
+      time: formData.time,
+      issueType: isMaintenance ? formData.issueType : undefined,
+      description: requestDescription,
+      priority: isMaintenance ? 'High' : 'Normal',
+    });
+
+    setIsSubmitting(false);
+
+    if (!emailResult.success) {
+      console.warn('Service request saved, but email delivery failed:', emailResult.error);
+      setToast({ msg: 'Request submitted, but the email notification could not be sent right now.' });
+    } else if (emailResult.error) {
+      console.warn('Service request email partially failed:', emailResult.error);
+      setToast({ msg: 'Request submitted successfully. The team was notified, but your confirmation email could not be sent.' });
+    } else {
+      setToast({ msg: 'Request submitted successfully! Check your email for confirmation.' });
+    }
 
     setTimeout(() => {
       if (onSuccess) {

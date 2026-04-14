@@ -195,10 +195,9 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             console.warn("Non-critical: Could not log order to hub:", hubError);
                         }
 
-                        // Send confirmation emails to BOTH Admin and Customer (sign-up email)
-                        sendOrderEmails({
+                        const emailResult = await sendOrderEmails({
                             customerName: formData.name,
-                            customerEmail: formData.email, // using sign-up/checkout email
+                            customerEmail: formData.email,
                             customerPhone: formData.phone,
                             orderId: order_id,
                             transactionRef: tx_ref,
@@ -209,9 +208,14 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             })),
                             totalAmount: totalPrice,
                             orderDate: new Date().toISOString()
-                        }).catch((err: any) => console.error("Could not send order emails:", err));
+                        });
 
-                        setToast({ msg: "✅ Payment successful! Your order has been placed." });
+                        if (emailResult.success) {
+                            setToast({ msg: "Payment successful! Your order has been placed. Check your email for confirmation." });
+                        } else {
+                            console.warn("Order placed, but one or more emails failed to send:", emailResult);
+                            setToast({ msg: "Payment successful! Your order has been placed, but the email confirmation could not be sent right now." });
+                        }
                         clearCart();
                         setTimeout(() => navigate(isEmbedded ? '/dashboard?view=orders' : '/'), 2000);
                     } catch (err: any) {
