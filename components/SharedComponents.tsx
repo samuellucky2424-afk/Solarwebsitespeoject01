@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -132,6 +132,8 @@ export const PublicHeader: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { setIsCartOpen, totalItems } = useCart();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     if (isMobileMenuOpen) {
@@ -158,7 +160,12 @@ export const PublicHeader: React.FC = () => {
             <Link to="/products" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Products</Link>
             <Link to="/consultation" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Solutions</Link>
             <Link to="/gallery" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Gallery</Link>
-            <Link to="/requests" className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors">Support</Link>
+            <button 
+              onClick={() => navigate(isAuthenticated ? '/dashboard?view=support' : '/support')} 
+              className="text-forest/80 dark:text-white/80 hover:text-primary dark:hover:text-primary text-sm font-semibold transition-colors cursor-pointer"
+            >
+              Support
+            </button>
           </nav>
 
           <div className="flex items-center gap-4 relative z-50">
@@ -214,7 +221,6 @@ export const PublicHeader: React.FC = () => {
               { to: "/products", label: "Products", icon: "inventory_2" },
               { to: "/consultation", label: "Solutions", icon: "solar_power" },
               { to: "/gallery", label: "Our Gallery", icon: "photo_library" },
-              { to: "/requests", label: "Support", icon: "support_agent" },
             ].map((link) => (
               <Link
                 key={link.to}
@@ -229,6 +235,21 @@ export const PublicHeader: React.FC = () => {
                 <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-primary">chevron_right</span>
               </Link>
             ))}
+
+            {/* Support Link with Dynamic Routing */}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                navigate(isAuthenticated ? '/dashboard?view=support' : '/support');
+              }}
+              className="flex items-center gap-4 p-4 rounded-xl text-forest dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-all group w-full text-left"
+            >
+              <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-forest transition-colors">
+                <span className="material-symbols-outlined">support_agent</span>
+              </div>
+              <span className="text-lg font-bold">Support</span>
+              <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-primary">chevron_right</span>
+            </button>
 
             <hr className="border-gray-100 dark:border-white/5 my-4" />
 
@@ -292,7 +313,7 @@ export const PublicFooter: React.FC = () => (
         <h4 className="font-bold text-lg mb-6 text-forest dark:text-white">Resources</h4>
         <ul className="flex flex-col gap-4 text-forest/60 dark:text-white/60 text-sm">
           <li><Link to="/gallery" className="hover:text-primary transition-colors">Gallery</Link></li>
-          <li><Link to="/requests" className="hover:text-primary transition-colors">Support Center</Link></li>
+          <li><Link to="/support" className="hover:text-primary transition-colors">Support Center</Link></li>
           <li><Link to="/consultation" className="hover:text-primary transition-colors">Get a Quote</Link></li>
           <li><Link to="/login" className="hover:text-primary transition-colors">Customer Portal</Link></li>
         </ul>

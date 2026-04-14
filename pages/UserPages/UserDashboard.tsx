@@ -13,12 +13,13 @@ import UpgradeRequest from '../../components/dashboard/UpgradeRequest';
 import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
 import DashboardPackages from '../../components/dashboard/DashboardPackages';
+import DashboardSupport from '../../components/dashboard/DashboardSupport';
 import ConsultationForm from '../PublicPages/ConsultationForm';
 import ServiceRequestForm from './ServiceRequestForm';
 import CheckoutPage from './CheckoutPage';
 
 // --- Types (Local) ---
-type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'shop-product' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout';
+type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'shop-product' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout' | 'support';
 
 const SidebarLink: React.FC<{
   active: boolean,
@@ -73,7 +74,7 @@ const UserDashboard: React.FC = () => {
     } else {
       const params = new URLSearchParams(location.search);
       const viewParam = params.get('view');
-      if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout'].includes(viewParam)) {
+      if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout', 'support'].includes(viewParam)) {
         setCurrentView(viewParam as DashboardView);
       }
     }
@@ -274,6 +275,12 @@ const UserDashboard: React.FC = () => {
                 icon="assignment"
                 label="Service Requests"
               />
+              <SidebarLink
+                active={currentView === 'support'}
+                onClick={() => { handleViewChange('support'); setIsMobileMenuOpen(false); }}
+                icon="support_agent"
+                label="Support Center"
+              />
 
               <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
               <p className="px-4 text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-1">Store</p>
@@ -368,6 +375,12 @@ const UserDashboard: React.FC = () => {
                 onClick={() => handleViewChange('requests')}
                 icon="assignment"
                 label="Service Requests"
+              />
+              <SidebarLink
+                active={currentView === 'support'}
+                onClick={() => handleViewChange('support')}
+                icon="support_agent"
+                label="Support Center"
               />
 
               <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
@@ -515,6 +528,7 @@ const UserDashboard: React.FC = () => {
             {currentView === 'packages' && <DashboardPackages />}
             {currentView === 'gallery' && <DashboardGallery />}
             {currentView === 'consultation' && <ConsultationForm isEmbedded={true} />}
+            {currentView === 'support' && <DashboardSupport />}
             {currentView === 'maintenance' && <ServiceRequestForm isEmbedded={true} requestType="maintenance" onSuccess={() => handleViewChange('requests')} />}
             {currentView === 'survey' && <ServiceRequestForm isEmbedded={true} requestType="survey" onSuccess={() => handleViewChange('requests')} />}
             {currentView === 'upgrade' && <UpgradeRequest onSuccess={() => handleViewChange('requests')} />}
