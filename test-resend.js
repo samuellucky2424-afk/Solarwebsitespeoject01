@@ -38,7 +38,7 @@ function readEnvFile() {
 const envVars = readEnvFile();
 
 const RESEND_API_KEY = envVars.RESEND_API_KEY;
-const RESEND_FROM_EMAIL = envVars.RESEND_FROM_EMAIL || 'noreply@greenlifesolar.com';
+const RESEND_FROM_EMAIL = envVars.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com';
 
 // Get recipient email from command line argument or use a test default
 const recipientEmail = process.argv[2] || 'infogreenlifetechnology@gmail.com';

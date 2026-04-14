@@ -28,8 +28,9 @@ export default async function handler(req: any, res: any) {
     }
 
     const adminEmail = process.env.ADMIN_EMAIL || 'infogreenlifetechnology@gmail.com';
+    const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || 'https://greenlifesolarsolution.com';
     const chatLink = conversationId
-      ? `${process.env.VITE_APP_URL || 'https://greenlifesolar.com'}/#/admin/dashboard?view=live-chat&conversation=${conversationId}`
+      ? `${appUrl}/#/admin/dashboard?view=live-chat&conversation=${conversationId}`
       : null;
     const isInitialInquiry = notificationType !== 'follow-up';
     const heading = fallbackMode
@@ -93,7 +94,7 @@ export default async function handler(req: any, res: any) {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolar.com',
+        from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com',
         to: adminEmail,
         subject,
         html: emailHtml,

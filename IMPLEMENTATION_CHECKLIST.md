@@ -60,7 +60,7 @@ The consultation form email notification system has been fully implemented with 
   2. Click Environment Variables
   3. Add three variables:
      - `RESEND_API_KEY=` (from Resend dashboard)
-     - `RESEND_FROM_EMAIL=noreply@greenlifesolar.com`
+     - `RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com`
      - `ADMIN_EMAIL=infogreenlifetechnology@gmail.com`
   4. Save and deploy
 
@@ -86,14 +86,14 @@ The consultation form email notification system has been fully implemented with 
 - [ ] **Verify Domain with Resend** (Optional but recommended)
   1. Go to Resend dashboard
   2. Navigate to Domains
-  3. Add your domain: greenlifesolar.com
+  3. Add your domain: greenlifesolarsolution.com
   4. Add DNS records to your domain registrar
   5. Verify domain ownership
   6. Update RESEND_FROM_EMAIL to use verified domain
 
 - [ ] **Update Email Address**
   - Verify admin email is correct: `infogreenlifetechnology@gmail.com`
-  - Add support email if needed: `support@greenlifesolar.com`
+  - Add support email if needed: `support@greenlifesolarsolution.com`
 
 - [ ] **Test in Production**
   1. Deploy to Vercel with environment variables

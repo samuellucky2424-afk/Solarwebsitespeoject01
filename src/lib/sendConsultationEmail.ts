@@ -148,7 +148,7 @@ export async function sendConsultationEmailsViaResend(
 
     // Example using Resend SDK (uncomment when ready to use)
     // const adminEmail = await resend.emails.send({
-    //   from: 'Greenlife Solar <noreply@greenlifesolar.com>',
+    //   from: 'Greenlife Solar <noreply@greenlifesolarsolution.com>',
     //   to: params.adminEmail,
     //   subject: `📋 New Consultation Request - ${params.customerName}`,
     //   html: adminHTML,
@@ -159,7 +159,7 @@ export async function sendConsultationEmailsViaResend(
     // });
 
     // const customerEmail = await resend.emails.send({
-    //   from: 'Greenlife Solar <noreply@greenlifesolar.com>',
+    //   from: 'Greenlife Solar <noreply@greenlifesolarsolution.com>',
     //   to: params.customerEmail,
     //   subject: '✅ Your Solar Consultation Request - Greenlife Solar',
     //   html: customerHTML,

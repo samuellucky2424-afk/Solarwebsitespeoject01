@@ -46,7 +46,7 @@ export default async function handler(req: any, res: any) {
 
     // Prepare email payload for Resend
     const emailPayload: any = {
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolar.com',
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com',
       to,
       subject,
       html,
@@ -125,7 +125,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const response = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolar.com',
+      from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com',
       to,
       subject,
       html,

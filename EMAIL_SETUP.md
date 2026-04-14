@@ -27,7 +27,7 @@ npm install resend
 
 ```
 RESEND_API_KEY=<your-api-key-here>
-RESEND_FROM_EMAIL=noreply@greenlifesolar.com
+RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
 ADMIN_EMAIL=infogreenlifetechnology@gmail.com
 ```
 
@@ -36,7 +36,7 @@ Create a `.env.local` file in the root of your project:
 
 ```env
 VITE_RESEND_API_KEY=<your-api-key-here>
-RESEND_FROM_EMAIL=noreply@greenlifesolar.com
+RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
 ADMIN_EMAIL=infogreenlifetechnology@gmail.com
 ```
 
@@ -44,7 +44,7 @@ ADMIN_EMAIL=infogreenlifetechnology@gmail.com
 For production emails, verify your domain with Resend:
 
 1. In Resend dashboard, go to **Domains**
-2. Add your domain (e.g., `greenlifesolar.com`)
+2. Add your domain (e.g., `greenlifesolarsolution.com`)
 3. Add the provided DNS records to your domain
 4. Update your from email to use the verified domain
 

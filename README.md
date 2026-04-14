@@ -35,6 +35,8 @@ If you deploy this project on Vercel, add the variables from [.env.vercel.exampl
 - `VITE_FLUTTERWAVE_PUBLIC_KEY`
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL`
+- `ADMIN_EMAIL`
+- `APP_URL`
 
 ## Supabase function secrets
 
