@@ -21,30 +21,54 @@ export interface ChatMessage {
   created_at: string;
 }
 
+export const CHAT_UNAVAILABLE_MESSAGE =
+  'Live chat is temporarily unavailable right now. Please use the contact page or call us while chat setup is being completed.';
+
+const getChatErrorMessage = (error: { code?: string; message?: string } | null | undefined): string => {
+  if (!error) {
+    return CHAT_UNAVAILABLE_MESSAGE;
+  }
+
+  if (
+    error.code === 'PGRST205' ||
+    error.message?.includes('live_chat_conversations') ||
+    error.message?.includes('live_chat_messages')
+  ) {
+    return CHAT_UNAVAILABLE_MESSAGE;
+  }
+
+  return error.message || CHAT_UNAVAILABLE_MESSAGE;
+};
+
+export const isChatUnavailableError = (error: unknown): boolean =>
+  error instanceof Error && error.message === CHAT_UNAVAILABLE_MESSAGE;
+
 // Create a new conversation
 export const createConversation = async (
   name: string,
   email: string,
   phone: string
-): Promise<Conversation | null> => {
-  try {
-    const { data, error } = await supabase
-      .from('live_chat_conversations')
-      .insert({
-        visitor_name: name,
-        visitor_email: email,
-        visitor_phone: phone,
-        status: 'active'
-      })
-      .select()
-      .single();
+): Promise<Conversation> => {
+  const { data, error } = await supabase
+    .from('live_chat_conversations')
+    .insert({
+      visitor_name: name,
+      visitor_email: email,
+      visitor_phone: phone,
+      status: 'active'
+    })
+    .select()
+    .single();
 
-    if (error) throw error;
-    return data as Conversation;
-  } catch (error) {
-    console.error('Error creating conversation:', error);
-    return null;
+  if (error) {
+    throw new Error(getChatErrorMessage(error));
   }
+
+  if (!data) {
+    throw new Error(CHAT_UNAVAILABLE_MESSAGE);
+  }
+
+  return data as Conversation;
 };
 
 // Get conversation by ID
@@ -126,15 +150,25 @@ export const subscribeToMessages = (
   conversationId: string,
   callback: (messages: ChatMessage[]) => void
 ) => {
-  const subscription = supabase
-    .from(`live_chat_messages:conversation_id=eq.${conversationId}`)
-    .on('*', (payload) => {
-      // Fetch all messages when there's a change
-      getConversationMessages(conversationId).then(callback);
-    })
+  const channel = supabase
+    .channel(`live-chat-${conversationId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'live_chat_messages',
+        filter: `conversation_id=eq.${conversationId}`,
+      },
+      () => {
+        getConversationMessages(conversationId).then(callback);
+      }
+    )
     .subscribe();
 
-  return () => subscription.unsubscribe();
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 };
 
 // Get all conversations (for admin)

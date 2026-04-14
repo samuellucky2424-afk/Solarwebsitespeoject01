@@ -14,11 +14,17 @@ const GalleryPage: React.FC = () => {
   }, [images, filter]);
 
   useGSAP(() => {
-    // Reset any previous animations
-    gsap.killTweensOf(".gallery-item");
-    
-    // Animate items whenever the filtered list changes
-    gsap.fromTo(".gallery-item", 
+    const items = containerRef.current
+      ? Array.from(containerRef.current.querySelectorAll<HTMLElement>('.gallery-item'))
+      : [];
+
+    if (items.length === 0) {
+      return;
+    }
+
+    gsap.killTweensOf(items);
+
+    gsap.fromTo(items,
       { opacity: 0, y: 30, scale: 0.95 },
       { 
         opacity: 1, 

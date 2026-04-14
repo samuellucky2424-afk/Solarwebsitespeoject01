@@ -11,12 +11,20 @@ interface ConsultationFormProps {
   isEmbedded?: boolean;
 }
 
+type ConsultationFieldErrors = Partial<
+  Record<
+    'address' | 'roofType' | 'housingType' | 'firstName' | 'lastName' | 'email' | 'phone',
+    string
+  >
+>;
+
 const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false }) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tcAgreed, setTcAgreed] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ConsultationFieldErrors>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const { addRequest } = useAdmin();
 
@@ -52,7 +60,69 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
   const [quoteRecommendations, setQuoteRecommendations] = useState<QuoteRecommendation[]>([]);
   const [selectedQuote, setSelectedQuote] = useState<QuoteRecommendation | null>(null);
 
+  const clearFieldError = (field: keyof ConsultationFieldErrors) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  const validatePhone = (phone: string) => {
+    const digits = phone.replace(/\D/g, '');
+    return digits.length >= 7;
+  };
+
+  const validateCurrentStep = (currentStep: number): ConsultationFieldErrors => {
+    const errors: ConsultationFieldErrors = {};
+
+    if (currentStep === 1) {
+      if (!propertyData.address.trim()) {
+        errors.address = 'Property address is required.';
+      }
+      if (!propertyData.roofType) {
+        errors.roofType = 'Please select your roof type.';
+      }
+      if (!propertyData.housingType) {
+        errors.housingType = 'Please select your housing type.';
+      }
+    }
+
+    if (currentStep === 4) {
+      if (!contactData.firstName.trim()) {
+        errors.firstName = 'First name is required.';
+      }
+      if (!contactData.lastName.trim()) {
+        errors.lastName = 'Last name is required.';
+      }
+      if (!contactData.email.trim()) {
+        errors.email = 'Email address is required.';
+      } else if (!validateEmail(contactData.email)) {
+        errors.email = 'Enter a valid email address.';
+      }
+      if (!contactData.phone.trim()) {
+        errors.phone = 'Phone number is required.';
+      } else if (!validatePhone(contactData.phone)) {
+        errors.phone = 'Enter a valid phone number.';
+      }
+    }
+
+    return errors;
+  };
+
   const handleNext = () => {
+    const errors = validateCurrentStep(step);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
+    setSubmitError(null);
+
     if (isEmbedded) {
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -68,6 +138,8 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
   };
 
   const handleBack = () => {
+    setFieldErrors({});
+    setSubmitError(null);
     if (isEmbedded) {
       document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -78,8 +150,18 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedQuote) return;
+    const errors = validateCurrentStep(4);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setSubmitError('Please complete all required contact details before submitting your request.');
+      return;
+    }
+    if (!selectedQuote) {
+      setSubmitError('Please select a quote package before submitting your consultation request.');
+      return;
+    }
 
+    setFieldErrors({});
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -284,13 +366,24 @@ Appliance Configuration:
                               location_on
                             </span>
                             <input
-                              className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 pl-10 md:pl-12 pr-4 text-sm md:text-base text-[#0d1b0f] dark:text-white placeholder:text-[#4c9a52]/60 focus:ring-primary focus:border-primary transition-all"
+                              className={`form-input flex w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 pl-10 md:pl-12 pr-4 text-sm md:text-base text-[#0d1b0f] dark:text-white placeholder:text-[#4c9a52]/60 focus:ring-primary focus:border-primary transition-all ${
+                                fieldErrors.address
+                                  ? 'border-red-400 dark:border-red-500'
+                                  : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                              }`}
                               placeholder="Enter your street address, city, and zip code"
                               type="text"
                               value={propertyData.address}
-                              onChange={(e) => setPropertyData((prev) => ({ ...prev, address: e.target.value }))}
+                              onChange={(e) => {
+                                setPropertyData((prev) => ({ ...prev, address: e.target.value }));
+                                clearFieldError('address');
+                              }}
+                              aria-invalid={Boolean(fieldErrors.address)}
                             />
                           </div>
+                          {fieldErrors.address && (
+                            <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.address}</p>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
@@ -299,9 +392,17 @@ Appliance Configuration:
                               Roof Type
                             </label>
                             <select
-                              className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none"
+                              className={`form-input flex w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none ${
+                                fieldErrors.roofType
+                                  ? 'border-red-400 dark:border-red-500'
+                                  : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                              }`}
                               value={propertyData.roofType}
-                              onChange={(e) => setPropertyData((prev) => ({ ...prev, roofType: e.target.value }))}
+                              onChange={(e) => {
+                                setPropertyData((prev) => ({ ...prev, roofType: e.target.value }));
+                                clearFieldError('roofType');
+                              }}
+                              aria-invalid={Boolean(fieldErrors.roofType)}
                             >
                               <option disabled value="">
                                 Select roof type
@@ -311,6 +412,9 @@ Appliance Configuration:
                               <option value="flat">Flat Roof (Concrete/EPDM)</option>
                               <option value="other">Other</option>
                             </select>
+                            {fieldErrors.roofType && (
+                              <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.roofType}</p>
+                            )}
                           </div>
 
                           <div className="flex flex-col gap-1.5 md:gap-2">
@@ -318,13 +422,19 @@ Appliance Configuration:
                               Housing Type
                             </label>
                             <select
-                              className="form-input flex w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none"
+                              className={`form-input flex w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base text-[#0d1b0f] dark:text-white focus:ring-primary focus:border-primary transition-all appearance-none ${
+                                fieldErrors.housingType
+                                  ? 'border-red-400 dark:border-red-500'
+                                  : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                              }`}
                               value={propertyData.housingType}
                               onChange={(e) => {
                                 const value = e.target.value as 'bungalow' | 'upstairs' | 'duplex';
                                 setPropertyData((prev) => ({ ...prev, housingType: value }));
                                 setApplianceData((prev) => ({ ...prev, housingType: value }));
+                                clearFieldError('housingType');
                               }}
+                              aria-invalid={Boolean(fieldErrors.housingType)}
                             >
                               <option disabled value="">
                                 Select housing type
@@ -333,6 +443,9 @@ Appliance Configuration:
                               <option value="upstairs">Upstairs Apartment</option>
                               <option value="duplex">Duplex</option>
                             </select>
+                            {fieldErrors.housingType && (
+                              <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.housingType}</p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -736,45 +849,89 @@ Appliance Configuration:
                           <div className="flex flex-col gap-1.5 md:gap-2">
                             <label className="font-bold text-sm md:text-base">First Name</label>
                             <input
-                              className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary"
+                              className={`form-input w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary ${
+                                fieldErrors.firstName
+                                  ? 'border-red-400 dark:border-red-500'
+                                  : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                              }`}
                               placeholder="John"
                               type="text"
                               value={contactData.firstName}
-                              onChange={(e) => setContactData((prev) => ({ ...prev, firstName: e.target.value }))}
+                              onChange={(e) => {
+                                setContactData((prev) => ({ ...prev, firstName: e.target.value }));
+                                clearFieldError('firstName');
+                              }}
+                              aria-invalid={Boolean(fieldErrors.firstName)}
                             />
+                            {fieldErrors.firstName && (
+                              <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.firstName}</p>
+                            )}
                           </div>
                           <div className="flex flex-col gap-1.5 md:gap-2">
                             <label className="font-bold text-sm md:text-base">Last Name</label>
                             <input
-                              className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary"
+                              className={`form-input w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary ${
+                                fieldErrors.lastName
+                                  ? 'border-red-400 dark:border-red-500'
+                                  : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                              }`}
                               placeholder="Doe"
                               type="text"
                               value={contactData.lastName}
-                              onChange={(e) => setContactData((prev) => ({ ...prev, lastName: e.target.value }))}
+                              onChange={(e) => {
+                                setContactData((prev) => ({ ...prev, lastName: e.target.value }));
+                                clearFieldError('lastName');
+                              }}
+                              aria-invalid={Boolean(fieldErrors.lastName)}
                             />
+                            {fieldErrors.lastName && (
+                              <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.lastName}</p>
+                            )}
                           </div>
                         </div>
 
                         <div className="flex flex-col gap-1.5 md:gap-2">
                           <label className="font-bold text-sm md:text-base">Email Address</label>
                           <input
-                            className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary"
+                            className={`form-input w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary ${
+                              fieldErrors.email
+                                ? 'border-red-400 dark:border-red-500'
+                                : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                            }`}
                             placeholder="john@example.com"
                             type="email"
                             value={contactData.email}
-                            onChange={(e) => setContactData((prev) => ({ ...prev, email: e.target.value }))}
+                            onChange={(e) => {
+                              setContactData((prev) => ({ ...prev, email: e.target.value }));
+                              clearFieldError('email');
+                            }}
+                            aria-invalid={Boolean(fieldErrors.email)}
                           />
+                          {fieldErrors.email && (
+                            <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.email}</p>
+                          )}
                         </div>
 
                         <div className="flex flex-col gap-1.5 md:gap-2">
                           <label className="font-bold text-sm md:text-base">Phone Number</label>
                           <input
-                            className="form-input w-full rounded-lg border border-[#cfe7d1] dark:border-[#1a351c] bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary"
+                            className={`form-input w-full rounded-lg bg-[#f8fcf8] dark:bg-[#0d1b0f] h-11 md:h-14 px-3 md:px-4 text-sm md:text-base focus:ring-primary focus:border-primary ${
+                              fieldErrors.phone
+                                ? 'border-red-400 dark:border-red-500'
+                                : 'border-[#cfe7d1] dark:border-[#1a351c]'
+                            }`}
                             placeholder="(555) 123-4567"
                             type="tel"
                             value={contactData.phone}
-                            onChange={(e) => setContactData((prev) => ({ ...prev, phone: e.target.value }))}
+                            onChange={(e) => {
+                              setContactData((prev) => ({ ...prev, phone: e.target.value }));
+                              clearFieldError('phone');
+                            }}
+                            aria-invalid={Boolean(fieldErrors.phone)}
                           />
+                          {fieldErrors.phone && (
+                            <p className="text-sm text-red-600 dark:text-red-400">{fieldErrors.phone}</p>
+                          )}
                         </div>
 
                         <TermsAndConditions
