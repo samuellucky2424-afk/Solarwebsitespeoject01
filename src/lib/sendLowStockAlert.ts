@@ -1,3 +1,5 @@
+import { sendEmailRequest } from './sendEmailRequest';
+
 /**
  * Low Stock Alert Email Template & Functions
  * Table-based design with sharp edges and mobile optimization
@@ -170,41 +172,28 @@ export function generateLowStockAdminEmailHTML(data: LowStockAlertData): string 
  */
 export async function sendLowStockAlert(
   data: LowStockAlertData,
-  adminEmail: string = 'samuellucky2424@gmail.com'
+  adminEmail?: string
 ): Promise<{ success: boolean; emailId?: string; error?: string }> {
   try {
     const emailHTML = generateLowStockAdminEmailHTML(data);
 
-    // Use local API server in development, production endpoint in production
-    const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-      ? 'http://localhost:3001/api/send-email'  // Local development
-      : '/api/send-email';  // Production (Vercel)
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const response = await sendEmailRequest({
+      ...(adminEmail ? { to: adminEmail } : { useAdminEmail: true }),
+      subject: `${data.currentStock === 0 ? 'OUT OF STOCK' : 'LOW STOCK'}: ${data.productName}`,
+      html: emailHTML,
+      tags: {
+        category: 'inventory',
+        type: data.currentStock === 0 ? 'out-of-stock' : 'low-stock',
+        productId: data.productId,
       },
-      body: JSON.stringify({
-        to: adminEmail,
-        subject: `${data.currentStock === 0 ? 'OUT OF STOCK' : 'LOW STOCK'}: ${data.productName}`,
-        html: emailHTML,
-        tags: {
-          category: 'inventory',
-          type: data.currentStock === 0 ? 'out-of-stock' : 'low-stock',
-          productId: data.productId,
-        },
-      }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to send low stock alert:', errorText);
+    if (!response.success) {
+      console.error('Failed to send low stock alert:', response.error);
       return { success: false, error: 'Failed to send alert email' };
     }
 
-    const emailData = await response.json();
-    return { success: true, emailId: emailData.id };
+    return { success: true, emailId: response.id };
   } catch (error) {
     console.error('Error sending low stock alert:', error);
     return {
@@ -221,7 +210,7 @@ export async function sendLowStockAlert(
 export async function checkInventoryLevel(
   product: any,
   lowStockThreshold: number = 3,
-  adminEmail: string = 'samuellucky2424@gmail.com'
+  adminEmail?: string
 ): Promise<{ alertSent: boolean; outOfStock: boolean }> {
   const currentStock = product.stock || 0;
 

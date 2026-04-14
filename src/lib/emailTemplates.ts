@@ -20,7 +20,7 @@ interface ConsultationEmailData {
   additionalAppliances: string[];
   selectedQuote: QuoteRecommendation;
   submissionDate: string;
-  adminEmail: string;
+  adminEmail?: string;
 }
 
 export function generateAdminEmailHTML(data: ConsultationEmailData): string {
@@ -391,6 +391,61 @@ export function generateUpgradeAdminEmailHTML(data: UpgradeEmailData): string {
         <strong>Customer Notes:</strong><br/>
         ${data.description || 'None provided'}
       </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
+export function generateUpgradeCustomerEmailHTML(data: UpgradeEmailData): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .header { background: #1a351c; color: white; padding: 30px 20px; text-align: center; }
+    .content { padding: 30px; }
+    .success-box { background: #f8fcf8; border-left: 4px solid #4c9a52; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    .details-box { background: #fff; border: 1px solid #e7f3e8; padding: 15px; border-radius: 8px; font-size: 14px; }
+    .label { font-size: 12px; color: #666; text-transform: uppercase; font-weight: bold; margin-top: 10px; }
+    .value { font-size: 15px; font-weight: 500; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin:0; font-size: 24px;">Upgrade Request Received</h1>
+    </div>
+    <div class="content">
+      <div class="success-box">
+        <p style="margin: 0 0 8px 0;"><strong>Hi ${data.customerName},</strong></p>
+        <p style="margin: 0;">We received your ${data.upgradeType.toLowerCase()} upgrade request. Our team will review it and contact you shortly.</p>
+      </div>
+
+      <div class="details-box">
+        <div class="label">Upgrade Type</div>
+        <div class="value">${data.upgradeType}</div>
+
+        <div class="label">Address</div>
+        <div class="value">${data.propertyAddress}</div>
+
+        <div class="label">Submitted</div>
+        <div class="value">${new Date(data.submissionDate).toLocaleString()}</div>
+
+        <div class="label">Requested Specifications</div>
+        <div class="value">${data.specifications}</div>
+
+        <div class="label">Additional Notes</div>
+        <div class="value">${data.description || 'None provided'}</div>
+      </div>
+
+      <p style="margin-top: 24px; font-size: 14px; color: #555;">
+        If you need to add anything else, just reply to this email and our team will follow up.
+      </p>
     </div>
   </div>
 </body>

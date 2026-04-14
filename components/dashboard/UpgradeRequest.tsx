@@ -73,8 +73,8 @@ const UpgradeRequest: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 return;
             }
 
-            // Immediately send the notification email to the admin
-            sendUpgradeEmail({
+            // Send admin notification and customer confirmation emails
+            const emailResult = await sendUpgradeEmail({
                 customerName: activeUser?.fullName || 'Unknown Customer',
                 customerEmail: activeUser?.email || '',
                 customerPhone: activeUser?.phone || '',
@@ -83,9 +83,15 @@ const UpgradeRequest: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
                 specifications: specs,
                 description: description,
                 submissionDate: new Date().toISOString()
-            }).catch((e: any) => console.error("Could not send upgrade email", e));
+            });
 
-            setToast("Upgrade request submitted successfully!");
+            if (!emailResult.success) {
+                setToast("Upgrade request submitted, but email notification failed.");
+            } else if (emailResult.error) {
+                setToast("Upgrade request submitted. Admin was notified, but your confirmation email could not be sent.");
+            } else {
+                setToast("Upgrade request submitted successfully! Check your email for confirmation.");
+            }
             setTimeout(() => {
                 onSuccess();
             }, 1500);

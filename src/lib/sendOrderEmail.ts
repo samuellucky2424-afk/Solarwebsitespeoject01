@@ -3,14 +3,14 @@ import {
   generateOrderCustomerEmailHTML,
   OrderEmailData,
 } from './emailTemplates';
-import { DEFAULT_ADMIN_EMAIL, sendEmailRequest } from './sendEmailRequest';
+import { sendEmailRequest } from './sendEmailRequest';
 
 /**
  * Send order confirmation emails to BOTH the customer and the Admin.
  */
 export async function sendOrderEmails(
   data: OrderEmailData,
-  adminEmail: string = DEFAULT_ADMIN_EMAIL
+  adminEmail?: string
 ): Promise<{ success: boolean; adminError?: string; customerError?: string }> {
   try {
     const adminHTML = generateOrderAdminEmailHTML(data);
@@ -18,7 +18,7 @@ export async function sendOrderEmails(
 
     const [adminResult, customerResult] = await Promise.all([
       sendEmailRequest({
-        to: adminEmail,
+        ...(adminEmail ? { to: adminEmail } : { useAdminEmail: true }),
         subject: `New Order Placed (#${data.orderId}) - ${data.customerName}`,
         html: adminHTML,
         replyTo: data.customerEmail,

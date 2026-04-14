@@ -21,7 +21,7 @@ export interface SendConsultationEmailParams {
   washingMachineSize: string;
   additionalAppliances: string[];
   selectedQuote: QuoteRecommendation;
-  adminEmail: string;
+  adminEmail?: string;
 }
 
 /**
@@ -46,7 +46,7 @@ export async function sendConsultationEmails(params: SendConsultationEmailParams
     const customerHTML = generateCustomerEmailHTML(emailData);
 
     const adminEmailResponse = await sendEmailRequest({
-      to: params.adminEmail,
+      ...(params.adminEmail ? { to: params.adminEmail } : { useAdminEmail: true }),
       subject: `New Consultation Request - ${params.customerName}`,
       html: adminHTML,
       replyTo: params.customerEmail,

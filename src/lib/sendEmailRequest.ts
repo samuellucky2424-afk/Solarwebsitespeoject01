@@ -1,10 +1,11 @@
 export const DEFAULT_ADMIN_EMAIL = 'infogreenlifetechnology@gmail.com';
 
 export interface SendEmailRequestPayload {
-  to: string | string[];
+  to?: string | string[];
   subject: string;
   html: string;
   replyTo?: string;
+  useAdminEmail?: boolean;
   tags?: Record<string, string | number | boolean | null | undefined>;
 }
 
@@ -39,8 +40,11 @@ export async function sendEmailRequest(
     const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3001/api/send-email'  // Local development
       : '/api/send-email';  // Production (Vercel)
-    
-    console.log('📧 Sending email via', apiUrl, { to: payload.to, subject: payload.subject });
+
+    console.log('📧 Sending email via', apiUrl, {
+      to: payload.useAdminEmail ? '[ADMIN_EMAIL from backend]' : payload.to,
+      subject: payload.subject
+    });
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -88,7 +92,7 @@ export async function sendEmailRequest(
       };
     }
 
-    console.log('✅ Email sent successfully!', { id: responseData.id });
+    console.log('✅ Email sent successfully!', { id: responseData.id, to: responseData.to });
     return {
       success: true,
       id: responseData.id,

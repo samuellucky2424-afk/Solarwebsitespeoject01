@@ -41,20 +41,21 @@ console.log('');
 
 app.post('/api/send-email', async (req, res) => {
   try {
-    const { to, subject, html, replyTo, tags } = req.body;
+    const { to, subject, html, replyTo, tags, useAdminEmail } = req.body;
+    const resolvedTo = useAdminEmail ? ADMIN_EMAIL : to;
 
-    console.log(`📧 Incoming email request: ${subject} → ${to}`);
+    console.log(`📧 Incoming email request: ${subject} → ${resolvedTo}`);
 
-    if (!to || !subject || !html) {
+    if (!resolvedTo || !subject || !html) {
       console.error('❌ Missing required fields');
       return res.status(400).json({
-        error: 'Missing required fields: to, subject, html',
+        error: 'Missing required fields: recipient, subject, html',
       });
     }
 
     const emailPayload = {
       from: RESEND_FROM_EMAIL,
-      to,
+      to: resolvedTo,
       subject,
       html,
     };
@@ -91,6 +92,7 @@ app.post('/api/send-email', async (req, res) => {
     res.json({
       success: true,
       id: data.id,
+      to: resolvedTo,
       message: 'Email sent successfully',
     });
   } catch (error) {

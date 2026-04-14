@@ -3,21 +3,21 @@ import {
   generateServiceRequestCustomerEmailHTML,
   ServiceRequestEmailData,
 } from './emailTemplates';
-import { DEFAULT_ADMIN_EMAIL, sendEmailRequest } from './sendEmailRequest';
+import { sendEmailRequest } from './sendEmailRequest';
 
 /**
  * Send service request notification emails to both admin and customer
  */
 export async function sendServiceRequestEmails(
   data: ServiceRequestEmailData,
-  adminEmail: string = DEFAULT_ADMIN_EMAIL
+  adminEmail?: string
 ): Promise<{ success: boolean; adminEmailId?: string; customerEmailId?: string; error?: string }> {
   try {
     const adminHTML = generateServiceRequestAdminEmailHTML(data);
     const customerHTML = generateServiceRequestCustomerEmailHTML(data);
 
     const adminResult = await sendEmailRequest({
-      to: adminEmail,
+      ...(adminEmail ? { to: adminEmail } : { useAdminEmail: true }),
       subject: `New Service Request - ${data.requestType} from ${data.customerName}`,
       html: adminHTML,
       replyTo: data.customerEmail,
@@ -37,7 +37,7 @@ export async function sendServiceRequestEmails(
       to: data.customerEmail,
       subject: `Service Request Received - ${data.requestType}`,
       html: customerHTML,
-      replyTo: adminEmail,
+      ...(adminEmail ? { replyTo: adminEmail } : {}),
       tags: {
         category: 'service-request',
         type: 'customer-confirmation',

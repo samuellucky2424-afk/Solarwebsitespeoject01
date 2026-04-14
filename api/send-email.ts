@@ -31,11 +31,16 @@ export default async function handler(req: any, res: any) {
         ? JSON.parse(req.body)
         : (req.body || {});
 
-    const { to, subject, html, replyTo, tags } = requestBody;
+    const { to, subject, html, replyTo, tags, useAdminEmail } = requestBody;
 
-    if (!to || !subject || !html) {
+    const resolvedTo =
+      useAdminEmail
+        ? (process.env.ADMIN_EMAIL || 'infogreenlifetechnology@gmail.com')
+        : to;
+
+    if (!resolvedTo || !subject || !html) {
       return res.status(400).json({
-        error: 'Missing required fields: to, subject, html',
+        error: 'Missing required fields: recipient, subject, html',
       });
     }
 
@@ -49,7 +54,7 @@ export default async function handler(req: any, res: any) {
 
     const emailPayload: any = {
       from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com',
-      to,
+      to: resolvedTo,
       subject,
       html,
     };
@@ -87,6 +92,7 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({
       success: true,
       id: data.id,
+      to: resolvedTo,
       message: 'Email sent successfully',
     });
   } catch (error) {
