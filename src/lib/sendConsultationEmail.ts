@@ -1,5 +1,6 @@
 import { QuoteRecommendation } from '../../data/consultationQuotes';
 import { generateAdminEmailHTML, generateCustomerEmailHTML } from './emailTemplates';
+import { sanitizeEmailHeaderValue, sanitizeEmailHtmlList, sanitizeEmailHtmlText } from './emailSanitizers';
 import { sendEmailRequest } from './sendEmailRequest';
 
 export interface SendConsultationEmailParams {
@@ -22,6 +23,7 @@ export interface SendConsultationEmailParams {
   additionalAppliances: string[];
   selectedQuote: QuoteRecommendation;
   adminEmail?: string;
+  sendCustomerConfirmation?: boolean;
 }
 
 /**
@@ -36,9 +38,36 @@ export async function sendConsultationEmails(params: SendConsultationEmailParams
 }> {
   try {
     const submissionDate = new Date().toISOString();
+    const safeCustomerName = sanitizeEmailHeaderValue(params.customerName, 120);
+    const safeCustomerEmail = sanitizeEmailHeaderValue(params.customerEmail, 160);
 
     const emailData = {
       ...params,
+      customerName: sanitizeEmailHtmlText(safeCustomerName, 120),
+      customerEmail: sanitizeEmailHtmlText(safeCustomerEmail, 160),
+      customerPhone: sanitizeEmailHtmlText(params.customerPhone, 40),
+      propertyAddress: sanitizeEmailHtmlText(params.propertyAddress, 400),
+      roofType: sanitizeEmailHtmlText(params.roofType, 80),
+      housingType: sanitizeEmailHtmlText(params.housingType, 80),
+      fridgeType: sanitizeEmailHtmlText(params.fridgeType, 60),
+      acType: sanitizeEmailHtmlText(params.acType, 60),
+      washingMachineType: sanitizeEmailHtmlText(params.washingMachineType, 80),
+      washingMachineSize: sanitizeEmailHtmlText(params.washingMachineSize, 80),
+      additionalAppliances: sanitizeEmailHtmlList(params.additionalAppliances, 20, 80),
+      selectedQuote: {
+        ...params.selectedQuote,
+        quote: {
+          ...params.selectedQuote.quote,
+          title: sanitizeEmailHtmlText(params.selectedQuote.quote.title, 160),
+          tagline: sanitizeEmailHtmlText(params.selectedQuote.quote.tagline, 200),
+          inverter: sanitizeEmailHtmlText(params.selectedQuote.quote.inverter, 120),
+          battery: sanitizeEmailHtmlText(params.selectedQuote.quote.battery, 120),
+          panels: sanitizeEmailHtmlText(params.selectedQuote.quote.panels, 120),
+          loadText: sanitizeEmailHtmlText(params.selectedQuote.quote.loadText, 240),
+          recommendedProperty: sanitizeEmailHtmlText(params.selectedQuote.quote.recommendedProperty, 120),
+        },
+        notes: sanitizeEmailHtmlList(params.selectedQuote.notes, 20, 200),
+      },
       submissionDate,
     };
 
@@ -47,13 +76,13 @@ export async function sendConsultationEmails(params: SendConsultationEmailParams
 
     const adminEmailResponse = await sendEmailRequest({
       ...(params.adminEmail ? { to: params.adminEmail } : { useAdminEmail: true }),
-      subject: `New Consultation Request - ${params.customerName}`,
+      subject: `New Consultation Request - ${safeCustomerName}`,
       html: adminHTML,
-      replyTo: params.customerEmail,
+      replyTo: safeCustomerEmail,
       tags: {
         category: 'consultation',
         type: 'admin-notification',
-        customerEmail: params.customerEmail,
+        customerEmail: safeCustomerEmail,
       },
     });
 
@@ -65,14 +94,21 @@ export async function sendConsultationEmails(params: SendConsultationEmailParams
       };
     }
 
+    if (params.sendCustomerConfirmation === false) {
+      return {
+        success: true,
+        adminEmailId: adminEmailResponse.id,
+      };
+    }
+
     const customerEmailResponse = await sendEmailRequest({
-      to: params.customerEmail,
+      to: safeCustomerEmail,
       subject: 'Your Solar Consultation Request - Greenlife Solar',
       html: customerHTML,
       tags: {
         category: 'consultation',
         type: 'customer-confirmation',
-        customerEmail: params.customerEmail,
+        customerEmail: safeCustomerEmail,
       },
     });
 

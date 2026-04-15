@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { getQuoteRecommendations, QuoteSelectionInput, QuoteRecommendation, EXTRA_APPLIANCE_OPTIONS } from '../../data/consultationQuotes';
 import { useAdmin } from '../../context/AdminContext';
+import { useAuth } from '../../context/AuthContext';
 import { sendConsultationEmails } from '../../src/lib/sendConsultationEmail';
 
 interface ConsultationFormProps {
@@ -18,6 +19,14 @@ type ConsultationFieldErrors = Partial<
   >
 >;
 
+const NAIRA_SYMBOL = "\u20A6";
+const BULLET = "\u2022";
+
+const getConsultationApiUrl = () =>
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:3001/api/submit-consultation-request'
+    : '/api/submit-consultation-request';
+
 const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false }) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,6 +36,7 @@ const ConsultationForm: React.FC<ConsultationFormProps> = ({ isEmbedded = false 
   const [fieldErrors, setFieldErrors] = useState<ConsultationFieldErrors>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const { addRequest } = useAdmin();
+  const { isAuthenticated } = useAuth();
 
   // Form data state
   const [propertyData, setPropertyData] = useState({
@@ -176,7 +186,7 @@ Property Details:
 - Housing Type: ${propertyData.housingType}
 
 Selected Package: ${selectedQuote.quote.title} (${selectedQuote.quote.tagline})
-- Price: ₦${selectedQuote.quote.price.toLocaleString()}
+- Price: ${NAIRA_SYMBOL}${selectedQuote.quote.price.toLocaleString()}
 - Inverter: ${selectedQuote.quote.inverter}
 - Battery: ${selectedQuote.quote.battery}
 - Panels: ${selectedQuote.quote.panels}
@@ -207,37 +217,86 @@ Appliance Configuration:
         packageId: selectedQuote.quote.id,
       };
 
-      // Save to database
-      const dbSuccess = await addRequest(request);
+      let dbSuccess = false;
+      let consultationNotificationStatus: string | null = null;
+      if (isAuthenticated) {
+        dbSuccess = await addRequest(request);
+      } else {
+        const response = await fetch(getConsultationApiUrl(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: request.title,
+            customer: request.customer,
+            email: request.email,
+            phone: request.phone,
+            address: request.address,
+            description: request.description,
+            packageId: request.packageId,
+            metadata: {
+              roofType: propertyData.roofType,
+              housingType: propertyData.housingType,
+              bedroomCount: applianceData.bedroomCount,
+              fans: applianceData.fans,
+              tvs: applianceData.tvs,
+              fridges: applianceData.fridges,
+              acCount: applianceData.acCount,
+              washingMachineCount: applianceData.washingMachineCount,
+              additionalAppliances: applianceData.additionalAppliances,
+              quoteTitle: selectedQuote.quote.title,
+              quoteTagline: selectedQuote.quote.tagline,
+              quotePrice: selectedQuote.quote.price,
+              loadText: selectedQuote.quote.loadText,
+              inverter: selectedQuote.quote.inverter,
+              battery: selectedQuote.quote.battery,
+              panels: selectedQuote.quote.panels,
+            },
+          }),
+        });
+
+        const responseData = await response.json().catch(() => null);
+        if (!response.ok || responseData?.success !== true) {
+          throw new Error(responseData?.error || 'Failed to save request to database');
+        }
+
+        consultationNotificationStatus = typeof responseData?.notificationStatus === 'string'
+          ? responseData.notificationStatus
+          : null;
+        dbSuccess = true;
+      }
+
       if (!dbSuccess) {
         throw new Error('Failed to save request to database');
       }
 
-      // Send emails
-      const emailResult = await sendConsultationEmails({
-        customerName,
-        customerEmail: contactData.email,
-        customerPhone: contactData.phone,
-        propertyAddress: propertyData.address,
-        roofType: propertyData.roofType,
-        housingType: propertyData.housingType,
-        bedroomCount: applianceData.bedroomCount,
-        fans: applianceData.fans,
-        tvs: applianceData.tvs,
-        fridges: applianceData.fridges,
-        fridgeType: applianceData.fridgeType,
-        acCount: applianceData.acCount,
-        acType: applianceData.acType,
-        washingMachineCount: applianceData.washingMachineCount,
-        washingMachineType: applianceData.washingMachineType,
-        washingMachineSize: applianceData.washingMachineSize,
-        additionalAppliances: applianceData.additionalAppliances,
-        selectedQuote,
-      });
+      if (isAuthenticated) {
+        const emailResult = await sendConsultationEmails({
+          customerName,
+          customerEmail: contactData.email,
+          customerPhone: contactData.phone,
+          propertyAddress: propertyData.address,
+          roofType: propertyData.roofType,
+          housingType: propertyData.housingType,
+          bedroomCount: applianceData.bedroomCount,
+          fans: applianceData.fans,
+          tvs: applianceData.tvs,
+          fridges: applianceData.fridges,
+          fridgeType: applianceData.fridgeType,
+          acCount: applianceData.acCount,
+          acType: applianceData.acType,
+          washingMachineCount: applianceData.washingMachineCount,
+          washingMachineType: applianceData.washingMachineType,
+          washingMachineSize: applianceData.washingMachineSize,
+          additionalAppliances: applianceData.additionalAppliances,
+          selectedQuote,
+          sendCustomerConfirmation: true,
+        });
 
-      if (!emailResult.success) {
-        console.warn('Email sending failed:', emailResult.error);
-        // Don't fail the entire submission if emails fail
+        if (!emailResult.success) {
+          console.warn('Email sending failed:', emailResult.error);
+        }
+      } else if (consultationNotificationStatus === 'failed') {
+        console.warn('Consultation request saved, but the admin notification email failed to send.');
       }
 
       setTimeout(() => {
@@ -774,7 +833,7 @@ Appliance Configuration:
                               </div>
                               <div className="text-right">
                                 <div className="text-2xl font-black text-primary mb-1">
-                                  ₦{recommendation.quote.price.toLocaleString()}
+                                  {NAIRA_SYMBOL}{recommendation.quote.price.toLocaleString()}
                                 </div>
                                 {recommendation.isStrongMatch && (
                                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
@@ -797,7 +856,7 @@ Appliance Configuration:
                                 <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-1">Notes:</p>
                                 <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
                                   {recommendation.notes.map((note, i) => (
-                                    <li key={i}>• {note}</li>
+                                    <li key={i}>{BULLET} {note}</li>
                                   ))}
                                 </ul>
                               </div>
@@ -962,7 +1021,7 @@ Appliance Configuration:
                       Thank you for choosing Greenlife Solar. Your consultation request for the{' '}
                       <strong>{selectedQuote?.quote.title}</strong> package has been received. Our team will review your
                       appliance requirements and contact you within 24 hours to discuss your personalized solar solution.
-                      You'll receive confirmation emails at <strong>{contactData.email}</strong>.
+                      We will follow up using <strong>{contactData.email}</strong> and your submitted phone number.
                     </p>
                     <button
                       onClick={() => (window.location.href = '/')}

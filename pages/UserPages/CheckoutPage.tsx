@@ -48,8 +48,10 @@ async function getFunctionErrorMessage(error: any) {
     return fallback;
 }
 
-// These are read at render time — by then loadConfig() has resolved.
+// These are read at render time - by then loadConfig() has resolved.
 const getFLWPublicKey = () => getConfig()?.flutterwavePublicKey || import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '';
+const isValidFLWPublicKey = (key: string) => /^FLWPUBK-[A-Za-z0-9-]+$/i.test(key.trim());
+const NAIRA_SYMBOL = "\u20A6";
 const getFunctionsBaseUrl = () =>
     getConfig()?.supabaseFunctionUrl ||
     import.meta.env.VITE_SUPABASE_FUNCTION_URL ||
@@ -59,7 +61,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
     const navigate = useNavigate();
     const { cartItems, totalPrice, clearCart } = useCart();
     const { activeUser } = useAdmin();
-    const { user } = useAuth();
+    const { user, session } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [toast, setToast] = useState<{ msg: string } | null>(null);
     const [tcAgreed, setTcAgreed] = useState(false);
@@ -102,9 +104,22 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
             return;
         }
 
+        if (!user || !session?.access_token) {
+            setToast({ msg: "Please sign in before checking out." });
+            navigate('/login', { state: { from: '/checkout' } });
+            return;
+        }
+
+        const flutterwavePublicKey = getFLWPublicKey().trim();
+
         // Guard: Flutterwave key missing
-        if (!getFLWPublicKey()) {
+        if (!flutterwavePublicKey) {
             setToast({ msg: "Payment not configured. Flutterwave public key is missing. Contact support." });
+            return;
+        }
+
+        if (!isValidFLWPublicKey(flutterwavePublicKey)) {
+            setToast({ msg: "Payment not configured. Flutterwave public key is invalid. It should start with FLWPUBK-." });
             return;
         }
 
@@ -117,14 +132,16 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
         setIsSubmitting(true);
 
         try {
-            // Step 1 — Create order record in database
+            // Step 1 - Create order record in database
             const { data: createOrderData, error: createOrderError } = await supabase.functions.invoke('create-order', {
+                headers: session?.access_token
+                    ? { Authorization: `Bearer ${session.access_token}` }
+                    : undefined,
                 body: {
                     amount: totalPrice,
                     currency: 'NGN',
                     kind: 'product',
                     item_id: null,
-                    user_id: user?.id || null,
                     item_snapshot: {
                         customer: formData,
                         items: cartItems
@@ -149,9 +166,9 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
 
             const { order_id, tx_ref } = createOrderData;
 
-            // Step 2 — Open Flutterwave payment modal
+            // Step 2 - Open Flutterwave payment modal
             window.FlutterwaveCheckout({
-                public_key: getFLWPublicKey(),
+                public_key: flutterwavePublicKey,
                 tx_ref,
                 amount: totalPrice,
                 currency: "NGN",
@@ -171,8 +188,9 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             throw new Error('No transaction ID returned from Flutterwave');
                         }
 
-                        // Step 3 — Verify payment
+                        // Step 3 - Verify payment
                         const { data: verifyData, error: verifyError } = await supabase.functions.invoke('verify-flutterwave', {
+                            headers: { Authorization: `Bearer ${session.access_token}` },
                             body: {
                                 transaction_id: response.transaction_id,
                                 tx_ref
@@ -190,12 +208,13 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             throw new Error(verifyData?.error || 'Payment could not be verified');
                         }
 
-                        // Step 4 — Log order request in greenlife_hub for admin visibility
+                        // Step 4 - Log order request in greenlife_hub for admin visibility
                         const { error: hubError } = await supabase.from('greenlife_hub').insert([{
                             type: 'request',
                             title: `Paid order from ${formData.name}`,
                             status: 'Completed',
-                            description: `Order contains ${cartItems.length} item(s). Total: ₦${totalPrice.toLocaleString()}`,
+                            description: `Order contains ${cartItems.length} item(s). Total: ${NAIRA_SYMBOL}${totalPrice.toLocaleString()}`,
+                            user_id: user.id,
                             metadata: {
                                 type: 'Order',
                                 customer: {
@@ -294,6 +313,34 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
         );
     }
 
+    if (!user) {
+        const LoginRequiredContent = (
+            <main className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[50vh]">
+                <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">lock</span>
+                <h2 className="text-2xl font-bold text-forest dark:text-white mb-2">Sign in before checkout</h2>
+                <p className="text-forest/60 dark:text-white/60 mb-6">
+                    We now require an authenticated account to protect orders and payment verification.
+                </p>
+                <button
+                    onClick={() => navigate('/login', { state: { from: '/checkout' } })}
+                    className="px-6 py-3 bg-primary text-forest font-bold rounded-xl hover:scale-105 transition-transform"
+                >
+                    Go to Login
+                </button>
+            </main>
+        );
+
+        if (isEmbedded) return LoginRequiredContent;
+
+        return (
+            <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col font-body">
+                <PublicHeader />
+                {toast && <Toast message={toast.msg} onClose={() => setToast(null)} />}
+                {LoginRequiredContent}
+            </div>
+        );
+    }
+
     const MainContent = (
         <main className={`flex-1 w-full ${isEmbedded ? '' : 'px-6 py-12'} grid grid-cols-1 lg:grid-cols-2 gap-12`}>
             {/* Order Summary */}
@@ -305,15 +352,15 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             <div className="size-16 rounded-xl bg-gray-100 dark:bg-black/20 bg-cover bg-center shrink-0" style={{ backgroundImage: `url('${item.img}')` }}></div>
                             <div className="flex-1">
                                 <h4 className="font-bold text-forest dark:text-white line-clamp-1">{item.name}</h4>
-                                <p className="text-sm text-forest/60 dark:text-white/60">Qty: {item.quantity} x ₦{item.price.toLocaleString()}</p>
+                                <p className="text-sm text-forest/60 dark:text-white/60">Qty: {item.quantity} x {NAIRA_SYMBOL}{item.price.toLocaleString()}</p>
                             </div>
-                            <div className="font-bold text-primary">₦{(item.price * item.quantity).toLocaleString()}</div>
+                            <div className="font-bold text-primary">{NAIRA_SYMBOL}{(item.price * item.quantity).toLocaleString()}</div>
                         </div>
                     ))}
                     <div className="border-t border-dashed border-forest/10 dark:border-white/10 pt-4 mt-4">
                         <div className="flex justify-between items-center text-xl font-black text-forest dark:text-white">
                             <span>Total</span>
-                            <span>₦{totalPrice.toLocaleString()}</span>
+                            <span>{NAIRA_SYMBOL}{totalPrice.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

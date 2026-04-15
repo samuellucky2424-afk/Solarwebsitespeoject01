@@ -3,6 +3,7 @@ import {
   generateUpgradeCustomerEmailHTML,
   UpgradeEmailData
 } from './emailTemplates';
+import { sanitizeEmailHeaderValue, sanitizeEmailHtmlText } from './emailSanitizers';
 import { sendEmailRequest } from './sendEmailRequest';
 
 /**
@@ -13,22 +14,35 @@ export async function sendUpgradeEmail(
   adminEmail?: string
 ): Promise<{ success: boolean; adminEmailId?: string; customerEmailId?: string; error?: string }> {
   try {
-    const adminHTML = generateUpgradeAdminEmailHTML(data);
-    const customerHTML = generateUpgradeCustomerEmailHTML(data);
+    const safeCustomerName = sanitizeEmailHeaderValue(data.customerName, 120);
+    const safeCustomerEmail = sanitizeEmailHeaderValue(data.customerEmail, 160);
+    const safeData: UpgradeEmailData = {
+      ...data,
+      customerName: sanitizeEmailHtmlText(safeCustomerName, 120),
+      customerEmail: sanitizeEmailHtmlText(safeCustomerEmail, 160),
+      customerPhone: sanitizeEmailHtmlText(data.customerPhone, 40),
+      propertyAddress: sanitizeEmailHtmlText(data.propertyAddress, 400),
+      upgradeType: sanitizeEmailHtmlText(data.upgradeType, 80),
+      specifications: sanitizeEmailHtmlText(data.specifications, 2000),
+      description: sanitizeEmailHtmlText(data.description, 3000),
+    };
+
+    const adminHTML = generateUpgradeAdminEmailHTML(safeData);
+    const customerHTML = generateUpgradeCustomerEmailHTML(safeData);
 
     const [adminResponse, customerResponse] = await Promise.all([
       sendEmailRequest({
         ...(adminEmail ? { to: adminEmail } : { useAdminEmail: true }),
-        subject: `New System Upgrade Request - ${data.customerName}`,
+        subject: `New System Upgrade Request - ${safeCustomerName}`,
         html: adminHTML,
-        replyTo: data.customerEmail,
+        replyTo: safeCustomerEmail,
         tags: {
           category: 'upgrade',
           type: 'admin-notification',
         },
       }),
       sendEmailRequest({
-        to: data.customerEmail,
+        to: safeCustomerEmail,
         subject: 'Your Upgrade Request - Greenlife Solar',
         html: customerHTML,
         tags: {

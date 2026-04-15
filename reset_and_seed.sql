@@ -30,10 +30,8 @@ CREATE TABLE greenlife_hub (
 -- 3. Enable Security
 ALTER TABLE greenlife_hub ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read access" ON greenlife_hub FOR SELECT USING (true);
-CREATE POLICY "Allow public write access" ON greenlife_hub FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow public update access" ON greenlife_hub FOR UPDATE USING (true);
-CREATE POLICY "Allow public delete access" ON greenlife_hub FOR DELETE USING (true);
+-- Security policies are managed in the Supabase migrations.
+-- Do not recreate blanket public policies in reset scripts.
 
 -- 4. Seed Data (Insert Products, Gallery, Packages)
 INSERT INTO greenlife_hub (type, name, title, price, image_url, category, status, description, metadata)

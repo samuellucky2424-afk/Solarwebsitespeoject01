@@ -1,5 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { adminListUsers, adminUserDetails } from '../../src/lib/supabaseFunctions';
+import {
+    formatFulfillmentStatus,
+    formatPaymentStatus,
+    getFulfillmentBadgeClasses,
+    getPaymentStatusBadgeClasses,
+} from '../../src/lib/orderTracking';
 
 const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<any[]>([]);
@@ -209,12 +215,6 @@ const UserManagement: React.FC = () => {
                                                 const snapshot = o.item_snapshot || {};
                                                 const lineItems: any[] = snapshot.items || [];
                                                 const isPackage = o.kind === 'package';
-                                                const statusColor =
-                                                    (o.status || '').toLowerCase() === 'paid' || (o.status || '').toLowerCase() === 'completed'
-                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                                        : (o.status || '').toLowerCase() === 'pending'
-                                                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                                            : 'bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-300';
 
                                                 return (
                                                     <div key={o.id} className="rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] bg-white dark:bg-black/20 overflow-hidden shadow-sm">
@@ -228,8 +228,11 @@ const UserManagement: React.FC = () => {
                                                                 {isPackage && (
                                                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 uppercase">Package</span>
                                                                 )}
-                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusColor}`}>
-                                                                    {o.status || 'unknown'}
+                                                                <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${getPaymentStatusBadgeClasses(o.status)}`}>
+                                                                    {formatPaymentStatus(o.status)}
+                                                                </span>
+                                                                <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${getFulfillmentBadgeClasses(o.fulfillment_status)}`}>
+                                                                    {formatFulfillmentStatus(o.fulfillment_status)}
                                                                 </span>
                                                                 <span className="text-sm font-black text-primary">
                                                                     ₦{Number(o.amount || 0).toLocaleString()}

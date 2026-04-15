@@ -1,10 +1,10 @@
 project_id = "xqvapaavywmqswtccfqu"
 
 [functions.create-order]
-verify_jwt = false
+verify_jwt = true
 
 [functions.verify-flutterwave]
-verify_jwt = false
+verify_jwt = true
 
 [functions.flutterwave-webhook]
 verify_jwt = false

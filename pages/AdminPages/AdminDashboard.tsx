@@ -10,9 +10,10 @@ import AnalyticsInsights from '../../components/admin/AnalyticsInsights';
 import SettingsPanel from '../../components/admin/SettingsPanel';
 import UserManagement from '../../components/admin/UserManagement';
 import AdminLiveChat from '../../components/admin/AdminLiveChat';
+import OrderManagement from '../../components/admin/OrderManagement';
 
 // Define View Type (matching AdminSidebar)
-type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
+type AdminView = 'overview' | 'users' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
 
 const AdminDashboard: React.FC = () => {
    const [activeView, setActiveView] = useState<AdminView>('overview');
@@ -76,6 +77,7 @@ const AdminDashboard: React.FC = () => {
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
                {activeView === 'overview' && <AdminOverview />}
                {activeView === 'users' && <UserManagement />}
+               {activeView === 'orders' && <OrderManagement />}
                {activeView === 'products' && <ProductManagement />}
                {activeView === 'packages' && (
                   <PackageManagement

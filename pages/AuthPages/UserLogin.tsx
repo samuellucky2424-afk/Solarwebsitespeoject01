@@ -20,8 +20,9 @@ const UserLogin: React.FC = () => {
   // Automatically redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
+      console.log('✅ User authenticated, redirecting to dashboard...');
       const from = location.state?.from || '/dashboard';
-      navigate(from);
+      navigate(from, { replace: true });
     }
   }, [isAuthenticated, navigate, location.state]);
 
@@ -136,6 +137,8 @@ const UserLogin: React.FC = () => {
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
 
+    console.log('🔐 Login attempt:', { email, hasPassword: !!password });
+
     if (!email || !password) {
       alert("Please enter email and password");
       setLoading(false);
@@ -143,21 +146,35 @@ const UserLogin: React.FC = () => {
     }
 
     try {
+      console.log('📝 Persisting auth preference...');
       persistAuthPreference(rememberMe);
 
-      const { error } = await getSupabase().auth.signInWithPassword({
+      console.log('🔑 Sending login request to Supabase...');
+      const { data, error } = await getSupabase().auth.signInWithPassword({
         email,
         password
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase auth error:', error);
+        throw error;
+      }
 
-      // Redirect is now handled by the useEffect watching isAuthenticated!
+      console.log('✅ Login successful! Session:', data.session?.user?.email);
+      
+      // Check session immediately to avoid race condition
+      if (data.session) {
+        console.log('✅ Session established immediately, proceeding to dashboard...');
+        const from = location.state?.from || '/dashboard';
+        navigate(from, { replace: true });
+      } else {
+        console.log('⏳ No session in response, waiting for auth state listener...');
+      }
 
     } catch (err: any) {
       clearAuthPreference();
-      console.error("Login error:", err);
-      alert(err.message || "Failed to login");
+      console.error("❌ Login error:", err);
+      alert(err.message || "Failed to login. Please check your email and password.");
     } finally {
       setLoading(false);
     }

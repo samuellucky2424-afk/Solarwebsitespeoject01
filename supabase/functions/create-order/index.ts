@@ -2,9 +2,11 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
+const VALID_ORDER_KINDS = new Set(["product", "package"]);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,7 +24,7 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency = "NGN", kind, item_id, item_snapshot, user_id } = await req.json();
+    const { amount, currency = "NGN", kind, item_id, item_snapshot } = await req.json();
 
     if (!amount || !kind) {
       return new Response(
@@ -31,19 +33,54 @@ serve(async (req) => {
       );
     }
 
+    if (!VALID_ORDER_KINDS.has(String(kind))) {
+      return new Response(
+        JSON.stringify({ error: "Invalid order kind" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return new Response(
+        JSON.stringify({ error: "Invalid order amount" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    let authenticatedUserId: string | null = null;
+    const authHeader = req.headers.get("Authorization");
+
+    if (authHeader && anonKey) {
+      const supabaseUserClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: authData } = await supabaseUserClient.auth.getUser();
+      authenticatedUserId = authData?.user?.id || null;
+    }
+
+    if (!authenticatedUserId) {
+      return new Response(
+        JSON.stringify({ error: "Authentication required to create an order" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const tx_ref = `GL-${kind}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 
     const { data, error } = await supabase
       .from("orders")
       .insert({
-        amount,
+        amount: numericAmount,
         currency,
         kind,
         item_id: item_id || null,
         item_snapshot: item_snapshot || null,
         status: "pending",
+        fulfillment_status: "pending",
+        fulfillment_updated_at: new Date().toISOString(),
         tx_ref,
-        user_id: user_id || null,
+        user_id: authenticatedUserId,
       })
       .select("id, tx_ref")
       .single();

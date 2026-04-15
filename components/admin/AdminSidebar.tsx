@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-type AdminView = 'overview' | 'users' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
+type AdminView = 'overview' | 'users' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
 
 interface AdminSidebarProps {
     activeView: AdminView;
@@ -48,6 +48,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                 >
                     <span className="material-symbols-outlined text-[20px] md:text-[24px]">group</span>
                     <span className="text-xs md:text-sm">Users</span>
+                </button>
+
+                <button
+                    onClick={() => setActiveView('orders')}
+                    className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg font-medium transition-colors ${activeView === 'orders' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                >
+                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">local_shipping</span>
+                    <span className="text-xs md:text-sm">Orders</span>
                 </button>
 
                 {/* Catalog Group */}

@@ -3,6 +3,7 @@ import {
   generateOrderCustomerEmailHTML,
   OrderEmailData,
 } from './emailTemplates';
+import { sanitizeEmailHeaderValue, sanitizeEmailHtmlText } from './emailSanitizers';
 import { sendEmailRequest } from './sendEmailRequest';
 
 /**
@@ -13,20 +14,36 @@ export async function sendOrderEmails(
   adminEmail?: string
 ): Promise<{ success: boolean; adminError?: string; customerError?: string }> {
   try {
-    const adminHTML = generateOrderAdminEmailHTML(data);
-    const customerHTML = generateOrderCustomerEmailHTML(data);
+    const safeCustomerName = sanitizeEmailHeaderValue(data.customerName, 120);
+    const safeCustomerEmail = sanitizeEmailHeaderValue(data.customerEmail, 160);
+    const safeOrderId = sanitizeEmailHeaderValue(data.orderId, 80);
+    const safeData: OrderEmailData = {
+      ...data,
+      customerName: sanitizeEmailHtmlText(safeCustomerName, 120),
+      customerEmail: sanitizeEmailHtmlText(safeCustomerEmail, 160),
+      customerPhone: sanitizeEmailHtmlText(data.customerPhone, 40),
+      orderId: sanitizeEmailHtmlText(safeOrderId, 80),
+      transactionRef: sanitizeEmailHtmlText(data.transactionRef, 120),
+      items: data.items.map((item) => ({
+        ...item,
+        name: sanitizeEmailHtmlText(item.name, 160),
+      })),
+    };
+
+    const adminHTML = generateOrderAdminEmailHTML(safeData);
+    const customerHTML = generateOrderCustomerEmailHTML(safeData);
 
     const [adminResult, customerResult] = await Promise.all([
       sendEmailRequest({
         ...(adminEmail ? { to: adminEmail } : { useAdminEmail: true }),
-        subject: `New Order Placed (#${data.orderId}) - ${data.customerName}`,
+        subject: `New Order Placed (#${safeOrderId}) - ${safeCustomerName}`,
         html: adminHTML,
-        replyTo: data.customerEmail,
+        replyTo: safeCustomerEmail,
         tags: { category: 'order', type: 'admin-notification' },
       }),
       sendEmailRequest({
-        to: data.customerEmail,
-        subject: `Order Confirmation (#${data.orderId}) - Greenlife Solar`,
+        to: safeCustomerEmail,
+        subject: `Order Confirmation (#${safeOrderId}) - Greenlife Solar`,
         html: customerHTML,
         tags: { category: 'order', type: 'customer-confirmation' },
       }),

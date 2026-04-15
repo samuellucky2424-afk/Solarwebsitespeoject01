@@ -2,6 +2,7 @@ import { QuoteRecommendation } from '../../data/consultationQuotes';
 import { getSupportEmail } from '../../config/supabaseClient';
 
 const SUPPORT_PHONE = '0903 657 0294';
+const NAIRA_HTML = '&#8358;';
 
 const getSupportFooterLineHtml = () => {
   const supportEmail = getSupportEmail();
@@ -104,14 +105,14 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
   <div class="container">
     <div class="email-wrapper">
       <div class="header">
-        <h1>📋 New Consultation Request</h1>
+        <h1>New Consultation Request</h1>
         <p>A customer has submitted their solar consultation form</p>
       </div>
 
       <div class="content">
         <!-- Customer Information -->
         <div class="section">
-          <h2 class="section-title">👤 Customer Information</h2>
+          <h2 class="section-title">Customer Information</h2>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Full Name</div>
@@ -134,7 +135,7 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
 
         <!-- Property Details -->
         <div class="section">
-          <h2 class="section-title">🏠 Property Details</h2>
+          <h2 class="section-title">Property Details</h2>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Property Address</div>
@@ -157,7 +158,7 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
 
         <!-- Appliance Configuration -->
         <div class="section">
-          <h2 class="section-title">⚡ Appliance Configuration</h2>
+          <h2 class="section-title">Appliance Configuration</h2>
           <div class="appliance-grid">
             <div class="appliance-item">
               <strong>Fans:</strong> <em>${data.fans}</em>
@@ -190,11 +191,11 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
 
         <!-- Selected Quote Package -->
         <div class="section">
-          <h2 class="section-title">💡 Selected Solar Package</h2>
+          <h2 class="section-title">Selected Solar Package</h2>
           <div class="quote-card">
             <div class="quote-title">${data.selectedQuote.quote.title}</div>
             <p style="color: #4c9a52; font-size: 14px; margin-bottom: 10px;">${data.selectedQuote.quote.tagline}</p>
-            <div class="quote-price">₦${data.selectedQuote.quote.price.toLocaleString()}</div>
+            <div class="quote-price">${NAIRA_HTML}${data.selectedQuote.quote.price.toLocaleString()}</div>
             
             <div class="quote-details">
               <div class="quote-detail">
@@ -236,8 +237,8 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
         <div class="action-section">
           <h3 style="color: #0d1b0f; margin-bottom: 15px;">Next Steps</h3>
           <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Review this consultation request and follow up with the customer to provide a quote and discuss their solar solution.</p>
-          <a href="mailto:${data.customerEmail}?subject=Your Greenlife Solar Consultation Request" class="action-button">📧 Reply to Customer</a>
-          <a href="#" class="action-button">📊 View Dashboard</a>
+          <a href="mailto:${data.customerEmail}?subject=Your Greenlife Solar Consultation Request" class="action-button">Reply to Customer</a>
+          <a href="#" class="action-button">View Dashboard</a>
         </div>
       </div>
 
@@ -291,7 +292,7 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
   <div class="container">
     <div class="email-wrapper">
       <div class="header">
-        <h1>✅ Consultation Request Received!</h1>
+        <h1>Consultation Request Received!</h1>
       </div>
 
       <div class="content">
@@ -304,11 +305,11 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
         </p>
 
         <div class="section">
-          <h2 class="section-title">📋 Your Selected Package</h2>
+          <h2 class="section-title">Your Selected Package</h2>
           <div class="quote-summary">
             <h3>${data.selectedQuote.quote.title}</h3>
             <p><em>${data.selectedQuote.quote.tagline}</em></p>
-            <div class="quote-price">₦${data.selectedQuote.quote.price.toLocaleString()}</div>
+            <div class="quote-price">${NAIRA_HTML}${data.selectedQuote.quote.price.toLocaleString()}</div>
             <p><strong>Load Coverage:</strong> ${data.selectedQuote.quote.loadText}</p>
             <p><strong>Recommended for:</strong> ${data.selectedQuote.quote.recommendedProperty}</p>
           </div>
@@ -321,7 +322,7 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
         </div>
 
         <div class="section">
-          <h2 class="section-title">📞 We're Here to Help</h2>
+          <h2 class="section-title">We're Here to Help</h2>
           <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
             If you have any questions or would like to discuss your consultation further, please don't hesitate to reach out:
           </p>
@@ -350,9 +351,9 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
 
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
-        <p>📍 Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
+        <p>Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
         ${getSupportFooterLineHtml()}
-        <p style="margin-top: 10px;">© 2026 Greenlife Solar Solutions. All rights reserved.</p>
+        <p style="margin-top: 10px;">&copy; 2026 Greenlife Solar Solutions. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -395,7 +396,7 @@ export function generateUpgradeAdminEmailHTML(data: UpgradeEmailData): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1 style="margin:0; font-size: 24px;">⬆️ System Upgrade Request</h1>
+      <h1 style="margin:0; font-size: 24px;">System Upgrade Request</h1>
     </div>
     <div class="content">
       <div class="info-box">
@@ -502,7 +503,7 @@ export function generateOrderAdminEmailHTML(data: OrderEmailData): string {
     `<tr>
       <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
       <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦${item.price.toLocaleString()}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${NAIRA_HTML}${item.price.toLocaleString()}</td>
     </tr>`
   ).join('');
 
@@ -523,7 +524,7 @@ export function generateOrderAdminEmailHTML(data: OrderEmailData): string {
 <body>
   <div class="container">
     <div class="header">
-      <h1 style="margin:0; font-size: 24px;">🛒 New Paid Order</h1>
+      <h1 style="margin:0; font-size: 24px;">New Paid Order</h1>
       <p style="margin: 5px 0 0 0; opacity: 0.9;">Order #${data.orderId}</p>
     </div>
     <div class="content">
@@ -544,7 +545,7 @@ export function generateOrderAdminEmailHTML(data: OrderEmailData): string {
           ${itemsHtml}
           <tr>
             <td colspan="2" style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333;">Total Amount:</td>
-            <td style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333; color: #4c9a52;">₦${data.totalAmount.toLocaleString()}</td>
+            <td style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333; color: #4c9a52;">${NAIRA_HTML}${data.totalAmount.toLocaleString()}</td>
           </tr>
         </tbody>
       </table>
@@ -560,7 +561,7 @@ export function generateOrderCustomerEmailHTML(data: OrderEmailData): string {
     `<tr>
       <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
       <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦${item.price.toLocaleString()}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${NAIRA_HTML}${item.price.toLocaleString()}</td>
     </tr>`
   ).join('');
 
@@ -603,7 +604,7 @@ export function generateOrderCustomerEmailHTML(data: OrderEmailData): string {
             ${itemsHtml}
             <tr>
               <td colspan="2" style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333;">Total Paid:</td>
-              <td style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333; color: #4c9a52;">₦${data.totalAmount.toLocaleString()}</td>
+              <td style="padding: 15px 10px; text-align: right; font-weight: bold; border-top: 2px solid #333; color: #4c9a52;">${NAIRA_HTML}${data.totalAmount.toLocaleString()}</td>
             </tr>
           </tbody>
         </table>
@@ -678,7 +679,7 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
   <div class="container">
     <div class="email-wrapper">
       <div class="header">
-        <h1>🔧 New Service Request</h1>
+        <h1>New Service Request</h1>
         <p>${data.requestType}</p>
         <div class="priority-badge">${data.priority} Priority</div>
       </div>
@@ -686,7 +687,7 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
       <div class="content">
         <!-- Customer Information -->
         <div class="section">
-          <h2 class="section-title">👤 Customer Information</h2>
+          <h2 class="section-title">Customer Information</h2>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Name</div>
@@ -713,7 +714,7 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
 
         <!-- Request Details -->
         <div class="section">
-          <h2 class="section-title">📋 Request Details</h2>
+          <h2 class="section-title">Request Details</h2>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Request Type</div>
@@ -740,7 +741,7 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
 
         <!-- Description -->
         <div class="section">
-          <h2 class="section-title">📝 Description</h2>
+          <h2 class="section-title">Description</h2>
           <div class="description-box">
             <p>${data.description}</p>
           </div>
@@ -750,8 +751,8 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
         <div class="action-section">
           <h3 style="color: #0d1b0f; margin-bottom: 12px; font-size: 14px;">Next Steps</h3>
           <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Please contact the customer to confirm the service appointment and provide more details.</p>
-          <a href="mailto:${data.customerEmail}?subject=Re: Your Service Request" class="action-button">📧 Reply to Customer</a>
-          <a href="#" class="action-button">📊 View Dashboard</a>
+          <a href="mailto:${data.customerEmail}?subject=Re: Your Service Request" class="action-button">Reply to Customer</a>
+          <a href="#" class="action-button">View Dashboard</a>
         </div>
       </div>
 
@@ -768,8 +769,8 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
 }
 
 export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmailData): string {
-  const requestTypeIcon = data.requestType === 'Maintenance Request' ? '🔧' : 
-                           data.requestType === 'Site Survey Request' ? '📍' : '📦';
+  const requestTypeLabel = data.requestType === 'Maintenance Request' ? 'Maintenance' : 
+                           data.requestType === 'Site Survey Request' ? 'Site Survey' : 'Package';
   
   return `
 <!DOCTYPE html>
@@ -807,7 +808,7 @@ export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmai
   <div class="container">
     <div class="email-wrapper">
       <div class="header">
-        <h1>✅ ${requestTypeIcon} Request Received</h1>
+        <h1>Request Received: ${requestTypeLabel}</h1>
         <p>Thank you for submitting your service request</p>
       </div>
 
@@ -820,7 +821,7 @@ export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmai
 
         <!-- Request Summary -->
         <div class="section">
-          <h2 class="section-title">📋 Request Summary</h2>
+          <h2 class="section-title">Request Summary</h2>
           <div class="info-box">
             <strong>Request ID:</strong>
             <p>${data.requestId}</p>
@@ -846,7 +847,7 @@ export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmai
 
         <!-- Support Section -->
         <div class="support-box">
-          <h4>📞 Have Questions?</h4>
+          <h4>Have Questions?</h4>
           ${getSupportBoxHtml()}
           <p><strong>Phone:</strong> ${SUPPORT_PHONE}</p>
           <p>Feel free to reach out if you need to reschedule or have any questions about your request.</p>
@@ -860,7 +861,7 @@ export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmai
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
         <p>Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
-        <p>© 2026 Greenlife Solar Solutions. All rights reserved.</p>
+        <p>&copy; 2026 Greenlife Solar Solutions. All rights reserved.</p>
       </div>
     </div>
   </div>

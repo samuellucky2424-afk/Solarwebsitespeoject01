@@ -12,11 +12,7 @@ import {
 import { ChatMessage, Conversation } from '../utils/chatService';
 
 const FALLBACK_SUPPORT_MESSAGE =
-  'Live chat is offline right now, but you can still leave a message here. Our team will follow up by email or phone.';
-const FALLBACK_CONFIRMATION_MESSAGE =
-  'Thanks. Your message has been sent to our support team and they will get back to you soon.';
-const FALLBACK_SEND_ERROR_MESSAGE =
-  'We could not send your message right now. Please use the support page or call our operations line instead.';
+  'Live chat is offline right now. Please use the support page or call us and our team will help you there.';
 const SUPPORT_PHONE = '+234 903 307 1034';
 
 type DeliveryMode = 'live-chat' | 'email-fallback';
@@ -39,7 +35,6 @@ const LiveChatWidget: React.FC = () => {
   const [chatError, setChatError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatWindowRef = useRef<HTMLDivElement>(null);
-  const fallbackConversationIdRef = useRef(`fallback-${Date.now()}`);
 
   useGSAP(() => {
     if (!isOpen || !chatWindowRef.current) {
@@ -79,7 +74,7 @@ const LiveChatWidget: React.FC = () => {
     message: string
   ): ChatMessage => ({
     id: `${senderType}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    conversation_id: conversation?.id || fallbackConversationIdRef.current,
+    conversation_id: conversation?.id || 'fallback-conversation',
     sender_type: senderType,
     message,
     is_read: senderType !== 'visitor',
@@ -88,9 +83,12 @@ const LiveChatWidget: React.FC = () => {
 
   const sendNotificationEmail = async (
     message: string,
-    fallbackMode: boolean,
     notificationType: NotificationType
   ) => {
+    if (!conversation) {
+      throw new Error('Live chat conversation is not available.');
+    }
+
     const response = await fetch('/api/send-live-chat-notification', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,14 +97,13 @@ const LiveChatWidget: React.FC = () => {
         visitorEmail: formData.email,
         visitorPhone: formData.phone,
         message,
-        conversationId: conversation?.id || fallbackConversationIdRef.current,
-        fallbackMode,
+        conversationId: conversation.id,
         notificationType,
       }),
     });
 
     if (!response.ok) {
-      let errorMessage = FALLBACK_SEND_ERROR_MESSAGE;
+      let errorMessage = 'We could not notify the support team right now.';
 
       try {
         const data = await response.json();
@@ -191,25 +188,12 @@ const LiveChatWidget: React.FC = () => {
     e.preventDefault();
 
     const trimmedMessage = inputValue.trim();
-    if (!trimmedMessage || isLoading) return;
-    if (deliveryMode === 'live-chat' && !conversation) return;
+    if (!trimmedMessage || isLoading || deliveryMode !== 'live-chat' || !conversation) return;
 
     setIsLoading(true);
     setChatError('');
 
     try {
-      if (deliveryMode === 'email-fallback') {
-        const visitorMessage = buildLocalMessage('visitor', trimmedMessage);
-        setMessages((prev) => [...prev, visitorMessage]);
-        setInputValue('');
-
-        await sendNotificationEmail(trimmedMessage, true, 'initial-inquiry');
-
-        const botResponse = buildLocalMessage('bot', FALLBACK_CONFIRMATION_MESSAGE);
-        setMessages((prev) => [...prev, botResponse]);
-        return;
-      }
-
       const isFirstVisitorMessage = !messages.some(
         (msg) => msg.sender_type === 'visitor'
       );
@@ -231,7 +215,7 @@ const LiveChatWidget: React.FC = () => {
 
       if (isFirstVisitorMessage) {
         try {
-          await sendNotificationEmail(trimmedMessage, false, 'initial-inquiry');
+          await sendNotificationEmail(trimmedMessage, 'initial-inquiry');
         } catch (emailError) {
           console.error('Error sending email notification:', emailError);
         }
@@ -250,11 +234,11 @@ const LiveChatWidget: React.FC = () => {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      if (deliveryMode === 'email-fallback') {
-        setChatError(
-          error instanceof Error ? error.message : FALLBACK_SEND_ERROR_MESSAGE
-        );
-      }
+      setChatError(
+        error instanceof Error
+          ? error.message
+          : 'We could not send your message right now. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -381,7 +365,10 @@ const LiveChatWidget: React.FC = () => {
             {deliveryMode === 'email-fallback' && (
               <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3 text-sm text-forest dark:text-white">
                 <p className="font-semibold mb-2">
-                  Messages sent here will be emailed to our support team.
+                  Live chat forwarding is unavailable right now.
+                </p>
+                <p className="text-xs mb-3">
+                  Please continue from the support page or call our operations line for a response.
                 </p>
                 <div className="flex flex-wrap gap-3 text-xs">
                   <a
@@ -442,7 +429,7 @@ const LiveChatWidget: React.FC = () => {
         )}
       </div>
 
-      {currentStep === 'chat' && (
+      {currentStep === 'chat' && deliveryMode === 'live-chat' && (
         <div className="border-t border-gray-200 dark:border-white/10 p-3 shrink-0 sm:p-4">
           <form onSubmit={handleSendMessage} className="flex gap-2">
             <input

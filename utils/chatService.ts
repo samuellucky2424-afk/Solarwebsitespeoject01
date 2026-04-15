@@ -31,6 +31,9 @@ const getChatErrorMessage = (error: { code?: string; message?: string } | null |
 
   if (
     error.code === 'PGRST205' ||
+    error.code === '42501' ||
+    error.message?.toLowerCase().includes('row-level security') ||
+    error.message?.toLowerCase().includes('permission denied') ||
     error.message?.includes('live_chat_conversations') ||
     error.message?.includes('live_chat_messages')
   ) {

@@ -15,6 +15,13 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
 };
 
+const VALID_STATUSES = new Set([
+  "pending",
+  "confirmed",
+  "in_transit",
+  "delivered",
+]);
+
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
 serve(async (req: Request) => {
@@ -25,7 +32,7 @@ serve(async (req: Request) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -55,64 +62,74 @@ serve(async (req: Request) => {
       throw new Error("forbidden");
     }
 
-    const body = await req.json();
-    const { user_id } = body;
+    const { order_id, fulfillment_status, note } = await req.json();
 
-    if (!user_id) {
-      return new Response(JSON.stringify({ error: "user_id is required" }), {
+    if (!order_id || !fulfillment_status) {
+      return new Response(JSON.stringify({ error: "order_id and fulfillment_status are required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = String(user_id);
+    const nextStatus = String(fulfillment_status);
+    if (!VALID_STATUSES.has(nextStatus)) {
+      return new Response(JSON.stringify({ error: "Invalid fulfillment_status" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const [
-      profileRes,
-      systemsRes,
-      bookingsRes,
-      hubRequestsRes,
-      ordersRes,
-      paymentsRes
-    ] = await Promise.all([
-      supabaseAdmin
-        .from("profiles")
-        .select("id, full_name, email, phone, address, role, created_at, avatar_url, metadata")
-        .eq("id", userId)
-        .maybeSingle(),
-      supabaseAdmin.from("user_systems").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-      supabaseAdmin.from("service_bookings").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-      supabaseAdmin.from("greenlife_hub").select("*").eq("type", "request").eq("user_id", userId).order("created_at", { ascending: false }),
-      supabaseAdmin
-        .from("orders")
-        .select("id, amount, currency, kind, status, fulfillment_status, fulfillment_updated_at, delivered_at, tx_ref, item_snapshot, created_at")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-      supabaseAdmin.from("payments").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-    ]);
+    const { data: existingOrder, error: existingOrderError } = await supabaseAdmin
+      .from("orders")
+      .select("id, fulfillment_status")
+      .eq("id", order_id)
+      .maybeSingle();
 
-    if (profileRes.error) throw profileRes.error;
+    if (existingOrderError) {
+      throw existingOrderError;
+    }
 
-    // payments table may not exist yet; treat missing table as empty list
-    const paymentsErrCode = (paymentsRes.error as any)?.code;
-    const paymentsErrMsg = (paymentsRes.error as any)?.message || "";
-    const paymentsMissing = paymentsErrCode === "PGRST205" || paymentsErrMsg.includes("Could not find the table");
+    if (!existingOrder) {
+      return new Response(JSON.stringify({ error: "Order not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (systemsRes.error) throw systemsRes.error;
-    if (bookingsRes.error) throw bookingsRes.error;
-    if (hubRequestsRes.error) throw hubRequestsRes.error;
-    if (ordersRes.error) throw ordersRes.error;
-    if (paymentsRes.error && !paymentsMissing) throw paymentsRes.error;
+    const now = new Date().toISOString();
+
+    const { data: updatedOrder, error: updateError } = await supabaseAdmin
+      .from("orders")
+      .update({
+        fulfillment_status: nextStatus,
+        fulfillment_updated_at: now,
+        delivered_at: nextStatus === "delivered" ? now : null,
+      })
+      .eq("id", order_id)
+      .select("id, user_id, amount, currency, kind, status, fulfillment_status, fulfillment_updated_at, delivered_at, tx_ref, item_snapshot, created_at")
+      .single();
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    const { error: historyError } = await supabaseAdmin
+      .from("order_status_history")
+      .insert({
+        order_id,
+        previous_status: existingOrder.fulfillment_status,
+        next_status: nextStatus,
+        changed_by: authData.user.id,
+        note: note || null,
+        created_at: now,
+      });
+
+    if (historyError) {
+      throw historyError;
+    }
 
     return new Response(
-      JSON.stringify({
-        profile: profileRes.data,
-        systems: systemsRes.data || [],
-        service_bookings: bookingsRes.data || [],
-        requests: hubRequestsRes.data || [],
-        orders: ordersRes.data || [],
-        payments: paymentsMissing ? [] : (paymentsRes.data || []),
-      }),
+      JSON.stringify({ order: updatedOrder }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
@@ -126,7 +143,7 @@ serve(async (req: Request) => {
     }
 
     if (status === 500) {
-      console.error("admin-user-details exception", err);
+      console.error("admin-update-order-status exception", err);
     }
 
     return new Response(JSON.stringify({ error: msg }), {

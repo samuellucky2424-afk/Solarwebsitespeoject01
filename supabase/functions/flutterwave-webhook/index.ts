@@ -40,6 +40,7 @@ function getFunctionConfig(): FunctionConfig {
     !supabaseUrl ? "SUPABASE_URL" : "",
     !serviceRoleKey ? "SUPABASE_SERVICE_ROLE_KEY" : "",
     !flutterwaveSecret ? "FLUTTERWAVE_SECRET_KEY" : "",
+    !webhookHash ? "FLUTTERWAVE_WEBHOOK_SECRET_HASH" : "",
   ].filter(Boolean);
 
   if (missing.length > 0) {

@@ -3,7 +3,7 @@ import { HashRouter, Routes, Route, useLocation, Navigate } from 'react-router-d
 import { CartProvider } from './context/CartContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AdminProvider } from './context/AdminContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
 import LiveChatWidget from './components/LiveChatWidget';
 
@@ -77,6 +77,20 @@ const PageLoader = () => (
   </div>
 );
 
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isAdmin } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App: React.FC = () => {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -112,7 +126,14 @@ const App: React.FC = () => {
                   <Route path="/service-request" element={<ServiceRequestForm />} />
 
                   {/* Admin Protected Routes */}
-                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <AdminRoute>
+                        <AdminDashboard />
+                      </AdminRoute>
+                    }
+                  />
                   {/* Redirect old admin routes to dashboard */}
                   <Route path="/admin/inventory" element={<Navigate to="/admin/dashboard" replace />} />
                   <Route path="/admin/gallery" element={<Navigate to="/admin/dashboard" replace />} />

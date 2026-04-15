@@ -568,12 +568,18 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       return true;
     }
 
+    const requestUserId = session?.user?.id || activeUser?.id;
+    if (!requestUserId) {
+      console.warn("Cannot add request without an authenticated user.");
+      return false;
+    }
+
     const { error } = await supabase.from('greenlife_hub').insert([{
       type: 'request',
       title: req.title,
       status: req.status,
       description: req.description,
-      user_id: activeUser?.id,
+      user_id: requestUserId,
       address: { address: req.address, phone: req.phone, email: req.email },
       metadata: {
         type: req.type,

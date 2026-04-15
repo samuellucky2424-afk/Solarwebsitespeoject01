@@ -19,12 +19,26 @@ const AdminLogin: React.FC = () => {
         password
       });
 
-      console.log("Supabase Auth Response:", { data, error }); // DEBUG LOG
-
       if (error) throw error;
 
       if (!data.session) {
         throw new Error("Login successful but no session returned. Check Supabase config.");
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        await supabase.auth.signOut();
+        throw new Error('Could not verify admin privileges.');
+      }
+
+      if (!profile || profile.role !== 'admin') {
+        await supabase.auth.signOut();
+        throw new Error('forbidden');
       }
 
       // Explicitly wait for session to be stored
@@ -32,16 +46,11 @@ const AdminLogin: React.FC = () => {
 
       // Try to verify session was stored, but don't fail if aborted
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Session after storage:", session);
-
-        if (!session) {
-          console.warn("Session verification failed, but proceeding anyway since login succeeded");
-        }
+        await supabase.auth.getSession();
       } catch (verifyError: any) {
         // Ignore AbortError during session verification
         if (verifyError.name === 'AbortError' || verifyError.message?.includes('aborted')) {
-          console.log("Session verification aborted (HMR), but login succeeded - proceeding");
+          // Ignore transient HMR-related aborts in development.
         } else {
           throw verifyError;
         }
@@ -49,17 +58,16 @@ const AdminLogin: React.FC = () => {
 
       navigate('/admin/dashboard');
     } catch (err: any) {
-      console.error("Login Error:", err);
-
       // Ignore AbortError - it's just HMR
       if (err.name === 'AbortError' || err.message?.includes('aborted')) {
-        console.log("Login aborted by HMR, please try again");
         return;
       }
 
       // specific check for the user credential mismatch
       if (err.message === 'Invalid login credentials') {
         alert("Invalid credentials. Please verify your admin password.");
+      } else if (err.message === 'forbidden') {
+        alert("This account does not have admin access.");
       } else {
         alert(err.message || "Failed to login");
       }

@@ -3,6 +3,7 @@ import {
   generateServiceRequestCustomerEmailHTML,
   ServiceRequestEmailData,
 } from './emailTemplates';
+import { sanitizeEmailHeaderValue, sanitizeEmailHtmlText } from './emailSanitizers';
 import { sendEmailRequest } from './sendEmailRequest';
 
 /**
@@ -13,18 +14,33 @@ export async function sendServiceRequestEmails(
   adminEmail?: string
 ): Promise<{ success: boolean; adminEmailId?: string; customerEmailId?: string; error?: string }> {
   try {
-    const adminHTML = generateServiceRequestAdminEmailHTML(data);
-    const customerHTML = generateServiceRequestCustomerEmailHTML(data);
+    const safeCustomerName = sanitizeEmailHeaderValue(data.customerName, 120);
+    const safeCustomerEmail = sanitizeEmailHeaderValue(data.customerEmail, 160);
+    const safeRequestType = sanitizeEmailHeaderValue(data.requestType, 80) as ServiceRequestEmailData['requestType'];
+    const safeData: ServiceRequestEmailData = {
+      ...data,
+      requestType: safeRequestType,
+      customerName: sanitizeEmailHtmlText(safeCustomerName, 120),
+      customerEmail: sanitizeEmailHtmlText(safeCustomerEmail, 160),
+      customerPhone: sanitizeEmailHtmlText(data.customerPhone, 40),
+      address: sanitizeEmailHtmlText(data.address, 400),
+      time: data.time ? sanitizeEmailHtmlText(data.time, 40) : undefined,
+      issueType: data.issueType ? sanitizeEmailHtmlText(data.issueType, 120) : undefined,
+      description: sanitizeEmailHtmlText(data.description, 3000),
+    };
+
+    const adminHTML = generateServiceRequestAdminEmailHTML(safeData);
+    const customerHTML = generateServiceRequestCustomerEmailHTML(safeData);
 
     const adminResult = await sendEmailRequest({
       ...(adminEmail ? { to: adminEmail } : { useAdminEmail: true }),
-      subject: `New Service Request - ${data.requestType} from ${data.customerName}`,
+      subject: `New Service Request - ${safeRequestType} from ${safeCustomerName}`,
       html: adminHTML,
-      replyTo: data.customerEmail,
+      replyTo: safeCustomerEmail,
       tags: {
         category: 'service-request',
         type: 'admin-notification',
-        requestType: data.requestType,
+        requestType: safeRequestType,
       },
     });
 
@@ -34,14 +50,14 @@ export async function sendServiceRequestEmails(
     }
 
     const customerResult = await sendEmailRequest({
-      to: data.customerEmail,
-      subject: `Service Request Received - ${data.requestType}`,
+      to: safeCustomerEmail,
+      subject: `Service Request Received - ${safeRequestType}`,
       html: customerHTML,
       ...(adminEmail ? { replyTo: adminEmail } : {}),
       tags: {
         category: 'service-request',
         type: 'customer-confirmation',
-        requestType: data.requestType,
+        requestType: safeRequestType,
       },
     });
 

@@ -1,3 +1,5 @@
+import { getSupabase } from '../../config/supabaseClient';
+
 export interface SendEmailRequestPayload {
   to?: string | string[];
   subject: string;
@@ -34,28 +36,32 @@ export async function sendEmailRequest(
   payload: SendEmailRequestPayload
 ): Promise<SendEmailRequestResult> {
   try {
+    const { data: sessionData } = await getSupabase().auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+
+    if (!accessToken) {
+      return {
+        success: false,
+        error: 'You must be signed in to send email notifications.',
+      };
+    }
+
     // Use local API server in development, production endpoint in production
     const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3001/api/send-email'  // Local development
       : '/api/send-email';  // Production (Vercel)
 
-    console.log('📧 Sending email via', apiUrl, {
-      to: payload.useAdminEmail ? '[ADMIN_EMAIL from backend]' : payload.to,
-      subject: payload.subject
-    });
-    
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
       body: JSON.stringify(payload),
     });
 
     const responseText = await response.text();
     const contentType = response.headers.get('content-type') || '';
-
-    console.log(`📬 Email API Response Status: ${response.status}`, { contentType });
 
     let responseData: any = null;
     if (responseText && contentType.toLowerCase().includes('application/json')) {
@@ -90,7 +96,6 @@ export async function sendEmailRequest(
       };
     }
 
-    console.log('✅ Email sent successfully!', { id: responseData.id, to: responseData.to });
     return {
       success: true,
       id: responseData.id,

@@ -5,6 +5,8 @@ import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isAdmin: boolean;
+  role: string | null;
   user: User | null;
   session: Session | null;
   signOut: () => Promise<void>;
@@ -92,10 +94,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const loadUserRole = async (userId: string | undefined | null) => {
+    if (!userId) {
+      setRole(null);
+      return;
+    }
+
+    try {
+      const client = getSupabase();
+      const { data, error } = await client
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('Role lookup failed:', error);
+        setRole(null);
+        return;
+      }
+
+      setRole(typeof data?.role === 'string' ? data.role : null);
+    } catch (err) {
+      console.warn('Role lookup exception:', err);
+      setRole(null);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -104,23 +134,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const initAuth = async () => {
       try {
         // Wait for robust runtime config to load
+        console.log('🔄 Loading Supabase config...');
         await loadConfig();
+        
         const client = getSupabase();
+        console.log('✅ Supabase client ready');
 
         // Check active session
         const { data: { session: initSession } } = await client.auth.getSession();
+        console.log('📋 Initial session check:', initSession ? `User: ${initSession.user.email}` : 'No session');
 
         if (initSession && shouldInvalidateRecoveredSession(initSession)) {
+          console.log('⏰ Session expired, signing out...');
           await client.auth.signOut();
           clearAuthPreference();
 
           if (mounted) {
             setSession(null);
             setUser(null);
+            setRole(null);
             setLoading(false);
           }
           return;
         }
+
+        await loadUserRole(initSession?.user?.id);
 
         if (mounted) {
           setSession(initSession);
@@ -129,7 +167,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Listen for changes
-        const { data } = client.auth.onAuthStateChange((_event, currentSession) => {
+        console.log('👂 Setting up auth state listener...');
+        const { data } = client.auth.onAuthStateChange(async (event, currentSession) => {
+          console.log('🔄 Auth state changed:', { event, user: currentSession?.user?.email });
+          await loadUserRole(currentSession?.user?.id);
           if (mounted) {
             setSession(currentSession);
             setUser(currentSession?.user ?? null);
@@ -137,12 +178,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         });
         subscription = data.subscription;
+        console.log('✅ Auth state listener registered');
 
       } catch (err: any) {
         if (mounted) {
           const isAbort = err.name === 'AbortError' || err.message?.includes('AbortError') || err.message?.includes('signal is aborted');
           if (!isAbort) {
-            console.error("Auth session check error:", err);
+            console.error("❌ Auth session check error:", err);
           }
           setLoading(false);
         }
@@ -163,6 +205,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const client = getSupabase();
     await client.auth.signOut();
     clearAuthPreference();
+    setRole(null);
     navigate('/login');
   };
 
@@ -170,16 +213,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (loading) return;
 
-    const protectedRoutes = ['/dashboard', '/requests', '/service-request'];
+    const protectedRoutes = ['/dashboard', '/order', '/requests', '/service-request', '/admin/dashboard'];
     const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
 
     if (isProtectedRoute && !session) {
       navigate('/login');
+      return;
     }
-  }, [session, loading, location.pathname, navigate]);
+
+    if (location.pathname.startsWith('/admin') && session && role !== 'admin') {
+      navigate('/dashboard');
+    }
+  }, [session, role, loading, location.pathname, navigate]);
 
   const value = {
     isAuthenticated: !!session,
+    isAdmin: role === 'admin',
+    role,
     user,
     session,
     signOut,

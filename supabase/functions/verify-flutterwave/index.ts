@@ -10,6 +10,7 @@ const corsHeaders = {
 
 type FunctionConfig = {
   supabaseUrl: string;
+  anonKey: string;
   serviceRoleKey: string;
   flutterwaveSecret: string;
 };
@@ -31,6 +32,7 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
 
 function getFunctionConfig(): FunctionConfig {
   const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim() || "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")?.trim() || "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ||
     "";
   const flutterwaveSecret = Deno.env.get("FLUTTERWAVE_SECRET_KEY")?.trim() ||
@@ -38,6 +40,7 @@ function getFunctionConfig(): FunctionConfig {
 
   const missing = [
     !supabaseUrl ? "SUPABASE_URL" : "",
+    !anonKey ? "SUPABASE_ANON_KEY" : "",
     !serviceRoleKey ? "SUPABASE_SERVICE_ROLE_KEY" : "",
     !flutterwaveSecret ? "FLUTTERWAVE_SECRET_KEY" : "",
   ].filter(Boolean);
@@ -50,6 +53,7 @@ function getFunctionConfig(): FunctionConfig {
 
   return {
     supabaseUrl,
+    anonKey,
     serviceRoleKey,
     flutterwaveSecret,
   };
@@ -185,6 +189,21 @@ serve(async (req) => {
 
     const config = getFunctionConfig();
     const supabase = createClient(config.supabaseUrl, config.serviceRoleKey);
+    const authHeader = req.headers.get("Authorization");
+
+    if (!authHeader) {
+      return jsonResponse({ error: "Authentication required" }, 401);
+    }
+
+    const supabaseUserClient = createClient(config.supabaseUrl, config.anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: authData, error: authErr } = await supabaseUserClient.auth.getUser();
+
+    if (authErr || !authData?.user) {
+      return jsonResponse({ error: "Authentication required" }, 401);
+    }
 
     const verify = await verifyFlutterwaveTransaction(
       String(transaction_id),
@@ -216,6 +235,10 @@ serve(async (req) => {
 
     if (!order) {
       return jsonResponse({ error: "Order not found" }, 404);
+    }
+
+    if (order.user_id !== authData.user.id) {
+      return jsonResponse({ error: "You do not have permission to verify this order" }, 403);
     }
 
     const amountPaid = Number(data.amount);

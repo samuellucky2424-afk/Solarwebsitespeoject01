@@ -33,19 +33,5 @@ CREATE INDEX idx_messages_created ON live_chat_messages(created_at DESC);
 ALTER TABLE live_chat_conversations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE live_chat_messages ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for conversations
-CREATE POLICY "Allow anonymous read" ON live_chat_conversations
-  FOR SELECT USING (true);
-
-CREATE POLICY "Allow anonymous insert" ON live_chat_conversations
-  FOR INSERT WITH CHECK (true);
-
--- RLS Policies for messages
-CREATE POLICY "Allow anonymous read messages" ON live_chat_messages
-  FOR SELECT USING (true);
-
-CREATE POLICY "Allow anonymous insert messages" ON live_chat_messages
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Allow update messages" ON live_chat_messages
-  FOR UPDATE USING (true);
+-- Security policies are intentionally managed in later hardening migrations.
+-- Do not add anonymous read/write access here.
