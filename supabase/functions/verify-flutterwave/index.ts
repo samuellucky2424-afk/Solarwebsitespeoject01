@@ -92,6 +92,12 @@ async function verifyFlutterwaveTransaction(
       body?.message || body?.error || rawBody || "Unknown Flutterwave error",
     ).trim();
 
+    if (remoteMessage.includes("No transaction was found for this id")) {
+      throw new Error(
+        "Flutterwave could not find that transaction ID. This usually means the Supabase FLUTTERWAVE_SECRET_KEY is from a different Flutterwave mode or account than the public key used for checkout.",
+      );
+    }
+
     throw new Error(
       `Flutterwave verification failed (${res.status}): ${remoteMessage}`,
     );
