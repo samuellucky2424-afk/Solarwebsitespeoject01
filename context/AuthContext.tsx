@@ -10,6 +10,80 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+const AUTH_PERSISTENCE_KEY = 'greenlife-auth-persistence';
+const TEMP_SESSION_KEY = 'greenlife-temp-session';
+const NON_REMEMBERED_SESSION_MS = 12 * 60 * 60 * 1000;
+const REMEMBERED_SESSION_MS = 30 * 24 * 60 * 60 * 1000;
+
+type AuthPersistence = {
+  rememberMe: boolean;
+  signedInAt: number;
+};
+
+function readAuthPersistence(): AuthPersistence | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(AUTH_PERSISTENCE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<AuthPersistence>;
+    if (typeof parsed.rememberMe !== 'boolean' || typeof parsed.signedInAt !== 'number') {
+      return null;
+    }
+
+    return {
+      rememberMe: parsed.rememberMe,
+      signedInAt: parsed.signedInAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function persistAuthPreference(rememberMe: boolean) {
+  if (typeof window === 'undefined') return;
+
+  const payload: AuthPersistence = {
+    rememberMe,
+    signedInAt: Date.now(),
+  };
+
+  window.localStorage.setItem(AUTH_PERSISTENCE_KEY, JSON.stringify(payload));
+
+  if (rememberMe) {
+    window.sessionStorage.removeItem(TEMP_SESSION_KEY);
+  } else {
+    window.sessionStorage.setItem(TEMP_SESSION_KEY, 'active');
+  }
+}
+
+export function clearAuthPreference() {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(AUTH_PERSISTENCE_KEY);
+  window.sessionStorage.removeItem(TEMP_SESSION_KEY);
+}
+
+function shouldInvalidateRecoveredSession() {
+  if (typeof window === 'undefined') return false;
+
+  const persistence = readAuthPersistence();
+
+  // Legacy sessions created before remember-me tracking are treated as expired.
+  if (!persistence) {
+    return true;
+  }
+
+  const age = Date.now() - persistence.signedInAt;
+
+  if (persistence.rememberMe) {
+    return age > REMEMBERED_SESSION_MS;
+  }
+
+  const browserSessionEnded = !window.sessionStorage.getItem(TEMP_SESSION_KEY);
+  return browserSessionEnded || age > NON_REMEMBERED_SESSION_MS;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,6 +106,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Check active session
         const { data: { session: initSession } } = await client.auth.getSession();
+
+        if (initSession && shouldInvalidateRecoveredSession()) {
+          await client.auth.signOut();
+          clearAuthPreference();
+
+          if (mounted) {
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
+
         if (mounted) {
           setSession(initSession);
           setUser(initSession?.user ?? null);
@@ -72,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     const client = getSupabase();
     await client.auth.signOut();
+    clearAuthPreference();
     navigate('/login');
   };
 

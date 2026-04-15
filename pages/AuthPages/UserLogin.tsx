@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { getSupabase } from '../../config/supabaseClient';
-import { useAuth } from '../../context/AuthContext';
+import { persistAuthPreference, useAuth } from '../../context/AuthContext';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ const UserLogin: React.FC = () => {
   // Auth Mode: 'signin' or 'signup'
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Automatically redirect if already authenticated
   useEffect(() => {
@@ -74,6 +75,10 @@ const UserLogin: React.FC = () => {
         });
 
         if (authError) throw authError;
+
+        if (authData.session) {
+          persistAuthPreference(false);
+        }
 
         if (authData.user) {
           // The trigger auto-creates a minimal row in 'profiles' (id, email, role, created_at).
@@ -144,6 +149,7 @@ const UserLogin: React.FC = () => {
       });
 
       if (error) throw error;
+      persistAuthPreference(rememberMe);
 
       // Redirect is now handled by the useEffect watching isAuthenticated!
 
@@ -242,7 +248,10 @@ const UserLogin: React.FC = () => {
             {/* Social Login (Google) - Placeholder for now, or use Supabase OAuth */}
             <div className="mb-8">
               <button
-                onClick={() => getSupabase().auth.signInWithOAuth({ provider: 'google' })}
+                onClick={() => {
+                  persistAuthPreference(authMode === 'signin' ? rememberMe : false);
+                  getSupabase().auth.signInWithOAuth({ provider: 'google' });
+                }}
                 className="flex w-full items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
                 type="button"
               >
@@ -281,7 +290,13 @@ const UserLogin: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 py-2">
-                    <input className="size-4 rounded border-gray-300 text-primary focus:ring-primary" id="remember" type="checkbox" />
+                    <input
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="size-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      id="remember"
+                      type="checkbox"
+                    />
                     <label className="text-sm text-gray-500 dark:text-gray-400" htmlFor="remember">Remember me for 30 days</label>
                   </div>
                 </>
