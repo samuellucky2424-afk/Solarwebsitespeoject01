@@ -1,13 +1,13 @@
 # Email Sending Debugging & Fix Guide
 
-## 🔴 The Root Issue
+## ðŸ”´ The Root Issue
 
 Your email sending is failing because:
 
 ### **The Problem Architecture:**
 ```
-Frontend (Vite)  →  tries to call →  /api/send-email
-    ❌ This endpoint doesn't exist in development!
+Frontend (Vite)  â†’  tries to call â†’  /api/send-email
+    âŒ This endpoint doesn't exist in development!
     
 This endpoint ONLY exists on Vercel after deployment
 ```
@@ -19,31 +19,31 @@ This endpoint ONLY exists on Vercel after deployment
 
 ---
 
-## ✅ Step 1: Enable Debug Logging
+## âœ… Step 1: Enable Debug Logging
 
 I've updated `src/lib/sendEmailRequest.ts` to add console logging. Now when you make a purchase:
 
 1. **Open Browser DevTools** (F12)
 2. **Go to Console tab**
 3. **Complete a purchase**
-4. **Look for messages starting with 📧, 📬, or ❌**
+4. **Look for messages starting with ðŸ“§, ðŸ“¬, or âŒ**
 
 Expected output if working:
 ```
-📧 Sending email via /api/send-email {to: "user@example.com", subject: "..."}
-📬 Email API Response Status: 200
-✅ Email sent successfully! {id: "email-id-123"}
+ðŸ“§ Sending email via /api/send-email {to: "user@example.com", subject: "..."}
+ðŸ“¬ Email API Response Status: 200
+âœ… Email sent successfully! {id: "email-id-123"}
 ```
 
 Expected output if FAILING:
 ```
-📧 Sending email via /api/send-email {to: "user@example.com", subject: "..."}
-❌ Email request failed: fetch failed / Network error / 404 Not Found
+ðŸ“§ Sending email via /api/send-email {to: "user@example.com", subject: "..."}
+âŒ Email request failed: fetch failed / Network error / 404 Not Found
 ```
 
 ---
 
-## ✅ Step 2: Check Your Deployment Environment
+## âœ… Step 2: Check Your Deployment Environment
 
 ### **Are you running locally or deployed?**
 
@@ -51,13 +51,13 @@ Expected output if FAILING:
 ```bash
 npm run dev
 # Opens at http://localhost:5173
-# ❌ /api/send-email does NOT work here!
+# âŒ /api/send-email does NOT work here!
 ```
 
 **Deployed on Vercel:**
 ```
 https://greenlifesolarsolution.com
-✅ /api/send-email WILL work here!
+âœ… /api/send-email WILL work here!
 ```
 
 ### **What This Means:**
@@ -66,21 +66,21 @@ https://greenlifesolarsolution.com
 
 ---
 
-## ✅ Step 3: Fix Your Setup
+## âœ… Step 3: Fix Your Setup
 
 ### **OPTION A: Deploy to Vercel (Recommended)**
 
 1. **Ensure your `.env` file on Vercel has:**
    ```
    RESEND_API_KEY=re_xxx...
-   RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-   ADMIN_EMAIL=infogreenlifetechnology@gmail.com
+   RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+   ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
    ```
 
 2. **Check Vercel project settings:**
    - Go to https://vercel.com/dashboard
    - Click your project
-   - Settings → Environment Variables
+   - Settings â†’ Environment Variables
    - Verify `RESEND_API_KEY` is set (without VITE_ prefix!)
 
 3. **Redeploy after adding env vars:**
@@ -117,7 +117,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 
 if (!RESEND_API_KEY) {
-  console.error('❌ RESEND_API_KEY not set in .env');
+  console.error('âŒ RESEND_API_KEY not set in .env');
   process.exit(1);
 }
 
@@ -177,7 +177,7 @@ app.post('/api/send-email', async (req, res) => {
 });
 
 app.listen(3001, () => {
-  console.log('✅ Email API server running on http://localhost:3001');
+  console.log('âœ… Email API server running on http://localhost:3001');
 });
 ```
 
@@ -191,7 +191,7 @@ npm install express cors node-fetch
 **Terminal 1 - API Server:**
 ```bash
 node api-server.js
-# ✅ Email API server running on http://localhost:3001
+# âœ… Email API server running on http://localhost:3001
 ```
 
 **Terminal 2 - Vite Frontend:**
@@ -203,7 +203,7 @@ npm run dev
 
 In `src/lib/sendEmailRequest.ts`, change:
 ```typescript
-const response = await fetch('/api/send-email', {  // ❌ Won't work locally
+const response = await fetch('/api/send-email', {  // âŒ Won't work locally
 ```
 
 To:
@@ -217,7 +217,7 @@ const response = await fetch(apiUrl, {
 
 ---
 
-## ✅ Step 4: Verify Environment Variables
+## âœ… Step 4: Verify Environment Variables
 
 ### **Check if variables are set:**
 
@@ -227,33 +227,33 @@ fetch('/api/config').then(r => r.json()).then(console.log)
 ```
 
 You should see Supabase config. The backend also needs access to:
-- `RESEND_API_KEY` ✓
-- `RESEND_FROM_EMAIL` ✓
-- `ADMIN_EMAIL` ✓
+- `RESEND_API_KEY` âœ“
+- `RESEND_FROM_EMAIL` âœ“
+- `ADMIN_EMAIL` âœ“
 
 ### **These MUST be set on Vercel:**
-1. Go to https://vercel.com → Your Project → Settings → Environment Variables
+1. Go to https://vercel.com â†’ Your Project â†’ Settings â†’ Environment Variables
 2. Add without `VITE_` prefix:
    - `RESEND_API_KEY=re_xxx...`
-   - `RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com`
-   - `ADMIN_EMAIL=infogreenlifetechnology@gmail.com`
+   - `RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS`
+   - `ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS`
 3. Redeploy
 
 ---
 
-## 🧪 Testing Checklist
+## ðŸ§ª Testing Checklist
 
 - [ ] Added `RESEND_API_KEY` to Vercel environment variables
 - [ ] Deployed latest code to Vercel (`git push`)
 - [ ] Opened DevTools console (F12)
 - [ ] Completed test purchase on production site
-- [ ] Saw `✅ Email sent successfully!` in console
+- [ ] Saw `âœ… Email sent successfully!` in console
 - [ ] Received email at customer address
 - [ ] Received email at admin address
 
 ---
 
-## 🆘 Still Not Working?
+## ðŸ†˜ Still Not Working?
 
 Run this in browser console to diagnose:
 
@@ -285,7 +285,7 @@ If working (Status 200):
 
 If API not found (Status 404):
 ```
-❌ This means /api/send-email is not deployed/accessible
+âŒ This means /api/send-email is not deployed/accessible
 ```
 
 If missing API key (Status 500):
@@ -295,7 +295,7 @@ If missing API key (Status 500):
 
 ---
 
-## 📞 Quick Summary
+## ðŸ“ž Quick Summary
 
 | Issue | Solution |
 |-------|----------|

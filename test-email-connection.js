@@ -10,24 +10,30 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com';
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
 
 // Get recipient email from command line argument
 const recipientEmail = process.argv[2];
 
 if (!recipientEmail) {
-  console.error('❌ Please provide a recipient email address');
+  console.error('âŒ Please provide a recipient email address');
   console.error('Usage: node test-email-connection.js your-email@example.com');
   process.exit(1);
 }
 
 if (!RESEND_API_KEY) {
-  console.error('❌ RESEND_API_KEY not found in .env file');
+  console.error('âŒ RESEND_API_KEY not found in .env file');
   console.error('Please add: RESEND_API_KEY=re_your_api_key_here');
   process.exit(1);
 }
 
-console.log('\n🧪 Testing Email Connection...\n');
+if (!RESEND_FROM_EMAIL) {
+  console.error('âŒ RESEND_FROM_EMAIL not found in .env file');
+  console.error('Please add your verified sender address to RESEND_FROM_EMAIL');
+  process.exit(1);
+}
+
+console.log('\nðŸ§ª Testing Email Connection...\n');
 console.log(`From: ${RESEND_FROM_EMAIL}`);
 console.log(`To: ${recipientEmail}`);
 console.log(`API Key: ${RESEND_API_KEY.substring(0, 10)}...\n`);
@@ -53,19 +59,19 @@ const testEmail = {
     <body>
       <div class="container">
         <div class="header">
-          <h1 style="margin: 0;">✅ Email Test Successful!</h1>
+          <h1 style="margin: 0;">âœ… Email Test Successful!</h1>
         </div>
         <div class="content">
           <div class="success">
-            <strong>🎉 Congratulations!</strong><br>
+            <strong>ðŸŽ‰ Congratulations!</strong><br>
             Your email configuration is working correctly.
           </div>
           
           <h2>What This Means:</h2>
           <ul>
-            <li>✅ Your Resend API key is valid</li>
-            <li>✅ Email sending is configured correctly</li>
-            <li>✅ Your application can now send notifications</li>
+            <li>âœ… Your Resend API key is valid</li>
+            <li>âœ… Email sending is configured correctly</li>
+            <li>âœ… Your application can now send notifications</li>
           </ul>
           
           <h2>Next Steps:</h2>
@@ -94,7 +100,7 @@ const testEmail = {
 
 async function sendTestEmail() {
   try {
-    console.log('📤 Sending test email...\n');
+    console.log('ðŸ“¤ Sending test email...\n');
     
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -108,16 +114,16 @@ async function sendTestEmail() {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('❌ Email sending failed!\n');
+      console.error('âŒ Email sending failed!\n');
       console.error('Status:', response.status);
       console.error('Error:', data);
       
       if (response.status === 401) {
-        console.error('\n💡 Tip: Your API key might be invalid. Check:');
+        console.error('\nðŸ’¡ Tip: Your API key might be invalid. Check:');
         console.error('   1. The key is correct in your .env file');
         console.error('   2. The key hasn\'t been revoked in Resend dashboard');
       } else if (response.status === 403) {
-        console.error('\n💡 Tip: Domain verification might be required. Check:');
+        console.error('\nðŸ’¡ Tip: Domain verification might be required. Check:');
         console.error('   1. Verify your domain at https://resend.com/domains');
         console.error('   2. Or use Resend\'s test domain for development');
       }
@@ -125,19 +131,19 @@ async function sendTestEmail() {
       process.exit(1);
     }
 
-    console.log('✅ Email sent successfully!\n');
+    console.log('âœ… Email sent successfully!\n');
     console.log('Email ID:', data.id);
-    console.log('\n📬 Check your inbox at:', recipientEmail);
+    console.log('\nðŸ“¬ Check your inbox at:', recipientEmail);
     console.log('   (Don\'t forget to check spam/junk folder)\n');
-    console.log('🎉 Your email configuration is working!\n');
+    console.log('ðŸŽ‰ Your email configuration is working!\n');
     console.log('Next steps:');
     console.log('   1. Run: node api-server.js');
     console.log('   2. Run: npm run dev (in another terminal)');
     console.log('   3. Test email notifications in your app\n');
     
   } catch (error) {
-    console.error('❌ Connection error:', error.message);
-    console.error('\n💡 Possible issues:');
+    console.error('âŒ Connection error:', error.message);
+    console.error('\nðŸ’¡ Possible issues:');
     console.error('   1. No internet connection');
     console.error('   2. Firewall blocking the request');
     console.error('   3. Resend API is down (check https://status.resend.com)\n');

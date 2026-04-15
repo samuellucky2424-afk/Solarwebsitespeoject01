@@ -27,7 +27,17 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ error: 'Email service not configured' });
     }
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'infogreenlifetechnology@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL?.trim();
+    const resendFromEmail = process.env.RESEND_FROM_EMAIL?.trim();
+
+    if (!adminEmail) {
+      return res.status(500).json({ error: 'Admin email is not configured' });
+    }
+
+    if (!resendFromEmail) {
+      return res.status(500).json({ error: 'Sender email is not configured' });
+    }
+
     const appUrl = process.env.APP_URL || process.env.VITE_APP_URL || 'https://greenlifesolarsolution.com';
     const chatLink = conversationId
       ? `${appUrl}/#/admin/dashboard?view=live-chat&conversation=${conversationId}`
@@ -94,7 +104,7 @@ export default async function handler(req: any, res: any) {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com',
+        from: resendFromEmail,
         to: adminEmail,
         subject,
         html: emailHtml,

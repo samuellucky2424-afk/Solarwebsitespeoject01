@@ -32,10 +32,12 @@ export default async function handler(req: any, res: any) {
         : (req.body || {});
 
     const { to, subject, html, replyTo, tags, useAdminEmail } = requestBody;
+    const adminEmail = process.env.ADMIN_EMAIL?.trim();
+    const resendFromEmail = process.env.RESEND_FROM_EMAIL?.trim();
 
     const resolvedTo =
       useAdminEmail
-        ? (process.env.ADMIN_EMAIL || 'infogreenlifetechnology@gmail.com')
+        ? adminEmail
         : to;
 
     if (!resolvedTo || !subject || !html) {
@@ -52,8 +54,22 @@ export default async function handler(req: any, res: any) {
       });
     }
 
+    if (useAdminEmail && !adminEmail) {
+      console.error('ADMIN_EMAIL environment variable not set');
+      return res.status(500).json({
+        error: 'Admin email is not configured',
+      });
+    }
+
+    if (!resendFromEmail) {
+      console.error('RESEND_FROM_EMAIL environment variable not set');
+      return res.status(500).json({
+        error: 'Sender email is not configured',
+      });
+    }
+
     const emailPayload: any = {
-      from: process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com',
+      from: resendFromEmail,
       to: resolvedTo,
       subject,
       html,

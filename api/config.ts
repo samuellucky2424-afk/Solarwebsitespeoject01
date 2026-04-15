@@ -9,6 +9,7 @@
  *   SUPABASE_ANON_KEY
  *   SUPABASE_FUNCTION_URL
  *   FLUTTERWAVE_PUBLIC_KEY
+ *   SUPPORT_EMAIL
  */
 export default function handler(req: any, res: any) {
   // Only allow GET
@@ -24,5 +25,6 @@ export default function handler(req: any, res: any) {
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     supabaseFunctionUrl: process.env.SUPABASE_FUNCTION_URL || '',
     flutterwavePublicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || '',
+    supportEmail: process.env.SUPPORT_EMAIL || '',
   });
 }

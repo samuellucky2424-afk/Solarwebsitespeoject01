@@ -1,4 +1,37 @@
 import { QuoteRecommendation } from '../../data/consultationQuotes';
+import { getSupportEmail } from '../../config/supabaseClient';
+
+const SUPPORT_PHONE = '0903 657 0294';
+
+const getSupportFooterLineHtml = () => {
+  const supportEmail = getSupportEmail();
+  return supportEmail
+    ? `<p>Phone: ${SUPPORT_PHONE} | Email: ${supportEmail}</p>`
+    : `<p>Phone: ${SUPPORT_PHONE}</p>`;
+};
+
+const getSupportContactDetailsHtml = () => {
+  const supportEmail = getSupportEmail();
+  return supportEmail
+    ? `
+          <p style="font-size: 14px;">
+            <strong>Phone:</strong> <a href="tel:${SUPPORT_PHONE}">${SUPPORT_PHONE}</a><br>
+            <strong>Email:</strong> <a href="mailto:${supportEmail}">${supportEmail}</a>
+          </p>
+        `
+    : `
+          <p style="font-size: 14px;">
+            <strong>Phone:</strong> <a href="tel:${SUPPORT_PHONE}">${SUPPORT_PHONE}</a>
+          </p>
+        `;
+};
+
+const getSupportBoxHtml = () => {
+  const supportEmail = getSupportEmail();
+  return supportEmail
+    ? `<p><strong>Email:</strong> ${supportEmail}</p>`
+    : '';
+};
 
 interface ConsultationEmailData {
   customerName: string;
@@ -211,7 +244,7 @@ export function generateAdminEmailHTML(data: ConsultationEmailData): string {
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
         <p>Total Plaza, 78 Old Lagos-Asaba Rd, Boji Boji, Agbor, Delta</p>
-        <p>📞 0903 657 0294 | 📧 infogreenlifetechnology@gmail.com</p>
+        ${getSupportFooterLineHtml()}
         <p style="margin-top: 10px; color: #999;">This is an automated email. Please do not reply directly to this address.</p>
       </div>
     </div>
@@ -292,10 +325,7 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
           <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
             If you have any questions or would like to discuss your consultation further, please don't hesitate to reach out:
           </p>
-          <p style="font-size: 14px;">
-            <strong>Phone:</strong> <a href="tel:09036570294">0903 657 0294</a><br>
-            <strong>Email:</strong> <a href="mailto:infogreenlifetechnology@gmail.com">infogreenlifetechnology@gmail.com</a>
-          </p>
+          ${getSupportContactDetailsHtml()}
         </div>
 
         <div class="steps">
@@ -321,7 +351,7 @@ export function generateCustomerEmailHTML(data: ConsultationEmailData): string {
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
         <p>📍 Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
-        <p>📞 0903 657 0294 | 📧 infogreenlifetechnology@gmail.com</p>
+        ${getSupportFooterLineHtml()}
         <p style="margin-top: 10px;">© 2026 Greenlife Solar Solutions. All rights reserved.</p>
       </div>
     </div>
@@ -583,7 +613,7 @@ export function generateOrderCustomerEmailHTML(data: OrderEmailData): string {
     </div>
     <div class="footer">
       <p>Greenlife Solar Solutions Limited</p>
-      <p>📞 0903 657 0294 | 📧 infogreenlifetechnology@gmail.com</p>
+      ${getSupportFooterLineHtml()}
     </div>
   </div>
 </body>
@@ -728,7 +758,7 @@ export function generateServiceRequestAdminEmailHTML(data: ServiceRequestEmailDa
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
         <p>Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
-        <p>📞 0903 657 0294 | 📧 support@greenlifesolarsolution.com</p>
+        ${getSupportFooterLineHtml()}
       </div>
     </div>
   </div>
@@ -817,8 +847,8 @@ export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmai
         <!-- Support Section -->
         <div class="support-box">
           <h4>📞 Have Questions?</h4>
-          <p><strong>Email:</strong> support@greenlifesolarsolution.com</p>
-          <p><strong>Phone:</strong> 0903 657 0294</p>
+          ${getSupportBoxHtml()}
+          <p><strong>Phone:</strong> ${SUPPORT_PHONE}</p>
           <p>Feel free to reach out if you need to reschedule or have any questions about your request.</p>
         </div>
 
@@ -838,3 +868,4 @@ export function generateServiceRequestCustomerEmailHTML(data: ServiceRequestEmai
 </html>
   `;
 }
+

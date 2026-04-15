@@ -45,7 +45,7 @@ const sampleOrder = {
   orderId: 'ORD-2026-04-001',
   orderDate: new Date().toISOString(),
   customerName: 'Samuel Lucky',
-  customerEmail: 'samuellucky2424@gmail.com',
+  customerEmail: 'customer.one@example.com',
   customerPhone: '+234 803-123-4567',
   deliveryAddress: '123 Lekki Phase 1, Lagos, Nigeria',
   status: 'pending_approval',
@@ -215,7 +215,7 @@ async function generateAdminOrderEmailHTML() {
                   <div style="font-size: 11px; font-weight: 600; color: #0d1b0f; margin-bottom: 2px;">${item.name}</div>
                   <div style="font-size: 9px; color: #4c9a52; margin-bottom: 3px;">${item.brand} - ${item.category}</div>
                   <div style="font-size: 10px; color: #666; line-height: 1.3;">
-                    <strong>ID:</strong> ${item.id} | <strong>Price:</strong> ₦${item.price} | <strong>Qty:</strong> ${item.quantity} | <strong>Total:</strong> ₦${(item.price * item.quantity).toFixed(2)}
+                    <strong>ID:</strong> ${item.id} | <strong>Price:</strong> â‚¦${item.price} | <strong>Qty:</strong> ${item.quantity} | <strong>Total:</strong> â‚¦${(item.price * item.quantity).toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -229,19 +229,19 @@ async function generateAdminOrderEmailHTML() {
           <div class="order-summary">
             <div class="summary-row">
               <span class="summary-label">Subtotal (${data.items.length} items)</span>
-              <span class="summary-value">₦${data.subtotal.toFixed(2)}</span>
+              <span class="summary-value">â‚¦${data.subtotal.toFixed(2)}</span>
             </div>
             <div class="summary-row">
               <span class="summary-label">Tax (7.5%)</span>
-              <span class="summary-value">₦${data.tax.toFixed(2)}</span>
+              <span class="summary-value">â‚¦${data.tax.toFixed(2)}</span>
             </div>
             <div class="summary-row">
               <span class="summary-label">Shipping</span>
-              <span class="summary-value">₦${data.shipping.toFixed(2)}</span>
+              <span class="summary-value">â‚¦${data.shipping.toFixed(2)}</span>
             </div>
             <div class="summary-row total-row">
               <span>TOTAL</span>
-              <span>₦${data.total.toFixed(2)}</span>
+              <span>â‚¦${data.total.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -350,7 +350,7 @@ async function generateCustomerOrderEmailHTML() {
             </tr>
             <tr>
               <td class="label">Total Amount</td>
-              <td class="value" style="font-size: 13px; font-weight: 600; color: #4c9a52;">₦${data.total.toFixed(2)}</td>
+              <td class="value" style="font-size: 13px; font-weight: 600; color: #4c9a52;">â‚¦${data.total.toFixed(2)}</td>
             </tr>
           </table>
         </div>
@@ -368,7 +368,7 @@ async function generateCustomerOrderEmailHTML() {
                   <div style="font-size: 11px; font-weight: 600; color: #0d1b0f; margin-bottom: 2px;">${item.name}</div>
                   <div style="font-size: 9px; color: #4c9a52; margin-bottom: 3px;">${item.brand} - ${item.category}</div>
                   <div style="font-size: 10px; color: #666; line-height: 1.3;">
-                    <strong>Qty:</strong> ${item.quantity} | <strong>Price/Unit:</strong> ₦${item.price.toFixed(2)} | <strong>Total:</strong> ₦${(item.price * item.quantity).toFixed(2)}
+                    <strong>Qty:</strong> ${item.quantity} | <strong>Price/Unit:</strong> â‚¦${item.price.toFixed(2)} | <strong>Total:</strong> â‚¦${(item.price * item.quantity).toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -382,19 +382,19 @@ async function generateCustomerOrderEmailHTML() {
           <div class="order-summary">
             <div class="summary-row">
               <span class="summary-label">Subtotal</span>
-              <span class="summary-value">₦${data.subtotal.toFixed(2)}</span>
+              <span class="summary-value">â‚¦${data.subtotal.toFixed(2)}</span>
             </div>
             <div class="summary-row">
               <span class="summary-label">Tax (7.5%)</span>
-              <span class="summary-value">₦${data.tax.toFixed(2)}</span>
+              <span class="summary-value">â‚¦${data.tax.toFixed(2)}</span>
             </div>
             <div class="summary-row">
               <span class="summary-label">Shipping</span>
-              <span class="summary-value">₦${data.shipping.toFixed(2)}</span>
+              <span class="summary-value">â‚¦${data.shipping.toFixed(2)}</span>
             </div>
             <div class="summary-row total-row">
               <span>TOTAL</span>
-              <span>₦${data.total.toFixed(2)}</span>
+              <span>â‚¦${data.total.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -427,30 +427,30 @@ async function generateCustomerOrderEmailHTML() {
 }
 
 async function sendTestOrderEmails() {
-  console.log('🧪 Testing Product Order Email Functionality');
+  console.log('ðŸ§ª Testing Product Order Email Functionality');
   console.log('=========================================\n');
 
   // Validate configuration
   if (!RESEND_API_KEY) {
-    console.error('❌ RESEND_API_KEY is not configured');
+    console.error('âŒ RESEND_API_KEY is not configured');
     process.exit(1);
   }
 
   if (!ADMIN_EMAIL) {
-    console.error('❌ ADMIN_EMAIL is not configured');
+    console.error('âŒ ADMIN_EMAIL is not configured');
     process.exit(1);
   }
 
-  console.log('📦 Order Details:');
+  console.log('ðŸ“¦ Order Details:');
   console.log(`   Order ID: ${sampleOrder.orderId}`);
   console.log(`   Customer: ${sampleOrder.customerName}`);
   console.log(`   Email: ${sampleOrder.customerEmail}`);
   console.log(`   Total Items: ${sampleOrder.items.length}`);
-  console.log(`   Order Total: ₦${total.toFixed(2)}\n`);
+  console.log(`   Order Total: â‚¦${total.toFixed(2)}\n`);
 
   try {
     // Generate admin and customer emails
-    console.log('📄 Generating email templates...\n');
+    console.log('ðŸ“„ Generating email templates...\n');
     const adminHTML = await generateAdminOrderEmailHTML();
     const customerHTML = await generateCustomerOrderEmailHTML();
 
@@ -459,11 +459,11 @@ async function sendTestOrderEmails() {
     const customerPath = path.resolve(__dirname, 'order-email-customer-preview.html');
     fs.writeFileSync(adminPath, adminHTML);
     fs.writeFileSync(customerPath, customerHTML);
-    console.log(`✓ Admin email preview saved: order-email-admin-preview.html`);
-    console.log(`✓ Customer email preview saved: order-email-customer-preview.html\n`);
+    console.log(`âœ“ Admin email preview saved: order-email-admin-preview.html`);
+    console.log(`âœ“ Customer email preview saved: order-email-customer-preview.html\n`);
 
     // Send ONLY admin approval email (customer email sent after approval)
-    console.log('📤 Sending admin approval request...\n');
+    console.log('ðŸ“¤ Sending admin approval request...\n');
     const adminResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -486,29 +486,29 @@ async function sendTestOrderEmails() {
     const adminData = await adminResponse.json();
 
     if (!adminResponse.ok) {
-      console.error('❌ Admin Email Send Failed');
+      console.error('âŒ Admin Email Send Failed');
       console.error(`Status: ${adminResponse.status}`);
       console.error(`Error:`, adminData);
       process.exit(1);
     }
 
-    console.log('✅ Admin Email Sent Successfully!');
+    console.log('âœ… Admin Email Sent Successfully!');
     console.log(`   Email ID: ${adminData.id}`);
     console.log(`   Sent to: ${ADMIN_EMAIL}\n`);
 
     console.log('========================================');
     console.log('APPROVAL WORKFLOW:');
-    console.log(`1. ✓ Admin received approval request email`);
+    console.log(`1. âœ“ Admin received approval request email`);
     console.log(`2. Admin goes to dashboard to approve/reject`);
     console.log(`3. Customer receives confirmation ONLY after approval`);
     console.log('========================================\n');
-    console.log('✓ Admin approval email sent successfully!');
-    console.log('✓ Images reduced to 40x40px for email compatibility');
-    console.log('✓ Product details clearly visible in compact table format');
-    console.log('✓ Customer email template ready (will be sent after approval)\n');
+    console.log('âœ“ Admin approval email sent successfully!');
+    console.log('âœ“ Images reduced to 40x40px for email compatibility');
+    console.log('âœ“ Product details clearly visible in compact table format');
+    console.log('âœ“ Customer email template ready (will be sent after approval)\n');
 
   } catch (error) {
-    console.error('❌ Error sending emails:');
+    console.error('âŒ Error sending emails:');
     console.error(error.message);
     process.exit(1);
   }

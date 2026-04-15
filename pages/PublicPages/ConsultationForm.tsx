@@ -233,7 +233,6 @@ Appliance Configuration:
         washingMachineSize: applianceData.washingMachineSize,
         additionalAppliances: applianceData.additionalAppliances,
         selectedQuote,
-        adminEmail: 'infogreenlifetechnology@gmail.com',
       });
 
       if (!emailResult.success) {

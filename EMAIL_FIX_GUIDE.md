@@ -1,4 +1,4 @@
-# 🔧 Email Notification Fix Guide
+# ðŸ”§ Email Notification Fix Guide
 
 ## Problem
 Email notifications for purchases, service requests, and low stock alerts are failing silently because the `/api/send-email` endpoint doesn't exist in your local development environment.
@@ -27,8 +27,8 @@ npm install express cors dotenv
 Add these lines to your `.env` file:
 ```env
 RESEND_API_KEY=re_your_actual_api_key_here
-RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-ADMIN_EMAIL=infogreenlifetechnology@gmail.com
+RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
 ```
 
 ### Step 4: Verify Your Domain (Optional but Recommended)
@@ -36,7 +36,7 @@ For production use, verify your domain in Resend:
 1. Go to https://resend.com/domains
 2. Add your domain: `greenlifesolarsolution.com`
 3. Follow DNS verification steps
-4. Once verified, you can send from `noreply@greenlifesolarsolution.com`
+4. Once verified, you can send from `YOUR_VERIFIED_SENDER_ADDRESS`
 
 For testing, you can use Resend's test domain.
 
@@ -48,8 +48,8 @@ node api-server.js
 
 You should see:
 ```
-✅ Email API server running on http://localhost:3001
-📬 Endpoint: http://localhost:3001/api/send-email
+âœ… Email API server running on http://localhost:3001
+ðŸ“¬ Endpoint: http://localhost:3001/api/send-email
 Ready to receive email requests!
 ```
 
@@ -62,7 +62,7 @@ npm run dev
 ### Step 7: Test Email Notifications
 Now test your application:
 1. Open http://localhost:5173 in your browser
-2. Open DevTools (F12) → Console tab
+2. Open DevTools (F12) â†’ Console tab
 3. Try one of these actions:
    - Make a purchase (checkout flow)
    - Submit a service request
@@ -70,9 +70,9 @@ Now test your application:
 
 You should see in the console:
 ```
-📧 Sending email via http://localhost:3001/api/send-email
-📬 Email API Response Status: 200
-✅ Email sent successfully! {id: "..."}
+ðŸ“§ Sending email via http://localhost:3001/api/send-email
+ðŸ“¬ Email API Response Status: 200
+âœ… Email sent successfully! {id: "..."}
 ```
 
 ---
@@ -82,13 +82,13 @@ You should see in the console:
 ### Step 1: Add Environment Variables to Vercel
 1. Go to https://vercel.com/dashboard
 2. Select your project
-3. Go to **Settings** → **Environment Variables**
+3. Go to **Settings** â†’ **Environment Variables**
 4. Add these variables (without `VITE_` prefix):
    ```
    RESEND_API_KEY=re_your_actual_api_key_here
-   RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-   ADMIN_EMAIL=infogreenlifetechnology@gmail.com
-   SUPPORT_EMAIL=support@greenlifesolarsolution.com
+   RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+   ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
+   SUPPORT_EMAIL=YOUR_SUPPORT_CONTACT_ADDRESS
    ```
 
 ### Step 2: Deploy Your Code
@@ -102,7 +102,7 @@ Vercel will automatically deploy your changes.
 
 ### Step 3: Test on Production
 1. Visit your production URL (e.g., https://greenlifesolarsolution.com)
-2. Open DevTools (F12) → Console tab
+2. Open DevTools (F12) â†’ Console tab
 3. Test email notifications (purchase, service request, etc.)
 4. Check for success messages in console
 5. Verify emails arrive in inbox
@@ -116,7 +116,7 @@ Vercel will automatically deploy your changes.
 **Check 1: Is the API server running?**
 ```bash
 # You should see this in the terminal running api-server.js:
-✅ Email API server running on http://localhost:3001
+âœ… Email API server running on http://localhost:3001
 ```
 
 **Check 2: Is RESEND_API_KEY set?**
@@ -127,9 +127,9 @@ RESEND_API_KEY=re_...
 
 **Check 3: Check browser console**
 Open DevTools (F12) and look for:
-- ❌ Network errors (API server not running)
-- ❌ 401 errors (invalid API key)
-- ❌ 403 errors (domain not verified)
+- âŒ Network errors (API server not running)
+- âŒ 401 errors (invalid API key)
+- âŒ 403 errors (domain not verified)
 
 ### Emails sent but not received
 

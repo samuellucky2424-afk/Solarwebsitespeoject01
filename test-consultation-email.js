@@ -43,7 +43,7 @@ const sampleQuote = {
   title: '10kVA 48V Hybrid System',
   tagline: 'Complete Solar Solution with Battery Backup',
   inverter: '10kVA Hybrid Inverter',
-  battery: '15kWh LiFePO₄ Battery',
+  battery: '15kWh LiFePOâ‚„ Battery',
   panels: '20 x 550W Solar Panels',
   loadText: 'Perfect for Family homes with AC, Refrigerator, Washing Machine',
   recommendedProperty: '4-5 Bedroom House',
@@ -64,7 +64,7 @@ const sampleQuote = {
 // Sample consultation request data
 const consultationData = {
   customerName: 'Samuel Lucky',
-  customerEmail: 'samuellucky2424@gmail.com',
+  customerEmail: 'customer.one@example.com',
   customerPhone: '+234 803-123-4567',
   propertyAddress: '123 Lekki Phase 1, Lagos, Nigeria',
   roofType: 'Concrete (Flat)',
@@ -232,7 +232,7 @@ async function generateAdminEmailHTML() {
           <div class="quote-card">
             <div class="quote-title">${data.selectedQuote.quote.title}</div>
             <div class="quote-tagline">${data.selectedQuote.quote.tagline}</div>
-            <div class="quote-price">₦${data.selectedQuote.quote.price.toLocaleString()}</div>
+            <div class="quote-price">â‚¦${data.selectedQuote.quote.price.toLocaleString()}</div>
             
             <table style="margin-top: 10px; font-size: 11px;">
               <tr>
@@ -292,38 +292,38 @@ async function generateAdminEmailHTML() {
 }
 
 async function sendTestConsultationEmail() {
-  console.log('🧪 Testing Consultation Email Functionality');
+  console.log('ðŸ§ª Testing Consultation Email Functionality');
   console.log('==========================================\n');
 
   // Validate configuration
   if (!RESEND_API_KEY) {
-    console.error('❌ RESEND_API_KEY is not configured');
+    console.error('âŒ RESEND_API_KEY is not configured');
     process.exit(1);
   }
 
   if (!ADMIN_EMAIL) {
-    console.error('❌ ADMIN_EMAIL is not configured');
+    console.error('âŒ ADMIN_EMAIL is not configured');
     process.exit(1);
   }
 
-  console.log('📋 Consultation Form Data:');
+  console.log('ðŸ“‹ Consultation Form Data:');
   console.log(`   Name: ${consultationData.customerName}`);
   console.log(`   Email: ${consultationData.customerEmail}`);
   console.log(`   Phone: ${consultationData.customerPhone}`);
   console.log(`   Property: ${consultationData.propertyAddress}`);
   console.log(`   Selected Package: ${consultationData.selectedQuote.quote.title}`);
-  console.log(`   Package Price: ₦${consultationData.selectedQuote.quote.price.toLocaleString()}\n`);
+  console.log(`   Package Price: â‚¦${consultationData.selectedQuote.quote.price.toLocaleString()}\n`);
 
   try {
-    console.log('📤 Generating email HTML...\n');
+    console.log('ðŸ“¤ Generating email HTML...\n');
     const adminHTML = await generateAdminEmailHTML();
 
     // Save HTML preview to file
     const htmlPath = path.resolve(__dirname, 'consultation-email-preview.html');
     fs.writeFileSync(htmlPath, adminHTML);
-    console.log(`✓ Email preview saved to: consultation-email-preview.html\n`);
+    console.log(`âœ“ Email preview saved to: consultation-email-preview.html\n`);
 
-    console.log('📤 Sending test email to admin...\n');
+    console.log('ðŸ“¤ Sending test email to admin...\n');
 
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -347,21 +347,21 @@ async function sendTestConsultationEmail() {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('❌ Email Send Failed');
+      console.error('âŒ Email Send Failed');
       console.error(`Status: ${response.status}`);
       console.error(`Error:`, data);
       process.exit(1);
     }
 
-    console.log('✅ Consultation Email Sent Successfully!');
-    console.log(`\n📧 Email ID: ${data.id}`);
-    console.log(`✓ Sent to: ${ADMIN_EMAIL}`);
-    console.log(`✓ Reply-To: ${consultationData.customerEmail}`);
-    console.log(`\n✓ Email template design has been generated and saved.`);
-    console.log(`✓ Open consultation-email-preview.html in your browser to see the design.\n`);
+    console.log('âœ… Consultation Email Sent Successfully!');
+    console.log(`\nðŸ“§ Email ID: ${data.id}`);
+    console.log(`âœ“ Sent to: ${ADMIN_EMAIL}`);
+    console.log(`âœ“ Reply-To: ${consultationData.customerEmail}`);
+    console.log(`\nâœ“ Email template design has been generated and saved.`);
+    console.log(`âœ“ Open consultation-email-preview.html in your browser to see the design.\n`);
 
   } catch (error) {
-    console.error('❌ Error sending email:');
+    console.error('âŒ Error sending email:');
     console.error(error.message);
     process.exit(1);
   }

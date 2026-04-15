@@ -13,6 +13,7 @@ interface AppConfig {
     supabaseAnonKey: string;
     supabaseFunctionUrl: string;
     flutterwavePublicKey: string;
+    supportEmail: string;
 }
 
 // Module-level state
@@ -26,6 +27,7 @@ const viteUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const viteKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const viteFuncUrl = import.meta.env.VITE_SUPABASE_FUNCTION_URL || '';
 const viteFlwKey = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '';
+const viteSupportEmail = import.meta.env.VITE_SUPPORT_EMAIL || '';
 
 if (viteUrl && viteKey && viteKey !== 'PLACEHOLDER_KEY') {
     // Local dev — VITE_ vars are available at build time
@@ -34,6 +36,7 @@ if (viteUrl && viteKey && viteKey !== 'PLACEHOLDER_KEY') {
         supabaseAnonKey: viteKey,
         supabaseFunctionUrl: viteFuncUrl,
         flutterwavePublicKey: viteFlwKey,
+        supportEmail: viteSupportEmail,
     };
     _supabase = createClient(viteUrl, viteKey);
     _isSupabaseConfigured = true;
@@ -65,7 +68,13 @@ export async function loadConfig(): Promise<AppConfig> {
                 }
             } catch (err) {
                 console.warn('⚠️ Could not fetch /api/config, falling back to placeholder.', err);
-                _config = { supabaseUrl: '', supabaseAnonKey: '', supabaseFunctionUrl: '', flutterwavePublicKey: '' };
+                _config = {
+                    supabaseUrl: '',
+                    supabaseAnonKey: '',
+                    supabaseFunctionUrl: '',
+                    flutterwavePublicKey: '',
+                    supportEmail: viteSupportEmail,
+                };
                 _supabase = createClient('https://placeholder.supabase.co', 'PLACEHOLDER_KEY');
             }
             return _config;
@@ -111,6 +120,10 @@ export let supabase: SupabaseClient = _supabase || createClient(
  */
 export function getConfig(): AppConfig | null {
     return _config;
+}
+
+export function getSupportEmail(): string {
+    return (_config?.supportEmail || viteSupportEmail || '').trim();
 }
 
 // Kick off config loading immediately on module load so it resolves ASAP.

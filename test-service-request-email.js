@@ -38,7 +38,7 @@ const maintenanceRequest = {
   requestId: 'SVC-2026-04-001',
   requestType: 'Maintenance Request',
   customerName: 'Samuel Lucky',
-  customerEmail: 'samuellucky2424@gmail.com',
+  customerEmail: 'customer.one@example.com',
   customerPhone: '+234 803-123-4567',
   address: '123 Solar Street, Lagos, Nigeria',
   date: new Date().toISOString(),
@@ -51,7 +51,7 @@ const surveyRequest = {
   requestId: 'SVC-2026-04-002',
   requestType: 'Site Survey Request',
   customerName: 'Chioma Okafor',
-  customerEmail: 'chioma.okafor@email.com',
+  customerEmail: 'customer.two@example.com',
   customerPhone: '+234 701-234-5678',
   address: '456 Green Avenue, Abuja, Nigeria',
   date: new Date().toISOString(),
@@ -64,7 +64,7 @@ const packageRequest = {
   requestId: 'SVC-2026-04-003',
   requestType: 'Package Request',
   customerName: 'Ikechukwu Nnamdi',
-  customerEmail: 'ikechukwu.n@email.com',
+  customerEmail: 'customer.three@example.com',
   customerPhone: '+234 905-678-9012',
   address: '789 Power Lane, Port Harcourt, Nigeria',
   date: new Date().toISOString(),
@@ -113,7 +113,7 @@ function generateServiceRequestAdminEmailHTML(data) {
   <div class="container">
     <div class="email-wrapper">
       <div class="header">
-        <h1>🔧 New Service Request</h1>
+        <h1>ðŸ”§ New Service Request</h1>
         <p>${data.requestType}</p>
         <div class="priority-badge">${data.priority} Priority</div>
       </div>
@@ -121,7 +121,7 @@ function generateServiceRequestAdminEmailHTML(data) {
       <div class="content">
         <!-- Customer Information -->
         <div class="section">
-          <h2 class="section-title">👤 Customer Information</h2>
+          <h2 class="section-title">ðŸ‘¤ Customer Information</h2>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Name</div>
@@ -148,7 +148,7 @@ function generateServiceRequestAdminEmailHTML(data) {
 
         <!-- Request Details -->
         <div class="section">
-          <h2 class="section-title">📋 Request Details</h2>
+          <h2 class="section-title">ðŸ“‹ Request Details</h2>
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Request Type</div>
@@ -175,7 +175,7 @@ function generateServiceRequestAdminEmailHTML(data) {
 
         <!-- Description -->
         <div class="section">
-          <h2 class="section-title">📝 Description</h2>
+          <h2 class="section-title">ðŸ“ Description</h2>
           <div class="description-box">
             <p>${data.description}</p>
           </div>
@@ -185,15 +185,15 @@ function generateServiceRequestAdminEmailHTML(data) {
         <div class="action-section">
           <h3 style="color: #0d1b0f; margin-bottom: 12px; font-size: 14px;">Next Steps</h3>
           <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Please contact the customer to confirm the service appointment and provide more details.</p>
-          <a href="mailto:${data.customerEmail}?subject=Re: Your Service Request" class="action-button">📧 Reply to Customer</a>
-          <a href="#" class="action-button">📊 View Dashboard</a>
+          <a href="mailto:${data.customerEmail}?subject=Re: Your Service Request" class="action-button">ðŸ“§ Reply to Customer</a>
+          <a href="#" class="action-button">ðŸ“Š View Dashboard</a>
         </div>
       </div>
 
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
         <p>Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
-        <p>📞 0903 657 0294 | 📧 support@greenlifesolarsolution.com</p>
+        <p>ðŸ“ž 0903 657 0294 | ðŸ“§ YOUR_SUPPORT_CONTACT_ADDRESS</p>
       </div>
     </div>
   </div>
@@ -203,8 +203,8 @@ function generateServiceRequestAdminEmailHTML(data) {
 }
 
 function generateServiceRequestCustomerEmailHTML(data) {
-  const requestTypeIcon = data.requestType === 'Maintenance Request' ? '🔧' : 
-                           data.requestType === 'Site Survey Request' ? '📍' : '📦';
+  const requestTypeIcon = data.requestType === 'Maintenance Request' ? 'ðŸ”§' : 
+                           data.requestType === 'Site Survey Request' ? 'ðŸ“' : 'ðŸ“¦';
   
   return `
 <!DOCTYPE html>
@@ -242,7 +242,7 @@ function generateServiceRequestCustomerEmailHTML(data) {
   <div class="container">
     <div class="email-wrapper">
       <div class="header">
-        <h1>✅ ${requestTypeIcon} Request Received</h1>
+        <h1>âœ… ${requestTypeIcon} Request Received</h1>
         <p>Thank you for submitting your service request</p>
       </div>
 
@@ -255,7 +255,7 @@ function generateServiceRequestCustomerEmailHTML(data) {
 
         <!-- Request Summary -->
         <div class="section">
-          <h2 class="section-title">📋 Request Summary</h2>
+          <h2 class="section-title">ðŸ“‹ Request Summary</h2>
           <div class="info-box">
             <strong>Request ID:</strong>
             <p>${data.requestId}</p>
@@ -281,8 +281,8 @@ function generateServiceRequestCustomerEmailHTML(data) {
 
         <!-- Support Section -->
         <div class="support-box">
-          <h4>📞 Have Questions?</h4>
-          <p><strong>Email:</strong> support@greenlifesolarsolution.com</p>
+          <h4>ðŸ“ž Have Questions?</h4>
+          <p><strong>Email:</strong> YOUR_SUPPORT_CONTACT_ADDRESS</p>
           <p><strong>Phone:</strong> 0903 657 0294</p>
           <p>Feel free to reach out if you need to reschedule or have any questions about your request.</p>
         </div>
@@ -295,7 +295,7 @@ function generateServiceRequestCustomerEmailHTML(data) {
       <div class="footer">
         <p><strong>Greenlife Solar Solutions Limited</strong></p>
         <p>Total Plaza, 78 Old Lagos-Asaba Rd, Agbor, Delta</p>
-        <p>© 2026 Greenlife Solar Solutions. All rights reserved.</p>
+        <p>Â© 2026 Greenlife Solar Solutions. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -306,13 +306,13 @@ function generateServiceRequestCustomerEmailHTML(data) {
 
 // Main function
 async function testServiceRequestEmails() {
-  console.log('🧪 Testing Service Request Email Templates');
+  console.log('ðŸ§ª Testing Service Request Email Templates');
   console.log('=========================================\n');
 
   const requests = [maintenanceRequest, surveyRequest, packageRequest];
   
   for (const request of requests) {
-    console.log(`📮 Testing: ${request.requestType}`);
+    console.log(`ðŸ“® Testing: ${request.requestType}`);
     console.log(`   Customer: ${request.customerName}`);
     console.log(`   Request ID: ${request.requestId}\n`);
 
@@ -328,14 +328,14 @@ async function testServiceRequestEmails() {
     fs.writeFileSync(adminPreviewPath, adminHTML);
     fs.writeFileSync(customerPreviewPath, customerHTML);
 
-    console.log(`✓ Admin preview saved: ${adminPreviewPath}`);
-    console.log(`✓ Customer preview saved: ${customerPreviewPath}\n`);
+    console.log(`âœ“ Admin preview saved: ${adminPreviewPath}`);
+    console.log(`âœ“ Customer preview saved: ${customerPreviewPath}\n`);
   }
 
   console.log('========================================');
-  console.log('✓ All service request email templates generated!');
-  console.log('✓ Admin email: Notification with priority badge & contact info');
-  console.log('✓ Customer email: Thank you message with request summary');
+  console.log('âœ“ All service request email templates generated!');
+  console.log('âœ“ Admin email: Notification with priority badge & contact info');
+  console.log('âœ“ Customer email: Thank you message with request summary');
   console.log('========================================');
 }
 

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { PublicHeader, PublicFooter, SectionHeader, Toast } from '../../components/SharedComponents';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { useSupportEmail } from '../../src/lib/contactInfo';
 
 const ContactPage: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -13,6 +14,7 @@ const ContactPage: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string } | null>(null);
+  const supportEmail = useSupportEmail();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -111,9 +113,15 @@ const ContactPage: React.FC = () => {
                     <p className="text-forest/60 dark:text-white/60 text-sm mt-1">
                       General inquiries & support
                     </p>
-                    <a href="mailto:infogreenlifetechnology@gmail.com" className="text-forest dark:text-white font-bold hover:text-primary transition-colors">
-                      infogreenlifetechnology@gmail.com
-                    </a>
+                    {supportEmail ? (
+                      <a href={`mailto:${supportEmail}`} className="text-forest dark:text-white font-bold hover:text-primary transition-colors">
+                        {supportEmail}
+                      </a>
+                    ) : (
+                      <span className="text-forest dark:text-white font-bold">
+                        Email available after deployment setup
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

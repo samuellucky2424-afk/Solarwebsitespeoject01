@@ -27,8 +27,8 @@ npm install resend
 
 ```
 RESEND_API_KEY=<your-api-key-here>
-RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-ADMIN_EMAIL=infogreenlifetechnology@gmail.com
+RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
 ```
 
 #### For Local Development:
@@ -36,8 +36,8 @@ Create a `.env.local` file in the root of your project:
 
 ```env
 VITE_RESEND_API_KEY=<your-api-key-here>
-RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-ADMIN_EMAIL=infogreenlifetechnology@gmail.com
+RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
 ```
 
 ### 4. Verify Your Domain (Production)
@@ -83,7 +83,7 @@ curl -X POST http://localhost:3000/api/send-email \
 2. Complete all steps
 3. Click Submit
 4. Check both:
-   - Admin email (infogreenlifetechnology@gmail.com)
+   - Admin email (YOUR_ADMIN_NOTIFICATION_ADDRESS)
    - Customer email for confirmation
 
 ### 7. Email Templates

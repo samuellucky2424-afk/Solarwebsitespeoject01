@@ -19,8 +19,8 @@ app.use(cors());
 app.use(express.json());
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@greenlifesolarsolution.com';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'infogreenlifetechnology@gmail.com';
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL;
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 
 console.log('\n🚀 Starting Email API Server...\n');
 
@@ -28,8 +28,8 @@ if (!RESEND_API_KEY) {
   console.error('❌ ERROR: RESEND_API_KEY not found in .env file');
   console.error('📝 Please add the following to your .env file:');
   console.error('   RESEND_API_KEY=re_your_api_key_here');
-  console.error('   RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com');
-  console.error('   ADMIN_EMAIL=infogreenlifetechnology@gmail.com\n');
+  console.error('   RESEND_FROM_EMAIL=<verified sender address>');
+  console.error('   ADMIN_EMAIL=<admin notification address>\n');
   process.exit(1);
 }
 
@@ -38,6 +38,12 @@ console.log(`   From Email: ${RESEND_FROM_EMAIL}`);
 console.log(`   Admin Email: ${ADMIN_EMAIL}`);
 console.log(`   API Key: ${RESEND_API_KEY.substring(0, 10)}...`);
 console.log('');
+
+if (!RESEND_FROM_EMAIL || !ADMIN_EMAIL) {
+  console.error('âŒ ERROR: Missing email routing configuration');
+  console.error('   Set RESEND_FROM_EMAIL and ADMIN_EMAIL in your .env file.\n');
+  process.exit(1);
+}
 
 app.post('/api/send-email', async (req, res) => {
   try {

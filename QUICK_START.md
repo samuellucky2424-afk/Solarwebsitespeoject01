@@ -1,4 +1,4 @@
-# 🚀 Quick Start - Email Notifications
+# ðŸš€ Quick Start - Email Notifications
 
 ## The Problem
 Your email notifications weren't working because the email API endpoint only exists on Vercel (production), not in local development.
@@ -26,8 +26,8 @@ npm install express cors dotenv
 Open your `.env` file and add:
 ```env
 RESEND_API_KEY=re_your_actual_key_here
-RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-ADMIN_EMAIL=infogreenlifetechnology@gmail.com
+RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
 ```
 
 ---
@@ -40,7 +40,7 @@ ADMIN_EMAIL=infogreenlifetechnology@gmail.com
 ```bash
 node api-server.js
 ```
-Wait for: `✅ Email API server running on http://localhost:3001`
+Wait for: `âœ… Email API server running on http://localhost:3001`
 
 **Terminal 2 - Vite Dev Server:**
 ```bash
@@ -74,15 +74,15 @@ This starts both servers at once!
 
 ### What You Should See:
 ```
-📧 Sending email via http://localhost:3001/api/send-email
-📬 Email API Response Status: 200
-✅ Email sent successfully! {id: "abc123"}
+ðŸ“§ Sending email via http://localhost:3001/api/send-email
+ðŸ“¬ Email API Response Status: 200
+âœ… Email sent successfully! {id: "abc123"}
 ```
 
 ### In the API Server Terminal:
 ```
-📧 Incoming email request: Order Confirmation → customer@email.com
-✅ Email sent successfully! ID: abc123
+ðŸ“§ Incoming email request: Order Confirmation â†’ customer@email.com
+âœ… Email sent successfully! ID: abc123
 ```
 
 ---
@@ -124,12 +124,12 @@ When you're ready to deploy:
 
 1. **Add Environment Variables in Vercel:**
    - Go to https://vercel.com/dashboard
-   - Select your project → Settings → Environment Variables
+   - Select your project â†’ Settings â†’ Environment Variables
    - Add:
      ```
      RESEND_API_KEY=re_your_key
-     RESEND_FROM_EMAIL=noreply@greenlifesolarsolution.com
-     ADMIN_EMAIL=infogreenlifetechnology@gmail.com
+     RESEND_FROM_EMAIL=YOUR_VERIFIED_SENDER_ADDRESS
+     ADMIN_EMAIL=YOUR_ADMIN_NOTIFICATION_ADDRESS
      ```
 
 2. **Deploy:**
@@ -148,11 +148,11 @@ When you're ready to deploy:
 
 ## Files Changed
 
-✅ **api-server.js** (NEW) - Local email API server  
-✅ **src/lib/sendEmailRequest.ts** - Auto-detects local vs production  
-✅ **src/lib/sendLowStockAlert.ts** - Auto-detects local vs production  
-✅ **package.json** - Added helpful scripts  
-✅ **.env.example** - Updated with email config  
+âœ… **api-server.js** (NEW) - Local email API server  
+âœ… **src/lib/sendEmailRequest.ts** - Auto-detects local vs production  
+âœ… **src/lib/sendLowStockAlert.ts** - Auto-detects local vs production  
+âœ… **package.json** - Added helpful scripts  
+âœ… **.env.example** - Updated with email config  
 
 ---
 
@@ -167,10 +167,10 @@ See the detailed guides:
 
 ## Summary
 
-✅ Email notifications now work in local development  
-✅ Automatic detection of local vs production  
-✅ Clear console logging for debugging  
-✅ Ready for Vercel deployment  
+âœ… Email notifications now work in local development  
+âœ… Automatic detection of local vs production  
+âœ… Clear console logging for debugging  
+âœ… Ready for Vercel deployment  
 
 **Next Steps:**
 1. Install dependencies: `npm install express cors dotenv`

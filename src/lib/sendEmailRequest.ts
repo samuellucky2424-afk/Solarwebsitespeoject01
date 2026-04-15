@@ -1,5 +1,3 @@
-export const DEFAULT_ADMIN_EMAIL = 'infogreenlifetechnology@gmail.com';
-
 export interface SendEmailRequestPayload {
   to?: string | string[];
   subject: string;

@@ -39,7 +39,7 @@ const sampleData = {
   order: {
     orderId: 'ORD-2026-04-MASTER',
     customerName: 'Samuel Lucky',
-    customerEmail: 'samuellucky2424@gmail.com',
+    customerEmail: 'customer.one@example.com',
     customerPhone: '+234 803-123-4567',
     items: [
       { name: 'Solar Panel Ultra Efficiency', quantity: 2, price: 461000 },
@@ -168,7 +168,7 @@ function generateOrderAdminHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>🛒 New Order Received</h1></div>
+    <div class="header"><h1>ðŸ›’ New Order Received</h1></div>
     <div class="content">
       <div class="alert"><strong>APPROVAL REQUIRED:</strong> Review and approve this order before customer receives confirmation.</div>
       <p><strong>Customer:</strong> ${data.customerName}</p>
@@ -177,11 +177,11 @@ function generateOrderAdminHTML(data) {
       <p><strong>Date:</strong> ${new Date(data.orderDate).toLocaleString()}</p>
       <table>
         <tr><th>Product</th><th>Qty</th><th>Price</th></tr>
-        ${data.items.map(i => `<tr><td>${i.name}</td><td>${i.quantity}</td><td>₦${i.price.toLocaleString()}</td></tr>`).join('')}
-        <tr><td colspan="2"><strong>Subtotal:</strong></td><td><strong>₦${data.subtotal.toLocaleString()}</strong></td></tr>
-        <tr><td colspan="2"><strong>Tax (7.5%):</strong></td><td><strong>₦${data.tax.toLocaleString()}</strong></td></tr>
-        <tr><td colspan="2"><strong>Shipping:</strong></td><td><strong>₦${data.shipping.toLocaleString()}</strong></td></tr>
-        <tr style="background: #e8f5e9;"><td colspan="2"><strong>TOTAL:</strong></td><td><strong style="color: #4c9a52;">₦${data.total.toLocaleString()}</strong></td></tr>
+        ${data.items.map(i => `<tr><td>${i.name}</td><td>${i.quantity}</td><td>â‚¦${i.price.toLocaleString()}</td></tr>`).join('')}
+        <tr><td colspan="2"><strong>Subtotal:</strong></td><td><strong>â‚¦${data.subtotal.toLocaleString()}</strong></td></tr>
+        <tr><td colspan="2"><strong>Tax (7.5%):</strong></td><td><strong>â‚¦${data.tax.toLocaleString()}</strong></td></tr>
+        <tr><td colspan="2"><strong>Shipping:</strong></td><td><strong>â‚¦${data.shipping.toLocaleString()}</strong></td></tr>
+        <tr style="background: #e8f5e9;"><td colspan="2"><strong>TOTAL:</strong></td><td><strong style="color: #4c9a52;">â‚¦${data.total.toLocaleString()}</strong></td></tr>
       </table>
     </div>
     <div class="footer"><p>Greenlife Solar Solutions</p></div>
@@ -212,14 +212,14 @@ function generateOrderCustomerHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>✅ Thank You For Your Order!</h1></div>
+    <div class="header"><h1>âœ… Thank You For Your Order!</h1></div>
     <div class="content">
       <div class="success"><p>Your order #${data.orderId} has been received. We'll contact you within 24 hours to confirm.</p></div>
       <p>Thank you for choosing Greenlife Solar Solutions!</p>
       <table>
         <tr><th>Product</th><th>Qty</th><th>Price</th></tr>
-        ${data.items.map(i => `<tr><td>${i.name}</td><td>${i.quantity}</td><td>₦${i.price.toLocaleString()}</td></tr>`).join('')}
-        <tr style="background: #f8fcf8;"><td colspan="2"><strong>Total:</strong></td><td><strong>₦${data.total.toLocaleString()}</strong></td></tr>
+        ${data.items.map(i => `<tr><td>${i.name}</td><td>${i.quantity}</td><td>â‚¦${i.price.toLocaleString()}</td></tr>`).join('')}
+        <tr style="background: #f8fcf8;"><td colspan="2"><strong>Total:</strong></td><td><strong>â‚¦${data.total.toLocaleString()}</strong></td></tr>
       </table>
     </div>
     <div class="footer"><p>Greenlife Solar Solutions Limited</p></div>
@@ -251,7 +251,7 @@ function generateConsultationAdminHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>📋 New Consultation Request</h1></div>
+    <div class="header"><h1>ðŸ“‹ New Consultation Request</h1></div>
     <div class="content">
       <div class="info-grid">
         <div class="info-item"><div class="label">Name</div><div class="value">${data.customerName}</div></div>
@@ -261,7 +261,7 @@ function generateConsultationAdminHTML(data) {
       </div>
       <div class="quote-box">
         <strong>${data.selectedQuote.quote.title}</strong>
-        <p style="color: #4c9a52; margin-top: 8px; font-weight: 600;">₦${data.selectedQuote.quote.price.toLocaleString()}</p>
+        <p style="color: #4c9a52; margin-top: 8px; font-weight: 600;">â‚¦${data.selectedQuote.quote.price.toLocaleString()}</p>
         <p style="font-size: 12px; margin-top: 8px;">${data.selectedQuote.quote.loadText}</p>
       </div>
     </div>
@@ -290,7 +290,7 @@ function generateConsultationCustomerHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>✅ Thank You for Your Consultation!</h1></div>
+    <div class="header"><h1>âœ… Thank You for Your Consultation!</h1></div>
     <div class="content">
       <div class="success"><p>We've received your solar consultation request. Our team will contact you within 24 hours.</p></div>
       <p>We're excited to help you find the perfect solar solution for your needs!</p>
@@ -320,7 +320,7 @@ function generateUpgradeAdminHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>⬆️ System Upgrade Request</h1></div>
+    <div class="header"><h1>â¬†ï¸ System Upgrade Request</h1></div>
     <div class="content">
       <div class="info-box"><strong>Customer:</strong> ${data.customerName}</div>
       <div class="info-box"><strong>Upgrade Type:</strong> ${data.upgradeType}</div>
@@ -353,7 +353,7 @@ function generateUpgradeCustomerHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>✅ Upgrade Request Received</h1></div>
+    <div class="header"><h1>âœ… Upgrade Request Received</h1></div>
     <div class="content">
       <div class="success"><p>We've received your system upgrade request for: ${data.upgradeType}</p></div>
       <p>Our team will review your request and contact you within 24 hours to discuss the next steps.</p>
@@ -390,7 +390,7 @@ function generateServiceRequestAdminHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>🔧 New Service Request</h1></div>
+    <div class="header"><h1>ðŸ”§ New Service Request</h1></div>
     <div class="content">
       <p><span class="priority">${data.priority} Priority</span></p>
       <p><strong>${data.requestType}</strong> (ID: ${data.requestId})</p>
@@ -410,7 +410,7 @@ function generateServiceRequestAdminHTML(data) {
 }
 
 function generateServiceRequestCustomerHTML(data) {
-  const icon = data.requestType === 'Maintenance Request' ? '🔧' : data.requestType === 'Site Survey Request' ? '📍' : '📦';
+  const icon = data.requestType === 'Maintenance Request' ? 'ðŸ”§' : data.requestType === 'Site Survey Request' ? 'ðŸ“' : 'ðŸ“¦';
   return `
 <!DOCTYPE html>
 <html>
@@ -428,7 +428,7 @@ function generateServiceRequestCustomerHTML(data) {
 </head>
 <body>
   <div class="container">
-    <div class="header"><h1>✅ ${icon} Request Received</h1></div>
+    <div class="header"><h1>âœ… ${icon} Request Received</h1></div>
     <div class="content">
       <div class="success"><p>Your ${data.requestType.toLowerCase()} has been received (ID: ${data.requestId}). We'll contact you within 24 hours.</p></div>
       <p>Thank you for choosing Greenlife Solar Solutions. Our team is working on your request.</p>
@@ -442,96 +442,96 @@ function generateServiceRequestCustomerHTML(data) {
 
 // Main function to send all test emails
 async function sendAllTestEmails() {
-  console.log('🚀 MASTER EMAIL TEST - Sending All Templates');
+  console.log('ðŸš€ MASTER EMAIL TEST - Sending All Templates');
   console.log('==========================================\n');
 
   const emailTests = [
     {
-      name: '📦 ORDER EMAIL',
+      name: 'ðŸ“¦ ORDER EMAIL',
       admin: {
         to: ADMIN_EMAIL,
-        subject: '🛒 New Order Received - ORD-2026-04-MASTER',
+        subject: 'ðŸ›’ New Order Received - ORD-2026-04-MASTER',
         html: generateOrderAdminHTML(sampleData.order),
         tags: { category: 'order', type: 'admin' }
       },
       customer: {
         to: sampleData.order.customerEmail,
-        subject: '✅ Thank You For Your Order - ORD-2026-04-MASTER',
+        subject: 'âœ… Thank You For Your Order - ORD-2026-04-MASTER',
         html: generateOrderCustomerHTML(sampleData.order),
         tags: { category: 'order', type: 'customer' }
       }
     },
     {
-      name: '📋 CONSULTATION EMAIL',
+      name: 'ðŸ“‹ CONSULTATION EMAIL',
       admin: {
         to: ADMIN_EMAIL,
-        subject: '📋 New Consultation Request - Chioma Okafor',
+        subject: 'ðŸ“‹ New Consultation Request - Chioma Okafor',
         html: generateConsultationAdminHTML(sampleData.consultation),
         tags: { category: 'consultation', type: 'admin' }
       },
       customer: {
         to: sampleData.consultation.customerEmail,
-        subject: '✅ Thank You for Your Consultation Request',
+        subject: 'âœ… Thank You for Your Consultation Request',
         html: generateConsultationCustomerHTML(sampleData.consultation),
         tags: { category: 'consultation', type: 'customer' }
       }
     },
     {
-      name: '⬆️ UPGRADE EMAIL',
+      name: 'â¬†ï¸ UPGRADE EMAIL',
       admin: {
         to: ADMIN_EMAIL,
-        subject: '⬆️ New System Upgrade Request - Ikechukwu Nnamdi',
+        subject: 'â¬†ï¸ New System Upgrade Request - Ikechukwu Nnamdi',
         html: generateUpgradeAdminHTML(sampleData.upgrade),
         tags: { category: 'upgrade', type: 'admin' }
       },
       customer: {
         to: sampleData.upgrade.customerEmail,
-        subject: '✅ Upgrade Request Received',
+        subject: 'âœ… Upgrade Request Received',
         html: generateUpgradeCustomerHTML(sampleData.upgrade),
         tags: { category: 'upgrade', type: 'customer' }
       }
     },
     {
-      name: '🔧 MAINTENANCE REQUEST EMAIL',
+      name: 'ðŸ”§ MAINTENANCE REQUEST EMAIL',
       admin: {
         to: ADMIN_EMAIL,
-        subject: '🔧 New Maintenance Request - Adebayo Oluwaseun',
+        subject: 'ðŸ”§ New Maintenance Request - Adebayo Oluwaseun',
         html: generateServiceRequestAdminHTML(sampleData.maintenance),
         tags: { category: 'service-request', type: 'admin', requestType: 'maintenance' }
       },
       customer: {
         to: sampleData.maintenance.customerEmail,
-        subject: '✅ Maintenance Request Received',
+        subject: 'âœ… Maintenance Request Received',
         html: generateServiceRequestCustomerHTML(sampleData.maintenance),
         tags: { category: 'service-request', type: 'customer', requestType: 'maintenance' }
       }
     },
     {
-      name: '📍 SITE SURVEY REQUEST EMAIL',
+      name: 'ðŸ“ SITE SURVEY REQUEST EMAIL',
       admin: {
         to: ADMIN_EMAIL,
-        subject: '📍 New Site Survey Request - Zainab Muhammad',
+        subject: 'ðŸ“ New Site Survey Request - Zainab Muhammad',
         html: generateServiceRequestAdminHTML(sampleData.survey),
         tags: { category: 'service-request', type: 'admin', requestType: 'survey' }
       },
       customer: {
         to: sampleData.survey.customerEmail,
-        subject: '✅ Site Survey Request Received',
+        subject: 'âœ… Site Survey Request Received',
         html: generateServiceRequestCustomerHTML(sampleData.survey),
         tags: { category: 'service-request', type: 'customer', requestType: 'survey' }
       }
     },
     {
-      name: '📦 PACKAGE REQUEST EMAIL',
+      name: 'ðŸ“¦ PACKAGE REQUEST EMAIL',
       admin: {
         to: ADMIN_EMAIL,
-        subject: '📦 New Package Request - Tunde Aladunni',
+        subject: 'ðŸ“¦ New Package Request - Tunde Aladunni',
         html: generateServiceRequestAdminHTML(sampleData.package),
         tags: { category: 'service-request', type: 'admin', requestType: 'package' }
       },
       customer: {
         to: sampleData.package.customerEmail,
-        subject: '✅ Package Request Received',
+        subject: 'âœ… Package Request Received',
         html: generateServiceRequestCustomerHTML(sampleData.package),
         tags: { category: 'service-request', type: 'customer', requestType: 'package' }
       }
@@ -542,8 +542,8 @@ async function sendAllTestEmails() {
   let errorCount = 0;
 
   for (const test of emailTests) {
-    console.log(`\n📧 ${test.name}`);
-    console.log('─'.repeat(50));
+    console.log(`\nðŸ“§ ${test.name}`);
+    console.log('â”€'.repeat(50));
 
     // Send admin email
     try {
@@ -561,16 +561,16 @@ async function sendAllTestEmails() {
 
       if (adminRes.ok) {
         const adminData = await adminRes.json();
-        console.log(`✅ Admin Email Sent`);
+        console.log(`âœ… Admin Email Sent`);
         console.log(`   Email ID: ${adminData.id}`);
         console.log(`   To: ${test.admin.to}`);
         successCount++;
       } else {
-        console.log(`❌ Admin Email Failed: ${adminRes.statusText}`);
+        console.log(`âŒ Admin Email Failed: ${adminRes.statusText}`);
         errorCount++;
       }
     } catch (err) {
-      console.log(`❌ Admin Email Error: ${err.message}`);
+      console.log(`âŒ Admin Email Error: ${err.message}`);
       errorCount++;
     }
 
@@ -590,28 +590,28 @@ async function sendAllTestEmails() {
 
       if (customerRes.ok) {
         const customerData = await customerRes.json();
-        console.log(`✅ Customer Email Sent`);
+        console.log(`âœ… Customer Email Sent`);
         console.log(`   Email ID: ${customerData.id}`);
         console.log(`   To: ${test.customer.to}`);
         successCount++;
       } else {
-        console.log(`❌ Customer Email Failed: ${customerRes.statusText}`);
+        console.log(`âŒ Customer Email Failed: ${customerRes.statusText}`);
         errorCount++;
       }
     } catch (err) {
-      console.log(`❌ Customer Email Error: ${err.message}`);
+      console.log(`âŒ Customer Email Error: ${err.message}`);
       errorCount++;
     }
   }
 
   console.log('\n' + '='.repeat(50));
-  console.log(`\n📊 TEST RESULTS`);
-  console.log(`✅ Successful: ${successCount} emails`);
-  console.log(`❌ Failed: ${errorCount} emails`);
-  console.log(`\n✨ All templates have been tested!`);
+  console.log(`\nðŸ“Š TEST RESULTS`);
+  console.log(`âœ… Successful: ${successCount} emails`);
+  console.log(`âŒ Failed: ${errorCount} emails`);
+  console.log(`\nâœ¨ All templates have been tested!`);
   console.log(`\nYou should now see emails in:`);
-  console.log(`📧 Admin inbox: ${ADMIN_EMAIL}`);
-  console.log(`📧 Customer inboxes at various test emails`);
+  console.log(`ðŸ“§ Admin inbox: ${ADMIN_EMAIL}`);
+  console.log(`ðŸ“§ Customer inboxes at various test emails`);
 }
 
 // Run the master test

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useSupportEmail } from '../src/lib/contactInfo';
 
 // --- SVGs ---
 
@@ -278,7 +279,10 @@ export const PublicHeader: React.FC = () => {
   );
 };
 
-export const PublicFooter: React.FC = () => (
+export const PublicFooter: React.FC = () => {
+  const supportEmail = useSupportEmail();
+
+  return (
   <footer className="bg-background-light dark:bg-black border-t border-forest/5 dark:border-white/5">
     {/* Full width footer */}
     <div className="w-full px-6 lg:px-12 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -323,7 +327,16 @@ export const PublicFooter: React.FC = () => (
         <ul className="flex flex-col gap-4 text-forest/60 dark:text-white/60 text-sm">
           <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">location_on</span>Total plaza, 78 Old Lagos -Asaba Rd, Delta</li>
           <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">phone</span>0903 657 0294</li>
-          <li className="flex gap-3"><span className="material-symbols-outlined text-primary text-sm">mail</span>infogreenlifetechnology@gmail.com</li>
+          <li className="flex gap-3">
+            <span className="material-symbols-outlined text-primary text-sm">mail</span>
+            {supportEmail ? (
+              <a href={`mailto:${supportEmail}`} className="hover:text-primary transition-colors">
+                {supportEmail}
+              </a>
+            ) : (
+              <span>Email available after deployment setup</span>
+            )}
+          </li>
         </ul>
       </div>
     </div>
@@ -331,7 +344,8 @@ export const PublicFooter: React.FC = () => (
       <p className="text-forest/40 dark:text-white/40 text-sm">© 2024 Greenlife Solar Solutions LTD. All rights reserved.</p>
     </div>
   </footer>
-);
+  );
+};
 
 export const SectionHeader: React.FC<{ sub: string, title: string, dark?: boolean }> = ({ sub, title, dark }) => (
   <div className="mb-16">
