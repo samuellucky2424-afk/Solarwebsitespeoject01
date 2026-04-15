@@ -64,14 +64,17 @@ export function clearAuthPreference() {
   window.sessionStorage.removeItem(TEMP_SESSION_KEY);
 }
 
-function shouldInvalidateRecoveredSession() {
+function shouldInvalidateRecoveredSession(session: Session) {
   if (typeof window === 'undefined') return false;
 
   const persistence = readAuthPersistence();
 
-  // Legacy sessions created before remember-me tracking are treated as expired.
+  // Legacy sessions created before remember-me tracking default to a short session.
   if (!persistence) {
-    return true;
+    const signedInAt = session.user.last_sign_in_at
+      ? new Date(session.user.last_sign_in_at).getTime()
+      : Date.now();
+    return Date.now() - signedInAt > NON_REMEMBERED_SESSION_MS;
   }
 
   const age = Date.now() - persistence.signedInAt;
@@ -107,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Check active session
         const { data: { session: initSession } } = await client.auth.getSession();
 
-        if (initSession && shouldInvalidateRecoveredSession()) {
+        if (initSession && shouldInvalidateRecoveredSession(initSession)) {
           await client.auth.signOut();
           clearAuthPreference();
 

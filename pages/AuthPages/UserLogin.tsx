@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { getSupabase } from '../../config/supabaseClient';
-import { persistAuthPreference, useAuth } from '../../context/AuthContext';
+import { clearAuthPreference, persistAuthPreference, useAuth } from '../../context/AuthContext';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -143,17 +143,19 @@ const UserLogin: React.FC = () => {
     }
 
     try {
+      persistAuthPreference(rememberMe);
+
       const { error } = await getSupabase().auth.signInWithPassword({
         email,
         password
       });
 
       if (error) throw error;
-      persistAuthPreference(rememberMe);
 
       // Redirect is now handled by the useEffect watching isAuthenticated!
 
     } catch (err: any) {
+      clearAuthPreference();
       console.error("Login error:", err);
       alert(err.message || "Failed to login");
     } finally {
