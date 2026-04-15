@@ -14,6 +14,40 @@ declare global {
     }
 }
 
+async function getFunctionErrorMessage(error: any) {
+    const fallback = error?.message || 'Server error';
+    const context = error?.context;
+
+    if (!context) {
+        return fallback;
+    }
+
+    try {
+        const response = typeof context.clone === 'function' ? context.clone() : context;
+        const data = await response.json();
+        if (data?.error) {
+            return data.error;
+        }
+        if (data?.message) {
+            return data.message;
+        }
+    } catch {
+        // Fall through to text parsing.
+    }
+
+    try {
+        const response = typeof context.clone === 'function' ? context.clone() : context;
+        const text = await response.text();
+        if (text) {
+            return text;
+        }
+    } catch {
+        // Use the original error message.
+    }
+
+    return fallback;
+}
+
 // These are read at render time — by then loadConfig() has resolved.
 const getFLWPublicKey = () => getConfig()?.flutterwavePublicKey || import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '';
 const getFunctionsBaseUrl = () =>
@@ -70,13 +104,13 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
 
         // Guard: Flutterwave key missing
         if (!getFLWPublicKey()) {
-            setToast({ msg: "❌ Payment not configured — Flutterwave public key is missing. Contact support." });
+            setToast({ msg: "Payment not configured. Flutterwave public key is missing. Contact support." });
             return;
         }
 
         // Guard: Flutterwave SDK not loaded
         if (!window.FlutterwaveCheckout) {
-            setToast({ msg: "❌ Payment gateway failed to load. Please refresh the page and try again." });
+            setToast({ msg: "Payment gateway failed to load. Please refresh the page and try again." });
             return;
         }
 
@@ -100,14 +134,15 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
 
             if (createOrderError) {
                 console.error("Create order error:", createOrderError);
-                setToast({ msg: `❌ Order creation failed: ${createOrderError.message || 'Server error'}. Please try again.` });
+                const message = await getFunctionErrorMessage(createOrderError);
+                setToast({ msg: `Order creation failed: ${message}. Please try again.` });
                 setIsSubmitting(false);
                 return;
             }
 
             if (!createOrderData?.order_id || !createOrderData?.tx_ref) {
                 console.error("Invalid order response:", createOrderData);
-                setToast({ msg: "❌ Order creation returned invalid data. Please try again." });
+                setToast({ msg: "Order creation returned invalid data. Please try again." });
                 setIsSubmitting(false);
                 return;
             }
@@ -146,12 +181,13 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
 
                         if (verifyError) {
                             console.error("Verification error:", verifyError);
-                            throw new Error(`Verification failed: ${verifyError.message}`);
+                            const message = await getFunctionErrorMessage(verifyError);
+                            throw new Error(`Verification failed: ${message}`);
                         }
 
                         if (!verifyData || verifyData.status !== 'success') {
                             console.warn("Verification returned non-success:", verifyData);
-                            throw new Error('Payment could not be verified');
+                            throw new Error(verifyData?.error || 'Payment could not be verified');
                         }
 
                         // Step 4 — Log order request in greenlife_hub for admin visibility
@@ -220,7 +256,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                         setTimeout(() => navigate(isEmbedded ? '/dashboard?view=orders' : '/'), 2000);
                     } catch (err: any) {
                         console.error("Payment callback error:", err);
-                        setToast({ msg: `❌ ${err.message || 'Payment verification failed. Contact support.'}` });
+                        setToast({ msg: err.message || 'Payment verification failed. Contact support.' });
                     } finally {
                         setIsSubmitting(false);
                     }
@@ -231,7 +267,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
             });
         } catch (err: any) {
             console.error("Checkout error:", err);
-            setToast({ msg: `❌ ${err.message || 'Checkout failed. Please try again.'}` });
+            setToast({ msg: err.message || 'Checkout failed. Please try again.' });
             setIsSubmitting(false);
         }
     };

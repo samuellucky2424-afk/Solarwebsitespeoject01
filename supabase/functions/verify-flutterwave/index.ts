@@ -1,16 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const flutterwaveSecret = Deno.env.get("FLUTTERWAVE_SECRET_KEY")!;
-
-if (!supabaseUrl) throw new Error("SUPABASE_URL not set");
-if (!serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY not set");
-if (!flutterwaveSecret) throw new Error("FLUTTERWAVE_SECRET_KEY not set");
-
-const supabase = createClient(supabaseUrl, serviceRoleKey);
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -18,7 +8,63 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
 };
 
-async function verifyFlutterwaveTransaction(transactionId: string) {
+type FunctionConfig = {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  flutterwaveSecret: string;
+};
+
+type VerifiedPayment = {
+  id: string | number;
+  amount: number | string;
+  currency?: string | null;
+  status?: string | null;
+  tx_ref?: string | null;
+};
+
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function getFunctionConfig(): FunctionConfig {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim() || "";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() ||
+    "";
+  const flutterwaveSecret = Deno.env.get("FLUTTERWAVE_SECRET_KEY")?.trim() ||
+    "";
+
+  const missing = [
+    !supabaseUrl ? "SUPABASE_URL" : "",
+    !serviceRoleKey ? "SUPABASE_SERVICE_ROLE_KEY" : "",
+    !flutterwaveSecret ? "FLUTTERWAVE_SECRET_KEY" : "",
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required edge function secret(s): ${missing.join(", ")}`,
+    );
+  }
+
+  return {
+    supabaseUrl,
+    serviceRoleKey,
+    flutterwaveSecret,
+  };
+}
+
+function isMissingTableError(error: unknown) {
+  const code = String((error as { code?: string })?.code || "");
+  const message = String((error as { message?: string })?.message || "");
+  return code === "PGRST205" || message.includes("Could not find the table");
+}
+
+async function verifyFlutterwaveTransaction(
+  transactionId: string,
+  flutterwaveSecret: string,
+) {
   const res = await fetch(
     `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`,
     {
@@ -30,15 +76,86 @@ async function verifyFlutterwaveTransaction(transactionId: string) {
     },
   );
 
+  const rawBody = await res.text();
+  let body: Record<string, unknown> | null = null;
+
+  try {
+    body = rawBody ? JSON.parse(rawBody) : null;
+  } catch {
+    body = null;
+  }
+
   if (!res.ok) {
-    const errText = await res.text();
-    console.error("Flutterwave verify HTTP error:", errText);
+    console.error("Flutterwave verify HTTP error:", res.status, rawBody);
+
+    const remoteMessage = String(
+      body?.message || body?.error || rawBody || "Unknown Flutterwave error",
+    ).trim();
+
     throw new Error(
-      `Flutterwave API error: ${res.status} ${errText}`,
+      `Flutterwave verification failed (${res.status}): ${remoteMessage}`,
     );
   }
 
-  return await res.json();
+  return body;
+}
+
+async function persistPaymentIfPossible(
+  supabase: ReturnType<typeof createClient>,
+  payment: {
+    order_id: string;
+    user_id: string | null;
+    flutterwave_transaction_id: string;
+    tx_ref: string;
+    amount: number;
+    currency: string;
+    raw: VerifiedPayment;
+  },
+) {
+  const existingPayment = await supabase
+    .from("payments")
+    .select("id")
+    .eq("flutterwave_transaction_id", payment.flutterwave_transaction_id)
+    .maybeSingle();
+
+  if (existingPayment.error) {
+    if (isMissingTableError(existingPayment.error)) {
+      console.warn("payments table missing; skipping payment log write");
+      return "payments_table_missing";
+    }
+
+    console.warn("Could not check existing payment log", existingPayment.error);
+    return "payment_lookup_failed";
+  }
+
+  if (existingPayment.data) {
+    return null;
+  }
+
+  const insertResult = await supabase.from("payments").insert({
+    order_id: payment.order_id,
+    user_id: payment.user_id,
+    provider: "flutterwave",
+    flutterwave_transaction_id: payment.flutterwave_transaction_id,
+    tx_ref: payment.tx_ref,
+    amount: payment.amount,
+    currency: payment.currency,
+    status: "successful",
+    raw: payment.raw,
+    verified_at: new Date().toISOString(),
+  });
+
+  if (insertResult.error) {
+    if (isMissingTableError(insertResult.error)) {
+      console.warn("payments table missing; skipping payment log insert");
+      return "payments_table_missing";
+    }
+
+    console.warn("Could not insert payment log", insertResult.error);
+    return "payment_insert_failed";
+  }
+
+  return null;
 }
 
 serve(async (req) => {
@@ -47,106 +164,119 @@ serve(async (req) => {
   }
 
   if (req.method !== "POST") {
-    return new Response("Method not allowed", {
-      status: 405,
-      headers: corsHeaders,
-    });
+    return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
   try {
     const { transaction_id, tx_ref } = await req.json();
 
     if (!transaction_id || !tx_ref) {
-      return new Response(
-        JSON.stringify({
-          error: "transaction_id and tx_ref are required",
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return jsonResponse(
+        { error: "transaction_id and tx_ref are required" },
+        400,
       );
     }
+
+    const config = getFunctionConfig();
+    const supabase = createClient(config.supabaseUrl, config.serviceRoleKey);
 
     const verify = await verifyFlutterwaveTransaction(
       String(transaction_id),
+      config.flutterwaveSecret,
     );
 
-    const data = verify.data;
+    const data = verify?.data as VerifiedPayment | undefined;
 
-    if (
-      !data ||
-      data.status !== "successful" ||
-      data.tx_ref !== tx_ref
-    ) {
-      return new Response(
-        JSON.stringify({ status: "invalid" }),
+    if (!data || data.status !== "successful" || data.tx_ref !== tx_ref) {
+      return jsonResponse(
         {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: "invalid",
+          error: "Flutterwave transaction status or reference did not match",
         },
+        400,
       );
     }
 
-    // Find order
     const { data: order, error: orderErr } = await supabase
       .from("orders")
-      .select("*")
+      .select("id, user_id, amount, currency, status")
       .eq("tx_ref", tx_ref)
-      .single();
+      .maybeSingle();
 
-    if (orderErr || !order) {
-      console.error("Order not found for tx_ref:", tx_ref, orderErr);
-      return new Response(
-        JSON.stringify({ error: "Order not found" }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+    if (orderErr) {
+      console.error("Order lookup failed for tx_ref:", tx_ref, orderErr);
+      throw new Error("Order lookup failed");
+    }
+
+    if (!order) {
+      return jsonResponse({ error: "Order not found" }, 404);
+    }
+
+    const amountPaid = Number(data.amount);
+    const expectedAmount = Number(order.amount);
+    const paidCurrency = String(data.currency || "NGN").toUpperCase();
+    const expectedCurrency = String(order.currency || "NGN").toUpperCase();
+
+    if (
+      !Number.isFinite(amountPaid) || !Number.isFinite(expectedAmount) ||
+      Math.abs(amountPaid - expectedAmount) > 0.01
+    ) {
+      console.warn("Flutterwave amount mismatch", {
+        tx_ref,
+        amountPaid,
+        expectedAmount,
+      });
+      return jsonResponse(
+        { error: "Verified amount does not match the order total" },
+        400,
       );
     }
 
-    const amount = Number(data.amount);
-    const currency = data.currency || "NGN";
+    if (paidCurrency !== expectedCurrency) {
+      console.warn("Flutterwave currency mismatch", {
+        tx_ref,
+        paidCurrency,
+        expectedCurrency,
+      });
+      return jsonResponse(
+        { error: "Verified currency does not match the order currency" },
+        400,
+      );
+    }
 
-    // Update order status
-    await supabase
+    const orderUpdate = await supabase
       .from("orders")
       .update({ status: "paid" })
       .eq("id", order.id);
 
-    // Save payment record
-    await supabase.from("payments").insert({
+    if (orderUpdate.error) {
+      console.error("Order update failed for tx_ref:", tx_ref, orderUpdate.error);
+      throw new Error("Could not mark order as paid");
+    }
+
+    const warning = await persistPaymentIfPossible(supabase, {
       order_id: order.id,
       user_id: order.user_id,
-      provider: "flutterwave",
       flutterwave_transaction_id: String(data.id),
       tx_ref,
-      amount,
-      currency,
-      status: "successful",
+      amount: amountPaid,
+      currency: paidCurrency,
       raw: data,
-      verified_at: new Date().toISOString(),
     });
 
-    return new Response(
-      JSON.stringify({ status: "success" }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
-  } catch (err: any) {
+    return jsonResponse({
+      status: "success",
+      order_status: "paid",
+      ...(warning ? { warning } : {}),
+    });
+  } catch (err: unknown) {
     console.error("verify-flutterwave error:", err);
 
-    return new Response(
-      JSON.stringify({
-        error: err.message || "Unexpected error",
-      }),
+    return jsonResponse(
       {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        error: (err as { message?: string })?.message || "Unexpected error",
       },
+      500,
     );
   }
 });
