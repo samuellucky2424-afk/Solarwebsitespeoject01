@@ -91,6 +91,20 @@ const UserDashboard: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close mobile menu on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    const scrollElement = document.querySelector('main');
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [isMobileMenuOpen]);
+
   // Loading state — early return AFTER all hooks
   if (!activeUser) {
     return (
@@ -439,17 +453,17 @@ const UserDashboard: React.FC = () => {
         <main className="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
           {/* Header */}
           <header className="h-12 sm:h-14 md:h-16 lg:h-20 bg-white dark:bg-[#1a2e21] border-b border-[#d0e5d5] dark:border-white/10 px-3 sm:px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-            <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold dark:text-white capitalize hidden md:block text-[#0d1b0f]">
-              {currentView.replace('-', ' ')}
-            </h2>
-
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle - Left Side */}
             <button
               className="lg:hidden p-1 sm:p-1.5 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
-              <span className="material-symbols-outlined text-base sm:text-xl">menu</span>
+              <span className="material-symbols-outlined text-lg sm:text-2xl">menu</span>
             </button>
+
+            <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold dark:text-white capitalize hidden md:block text-[#0d1b0f] flex-1">
+              {currentView.replace('-', ' ')}
+            </h2>
 
             <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 ml-auto">
               {/* Search Bar - only visible on shop */}
