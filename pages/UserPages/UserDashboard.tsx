@@ -438,8 +438,8 @@ const UserDashboard: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
           {/* Header */}
-          <header className="h-16 bg-white dark:bg-[#1a2e21] border-b border-[#e7f3eb] dark:border-white/10 px-6 flex items-center justify-between sticky top-0 z-30">
-            <h2 className="text-lg font-bold dark:text-white capitalize hidden md:block">
+          <header className="h-16 md:h-20 bg-white dark:bg-[#1a2e21] border-b border-[#d0e5d5] dark:border-white/10 px-6 md:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+            <h2 className="text-xl md:text-2xl font-bold dark:text-white capitalize hidden md:block text-[#0d1b0f]">
               {currentView.replace('-', ' ')}
             </h2>
 

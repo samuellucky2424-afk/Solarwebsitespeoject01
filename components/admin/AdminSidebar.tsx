@@ -20,61 +20,61 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
     };
 
     return (
-        <aside className="w-56 md:w-64 border-r border-[#e7f3e8] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] flex flex-col shrink-0 h-full">
-            <div className="p-4 md:p-6">
-                <Link to="/" className="flex items-center gap-2 md:gap-3">
-                    <div className="size-8 md:size-10 flex items-center justify-center">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+        <aside className="w-56 md:w-64 border-r border-[#d0e5d5] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] flex flex-col shrink-0 h-full shadow-sm">
+            <div className="p-6 md:p-8 border-b border-[#d0e5d5] dark:border-[#2a3d2c]">
+                <Link to="/" className="flex items-center gap-3 md:gap-4">
+                    <div className="size-10 md:size-12 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl">
+                        <img src="/logo.png" alt="Logo" className="w-6 md:w-8 h-6 md:h-8 object-contain" />
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="text-[#0d1b0f] dark:text-white text-sm md:text-base font-bold leading-none">Greenlife Solar</h1>
-                        <p className="text-[#4c9a52] text-[10px] md:text-xs font-medium mt-0.5 md:mt-1 uppercase tracking-wider">Admin Panel</p>
+                        <h1 className="text-[#0d1b0f] dark:text-white text-base md:text-lg font-black leading-tight">Greenlife Solar</h1>
+                        <p className="text-[#4c9a52] text-[10px] md:text-xs font-semibold mt-0.5 uppercase tracking-wider">Admin Portal</p>
                     </div>
                 </Link>
             </div>
 
-            <nav className="flex-1 px-3 md:px-4 space-y-0.5 md:space-y-1 overflow-y-auto">
+            <nav className="flex-1 px-4 md:px-6 py-6 space-y-1 overflow-y-auto">
                 <button
                     onClick={() => setActiveView('overview')}
-                    className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg font-medium transition-colors ${activeView === 'overview' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 md:py-3.5 rounded-xl font-semibold transition-all ${activeView === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
                 >
-                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">dashboard</span>
-                    <span className="text-xs md:text-sm">Overview</span>
+                    <span className="material-symbols-outlined text-xl md:text-2xl font-light">dashboard</span>
+                    <span className="text-sm md:text-base">Overview</span>
                 </button>
 
                 <button
                     onClick={() => setActiveView('users')}
-                    className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg font-medium transition-colors ${activeView === 'users' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 md:py-3.5 rounded-xl font-semibold transition-all ${activeView === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
                 >
-                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">group</span>
-                    <span className="text-xs md:text-sm">Users</span>
+                    <span className="material-symbols-outlined text-xl md:text-2xl font-light">group</span>
+                    <span className="text-sm md:text-base">Users</span>
                 </button>
 
                 <button
                     onClick={() => setActiveView('orders')}
-                    className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg font-medium transition-colors ${activeView === 'orders' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 md:py-3.5 rounded-xl font-semibold transition-all ${activeView === 'orders' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
                 >
-                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">local_shipping</span>
-                    <span className="text-xs md:text-sm">Orders</span>
+                    <span className="material-symbols-outlined text-xl md:text-2xl font-light">local_shipping</span>
+                    <span className="text-sm md:text-base">Orders</span>
                 </button>
 
                 {/* Catalog Group */}
-                <div className="pt-1.5 md:pt-2">
+                <div className="pt-4 md:pt-6">
                     <button
                         onClick={() => setIsCatalogOpen(!isCatalogOpen)}
-                        className="w-full flex items-center justify-between px-3 py-1.5 md:py-2 text-[10px] md:text-xs font-bold uppercase text-gray-500 hover:text-primary transition-colors mb-0.5 md:mb-1"
+                        className="w-full flex items-center justify-between px-4 py-2 text-[11px] md:text-xs font-bold uppercase text-gray-500 hover:text-primary transition-colors mb-2"
                     >
-                        <span>Catalog & Assets</span>
-                        <span className={`material-symbols-outlined text-xs md:text-sm transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                        <span className="tracking-wider">Catalog & Assets</span>
+                        <span className={`material-symbols-outlined text-sm md:text-base transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`}>expand_more</span>
                     </button>
 
                     {isCatalogOpen && (
-                        <div className="space-y-0.5 md:space-y-1 pl-2 border-l-2 border-[#e7f3e8] dark:border-[#2a3d2c] ml-3 md:ml-4">
+                        <div className="space-y-1 pl-2 border-l-2 border-[#d0e5d5] dark:border-[#2a3d2c] ml-4">
                             <button
                                 onClick={() => setActiveView('products')}
-                                className={`w-full flex items-center gap-2 md:gap-3 px-3 py-1.5 md:py-2 rounded-r-lg font-medium transition-colors text-xs md:text-sm ${activeView === 'products' ? 'bg-primary/10 text-primary' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-r-xl font-semibold transition-all text-sm md:text-base ${activeView === 'products' ? 'bg-primary/10 text-primary' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
                             >
-                                <span className="material-symbols-outlined text-base md:text-lg">inventory_2</span>
+                                <span className="material-symbols-outlined text-lg md:text-xl font-light">inventory_2</span>
                                 <span>Products</span>
                             </button>
                             <button

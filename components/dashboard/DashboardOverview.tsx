@@ -65,58 +65,63 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ handleBookService
 
 
     return (
-        <div className="space-y-6 animate-in fade-in">
-            <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl lg:text-4xl font-black tracking-tight mb-2">Welcome back, {activeUser.firstName}!</h1>
-                    <p className="text-[#4c9a66] text-base lg:text-lg">Manage your solar system, orders, and service requests.</p>
+        <div className="space-y-8 animate-in fade-in">
+            <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex-1">
+                    <h1 className="text-4xl lg:text-5xl font-black tracking-tight mb-3 text-[#0d1b0f] dark:text-white">Welcome back, {activeUser.firstName}!</h1>
+                    <p className="text-[#4c9a66] dark:text-gray-300 text-lg font-medium">Manage your solar system, orders, and service requests all in one place.</p>
                 </div>
                 <button
                     onClick={handleBookService}
-                    className="bg-primary text-forest font-bold px-4 py-2.5 md:px-6 md:py-3 rounded-xl shadow-md hover:scale-105 active:scale-95 transition-transform flex items-center gap-2 text-sm md:text-base"
+                    className="bg-primary hover:bg-primary/90 active:scale-95 text-forest font-bold px-8 py-3.5 md:px-10 md:py-4 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all flex items-center gap-3 text-base md:text-lg whitespace-nowrap"
                 >
-                    <span className="material-symbols-outlined text-[20px]">add_circle</span> Book Service
+                    <span className="material-symbols-outlined text-2xl font-light">add_circle</span> 
+                    <span>Book a Service</span>
                 </button>
             </section>
 
             {/* Feature 1: System Information with Warranty & Status */}
-            <section className="bg-white dark:bg-[#1a2e21] rounded-xl border border-[#cfe7d7] dark:border-white/5 p-6 shadow-sm relative overflow-hidden">
+            <section className="bg-white dark:bg-[#1a2e21] rounded-2xl border border-[#d0e5d5] dark:border-white/5 p-8 shadow-lg hover:shadow-xl transition-shadow relative overflow-hidden">
+                {/* Decorative Background */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -mr-20 -mt-20"></div>
+                
                 {/* Status Indicator */}
-                <div className="absolute top-0 right-0 p-6">
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider ${getSystemStatusBadge(systemCard.status)}`}>
-                        <span className={`size-1.5 rounded-full ${systemCard.status === 'Operational' ? 'bg-green-500 animate-pulse' : 'bg-current'}`}></span>
+                <div className="absolute top-8 right-8 z-10">
+                    <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${getSystemStatusBadge(systemCard.status)} shadow-md`}>
+                        <span className={`size-2 rounded-full ${systemCard.status === 'Operational' ? 'bg-green-500 animate-pulse' : 'bg-current'}`}></span>
                         {systemCard.status}
                     </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-6 items-start relative z-10">
-                    <div className="size-16 md:size-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-4xl text-primary">solar_power</span>
+                <div className="flex flex-col md:flex-row gap-8 items-start relative z-10">
+                    <div className="size-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0 shadow-md">
+                        <span className="material-symbols-outlined text-6xl text-primary font-light">solar_power</span>
                     </div>
                     <div className="flex-1 w-full">
-                        <div className="flex items-center gap-3 mb-1">
-                            <h2 className="text-xl md:text-2xl font-bold">{systemCard.name}</h2>
+                        <div className="mb-2">
+                            <h2 className="text-3xl font-bold text-[#0d1b0f] dark:text-white mb-1">{systemCard.name}</h2>
+                            <p className="text-[#4c9a66] dark:text-gray-400 text-base font-medium">{systemCard.address}</p>
                         </div>
-                        <p className="text-[#4c9a66] dark:text-gray-400 text-sm md:text-base mb-4">{systemCard.address}</p>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div className="p-3 bg-background-light dark:bg-white/5 rounded-lg border border-[#e7f3eb] dark:border-white/5">
-                                <p className="text-[10px] text-[#4c9a66] uppercase font-bold mb-0.5">Installation Date</p>
-                                <p className="font-semibold text-sm">{systemCard.installDate}</p>
-                                {activeUser.installTime && <p className="text-[10px] text-gray-500">{activeUser.installTime}</p>}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                            <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-25 dark:from-white/5 dark:to-white/2 rounded-xl border border-[#e7f3eb] dark:border-white/5 backdrop-blur-sm">
+                                <p className="text-[11px] text-[#4c9a66] uppercase font-bold tracking-wider mb-1">Installation Date</p>
+                                <p className="font-bold text-lg text-[#0d1b0f] dark:text-white">{systemCard.installDate}</p>
+                                {activeUser.installTime && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{activeUser.installTime}</p>}
                             </div>
-                            <div className={`p-3 rounded-lg border ${isWarrantyActive ? 'bg-green-50 border-green-200 dark:bg-green-900/10 dark:border-green-900/30' : 'bg-red-50 border-red-200 dark:bg-red-900/10 dark:border-red-900/30'}`}>
-                                <div className="flex justify-between items-center mb-0.5">
-                                    <p className={`text-[10px] uppercase font-bold ${isWarrantyActive ? 'text-green-700 dark:text-green-400' : 'text-red-600'}`}>
-                                        {isWarrantyActive ? 'In Warranty' : 'Expired'}
+                            <div className={`p-4 rounded-xl border backdrop-blur-sm ${isWarrantyActive ? 'bg-gradient-to-br from-green-50 to-green-25 border-green-200 dark:from-green-900/10 dark:to-green-900/5 dark:border-green-900/30' : 'bg-gradient-to-br from-red-50 to-red-25 border-red-200 dark:from-red-900/10 dark:to-red-900/5 dark:border-red-900/30'}`}>
+                                <div className="flex justify-between items-start mb-1">
+                                    <p className={`text-[11px] uppercase font-bold tracking-wider ${isWarrantyActive ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {isWarrantyActive ? 'Warranty Status: Active' : 'Warranty Expired'}
                                     </p>
-                                    {isWarrantyActive && <span className="text-[9px] font-bold text-green-600">{daysLeft} Days left</span>}
                                 </div>
-                                <p className="font-semibold text-xs md:text-sm">Ends: {activeUser.warrantyEnd}</p>
+                                <p className="font-bold text-lg text-[#0d1b0f] dark:text-white">Expires: {activeUser.warrantyEnd}</p>
+                                {isWarrantyActive && <p className="text-xs font-semibold text-green-600 dark:text-green-400 mt-1">{daysLeft} days remaining</p>}
                             </div>
-                            <div className="p-3 bg-background-light dark:bg-white/5 rounded-lg border border-[#e7f3eb] dark:border-white/5">
-                                <p className="text-[10px] text-[#4c9a66] uppercase font-bold mb-0.5">Service Plan</p>
-                                <p className="font-semibold text-sm">{activeUser.plan || 'Standard Plan'}</p>
+                            <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-25 dark:from-white/5 dark:to-white/2 rounded-xl border border-[#e7f3eb] dark:border-white/5 backdrop-blur-sm">
+                                <p className="text-[11px] text-[#4c9a66] uppercase font-bold tracking-wider mb-1">Service Plan</p>
+                                <p className="font-bold text-lg text-[#0d1b0f] dark:text-white">{activeUser.plan || 'Standard Plan'}</p>
+                                <div className="mt-2 inline-block bg-primary/10 text-primary px-2 py-1 rounded text-xs font-semibold">Active</div>
                             </div>
                         </div>
                     </div>

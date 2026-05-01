@@ -151,50 +151,53 @@ const MySystems: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4 md:space-y-6 animate-in fade-in">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl md:text-2xl font-bold dark:text-white">My Systems</h2>
+        <div className="space-y-6 md:space-y-8 animate-in fade-in">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#0d1b0f] dark:text-white mb-2">My Systems</h2>
+                    <p className="text-[#4c9a66] dark:text-gray-400 text-base">Manage and monitor your solar installations</p>
+                </div>
                 <button
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="bg-primary text-forest font-bold px-3 py-1.5 md:px-4 md:py-2 rounded-lg hover:brightness-105 transition-all flex items-center gap-1.5 text-xs md:text-sm"
+                    className="bg-primary hover:bg-primary/90 active:scale-95 text-forest font-bold px-6 py-3.5 md:px-8 md:py-4 rounded-xl shadow-lg shadow-primary/30 transition-all flex items-center gap-2 text-base whitespace-nowrap"
                 >
-                    <span className="material-symbols-outlined text-base md:text-lg">{showAddForm ? 'close' : 'add_circle'}</span>
-                    {showAddForm ? 'Cancel' : 'Add Existing System'}
+                    <span className="material-symbols-outlined text-2xl font-light">{showAddForm ? 'close' : 'add_circle'}</span>
+                    {showAddForm ? 'Cancel' : 'Add System'}
                 </button>
             </div>
 
             {/* Add Existing System Form */}
             {showAddForm && (
-                <div className="bg-white dark:bg-[#152a17] p-4 md:p-6 rounded-2xl border border-primary/20 dark:border-primary/10 shadow-sm animate-in fade-in slide-in-from-top-2">
-                    <h3 className="font-bold text-base md:text-lg text-forest dark:text-white mb-1">Add Existing System</h3>
-                    <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-4 md:mb-5">Register a solar system you already have installed.</p>
+                <div className="bg-white dark:bg-[#152a17] p-8 rounded-2xl border border-[#d0e5d5] dark:border-white/10 shadow-lg animate-in fade-in slide-in-from-top-2">
+                    <h3 className="font-bold text-xl md:text-2xl text-[#0d1b0f] dark:text-white mb-1">Register New System</h3>
+                    <p className="text-sm md:text-base text-[#4c9a66] dark:text-gray-400 mb-6">Add details of an existing solar system installation.</p>
 
-                    <form onSubmit={handleAddSystem} className="space-y-3 md:space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase text-gray-500">System Name</label>
+                    <form onSubmit={handleAddSystem} className="space-y-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="space-y-2">
+                                <label className="text-xs md:text-sm font-bold uppercase text-gray-500 tracking-wider">System Name</label>
                                 <input
                                     name="name" value={newSystem.name} onChange={handleInputChange}
-                                    className="w-full h-11 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-sm"
+                                    className="w-full h-12 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-[#d0e5d5] dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-base font-medium"
                                     placeholder="e.g. Home Solar, Office System"
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase text-gray-500">Installation Address</label>
+                            <div className="space-y-2">
+                                <label className="text-xs md:text-sm font-bold uppercase text-gray-500 tracking-wider">Installation Address</label>
                                 <input
                                     required name="address" value={newSystem.address} onChange={handleInputChange}
-                                    className="w-full h-11 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-sm"
+                                    className="w-full h-12 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-[#d0e5d5] dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-base font-medium"
                                     placeholder="123 Solar Street, Lagos"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase text-gray-500">System Size</label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div className="space-y-2">
+                                <label className="text-xs md:text-sm font-bold uppercase text-gray-500 tracking-wider">System Size</label>
                                 <select
                                     name="systemSize" value={newSystem.systemSize} onChange={handleInputChange}
-                                    className="w-full h-11 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-sm"
+                                    className="w-full h-12 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-[#d0e5d5] dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-base font-medium"
                                 >
                                     <option value="1kW">1 kW</option>
                                     <option value="3kW">3 kW</option>
@@ -203,48 +206,48 @@ const MySystems: React.FC = () => {
                                     <option value="Above 10kW">Above 10 kW</option>
                                 </select>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase text-gray-500">Inverter Type</label>
+                            <div className="space-y-2">
+                                <label className="text-xs md:text-sm font-bold uppercase text-gray-500 tracking-wider">Inverter Type</label>
                                 <input
                                     name="inverterType" value={newSystem.inverterType} onChange={handleInputChange}
-                                    className="w-full h-11 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-sm"
+                                    className="w-full h-12 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-[#d0e5d5] dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-base font-medium"
                                     placeholder="e.g. Hybrid 5kW"
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase text-gray-500">Battery Type</label>
+                            <div className="space-y-2">
+                                <label className="text-xs md:text-sm font-bold uppercase text-gray-500 tracking-wider">Battery Type</label>
                                 <input
                                     name="batteryType" value={newSystem.batteryType} onChange={handleInputChange}
-                                    className="w-full h-11 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-sm"
+                                    className="w-full h-12 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-[#d0e5d5] dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-base font-medium"
                                     placeholder="e.g. Lithium Ion 200Ah"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold uppercase text-gray-500">Installation Date</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="space-y-2">
+                                <label className="text-xs md:text-sm font-bold uppercase text-gray-500 tracking-wider">Installation Date</label>
                                 <input
                                     name="installDate" type="date" value={newSystem.installDate} onChange={handleInputChange}
-                                    className="w-full h-11 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-forest/10 dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-sm"
+                                    className="w-full h-12 px-4 rounded-xl bg-background-light dark:bg-background-dark border border-[#d0e5d5] dark:border-white/10 focus:ring-2 focus:ring-primary outline-none text-base font-medium"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-2 md:gap-3 pt-2">
+                        <div className="flex justify-end gap-3 pt-4">
                             <button
                                 type="button" onClick={() => setShowAddForm(false)}
-                                className="px-4 py-2 md:px-5 md:py-2.5 rounded-xl font-bold text-xs md:text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                                className="px-6 py-3 md:px-8 md:py-3.5 rounded-xl font-bold text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={saving}
-                                className={`bg-primary text-forest px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-bold text-xs md:text-sm hover:brightness-105 transition-all shadow-md shadow-primary/20 flex items-center gap-1.5 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                className={`bg-primary hover:bg-primary/90 active:scale-95 text-forest px-6 py-3 md:px-8 md:py-3.5 rounded-xl font-bold text-base shadow-lg shadow-primary/30 transition-all flex items-center gap-2 ${saving ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
-                                <span className="material-symbols-outlined text-base md:text-lg">add</span>
-                                {saving ? 'Saving...' : 'Add System'}
+                                <span className="material-symbols-outlined text-2xl font-light">add</span>
+                                {saving ? 'Saving...' : 'Register System'}
                             </button>
                         </div>
                     </form>
