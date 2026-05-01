@@ -208,8 +208,8 @@ const UserLogin: React.FC = () => {
         <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDywjTY-ACoD5T274KEVbpjZpt1UsEACtIVbJMHCRFz6yvYkav1NDLgGVB_12KHvz-YIZHvQUer2FW__NQSlJOCK6aBQToLrM1_jTtkSfTu3dzqCouMKKe34n-UORwMKpwM_DqoWczq5GQZ_mTkp3jJIYcvRpXWs79XAgX29VkaUNEqffEILxgiOYXS2Ly14ndhnImJeE65WQdbkLJxGkoe6e68SEVHC_hPpQssIcTjsuT8vbXHWHITKEwrs4a-xvJ_6MXOM352ob4')" }}></div>
         <div className="relative z-20 flex flex-col justify-between p-16 w-full h-full">
           <Link to="/" className="flex items-center gap-3">
-            <div className="size-10 text-primary">
-              <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
+            <div className="size-10 text-primary rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-cover" />
             </div>
             <h2 className="text-white text-2xl font-bold tracking-tight">Greenlife Solar</h2>
           </Link>

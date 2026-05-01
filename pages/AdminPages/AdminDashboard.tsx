@@ -22,7 +22,7 @@ const AdminDashboard: React.FC = () => {
    const [focusPackageId, setFocusPackageId] = useState<string | null>(null);
 
    return (
-      <div className="bg-background-light dark:bg-background-dark text-[#0d1b0f] dark:text-white font-display flex h-screen overflow-hidden transition-colors duration-200">
+      <div className="bg-background-light dark:bg-background-dark text-[#0d1b0f] dark:text-white font-display flex h-screen w-screen overflow-hidden transition-colors duration-200">
          {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
          {/* Sidebar - hidden on mobile, visible on md+ */}
@@ -49,29 +49,29 @@ const AdminDashboard: React.FC = () => {
          )}
 
          {/* Main Content */}
-         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+         <div className="flex-1 flex flex-col w-full h-full overflow-hidden">
             {/* Header */}
-            <header className="h-16 md:h-20 flex items-center justify-between border-b border-[#d0e5d5] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] px-4 md:px-8 shrink-0 relative z-20 shadow-sm">
-               <div className="flex items-center gap-3 md:gap-4">
+            <header className="h-12 sm:h-14 md:h-16 lg:h-20 flex items-center justify-between border-b border-[#d0e5d5] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] px-3 sm:px-4 md:px-6 lg:px-8 shrink-0 relative z-20 shadow-sm">
+               <div className="flex items-center gap-2 sm:gap-3">
                   <button
                      type="button"
                      onClick={() => setMobileNavOpen(true)}
-                     className="md:hidden p-2 -ml-2 rounded-lg hover:bg-background-light/80 dark:hover:bg-black/10 transition-colors"
+                     className="md:hidden p-1.5 sm:p-2 -ml-1 rounded-lg hover:bg-background-light/80 dark:hover:bg-black/10 transition-colors"
                      aria-label="Open navigation"
                   >
-                     <span className="material-symbols-outlined text-[22px] md:text-[24px]">menu</span>
+                     <span className="material-symbols-outlined text-base sm:text-xl">menu</span>
                   </button>
                   <div>
-                     <h2 className="text-xl md:text-2xl font-bold capitalize text-[#0d1b0f] dark:text-white">{activeView}</h2>
-                     <p className="text-xs text-[#4c9a66] dark:text-gray-400 hidden md:block">Manage & monitor</p>
+                     <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold capitalize text-[#0d1b0f] dark:text-white">{activeView}</h2>
+                     <p className="text-[8px] sm:text-xs text-[#4c9a66] dark:text-gray-400 hidden md:block">Manage & monitor</p>
                   </div>
                </div>
-               <div className="flex items-center gap-4 md:gap-6">
+               <div className="flex items-center gap-2 sm:gap-3">
                   <div className="flex flex-col items-end">
-                     <span className="text-sm md:text-base font-bold leading-none text-[#0d1b0f] dark:text-white">Admin Panel</span>
-                     <span className="text-[10px] md:text-xs text-[#4c9a52] font-medium">System Active</span>
+                     <span className="text-xs sm:text-base md:text-lg font-bold leading-none text-[#0d1b0f] dark:text-white">Admin Panel</span>
+                     <span className="text-[8px] sm:text-xs text-[#4c9a52] font-medium">System Active</span>
                   </div>
-                  <div className="size-8 md:size-10 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-bold text-sm md:text-base shadow-md">
+                  <div className="size-6 sm:size-8 md:size-10 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-bold text-xs md:text-sm shadow-md">
                      ✓
                   </div>
                </div>

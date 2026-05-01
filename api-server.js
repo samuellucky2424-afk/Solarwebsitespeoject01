@@ -116,6 +116,7 @@ if (!isEmailConfigured) {
 app.post('/api/send-email', async (req, res) => {
   try {
     if (!isEmailConfigured) {
+      console.log('❌ Email service not configured');
       return res.status(503).json({
         error: 'Email service is not configured',
       });
@@ -124,7 +125,14 @@ app.post('/api/send-email', async (req, res) => {
     const { to, subject, html, replyTo, tags, useAdminEmail } = req.body || {};
     const resolvedTo = useAdminEmail ? ADMIN_EMAIL : to;
 
+    console.log('📧 Email request received:');
+    console.log('  - To:', resolvedTo);
+    console.log('  - Subject:', subject);
+    console.log('  - UseAdminEmail:', useAdminEmail);
+    console.log('  - Tags:', tags);
+
     if (!resolvedTo || !subject || !html) {
+      console.log('❌ Missing required fields');
       return res.status(400).json({
         error: 'Missing required fields: recipient, subject, html',
       });
@@ -146,6 +154,8 @@ app.post('/api/send-email', async (req, res) => {
         : {}),
     };
 
+    console.log('📤 Sending to Resend with payload:', JSON.stringify(emailPayload, null, 2).slice(0, 200) + '...');
+
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -157,12 +167,17 @@ app.post('/api/send-email', async (req, res) => {
 
     const data = await response.json();
 
+    console.log('📬 Resend response status:', response.status);
+    console.log('📬 Resend response data:', data);
+
     if (!response.ok) {
+      console.log('❌ Email failed with status', response.status, ':', data.message);
       return res.status(response.status).json({
         error: data.message || 'Failed to send email',
       });
     }
 
+    console.log('✅ Email sent successfully with ID:', data.id);
     return res.json({
       success: true,
       id: data.id,
@@ -170,6 +185,7 @@ app.post('/api/send-email', async (req, res) => {
       message: 'Email sent successfully',
     });
   } catch (error) {
+    console.log('❌ Error in send-email endpoint:', error instanceof Error ? error.message : error);
     return res.status(500).json({
       error: error instanceof Error ? error.message : 'Internal server error',
     });

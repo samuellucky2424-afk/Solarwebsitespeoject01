@@ -82,8 +82,8 @@ const AdminLogin: React.FC = () => {
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 px-4 md:px-6 py-2.5 md:py-3 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-50">
         <Link to="/" className="flex items-center gap-2 md:gap-4 text-forest dark:text-white">
           <div className="flex justify-center">
-            <div className="bg-white p-2 md:p-3 rounded-xl md:rounded-2xl shadow-lg">
-              <img src="/logo.png" alt="Greenlife Solar" className="w-10 h-10 md:w-16 md:h-16 object-contain" />
+            <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-1 md:p-2 rounded-full shadow-lg overflow-hidden">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-10 h-10 md:w-16 md:h-16 object-cover rounded-full" />
             </div>
           </div>
           <h2 className="text-sm md:text-lg font-bold leading-tight tracking-tight">Greenlife Solar Solutions LTD</h2>

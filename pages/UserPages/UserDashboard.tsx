@@ -29,7 +29,7 @@ const SidebarLink: React.FC<{
 }> = ({ active, onClick, icon, label }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-left transition-colors ${active ? 'bg-primary text-forest font-semibold shadow-sm' : 'hover:bg-primary/10 text-[#4c9a66] dark:text-gray-300 font-medium'}`}
+    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${active ? 'bg-primary text-forest font-semibold shadow-sm' : 'hover:bg-primary/10 text-[#4c9a66] dark:text-gray-300 font-medium'}`}
   >
     <span className="material-symbols-outlined text-lg">{icon}</span>
     <span className="text-sm">{label}</span>
@@ -163,7 +163,7 @@ const UserDashboard: React.FC = () => {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-[#0d1b12] dark:text-white transition-colors duration-200 font-display">
+    <div className="bg-background-light dark:bg-background-dark text-[#0d1b12] dark:text-white transition-colors duration-200 font-display h-screen w-screen flex flex-col">
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
 
       {/* Service Selection Modal */}
@@ -235,8 +235,8 @@ const UserDashboard: React.FC = () => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-10 px-2 justify-between">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-full flex items-center justify-center">
-                  <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+                <div className="size-10 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10">
+                  <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h1 className="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight">Greenlife Solar</h1>
@@ -335,13 +335,13 @@ const UserDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex min-h-screen">
+      <div className="flex w-full h-full flex-1">
         {/* Sidebar */}
-        <aside className="w-64 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-screen sticky top-0 hidden lg:flex shrink-0">
+        <aside className="w-64 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0">
           <div className="p-4 flex flex-col h-full">
             <div className="flex items-center gap-2.5 mb-8 px-2">
-              <div className="size-8 rounded-full flex items-center justify-center">
-                <img src="/logo.png" alt="Logo" className="w-full h-full object-contain" />
+              <div className="size-8 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10">
+                <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
               </div>
               <div>
                 <h1 className="text-[#0d1b12] dark:text-white text-base font-bold leading-tight">Greenlife Solar</h1>
@@ -438,28 +438,28 @@ const UserDashboard: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
           {/* Header */}
-          <header className="h-16 md:h-20 bg-white dark:bg-[#1a2e21] border-b border-[#d0e5d5] dark:border-white/10 px-6 md:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-            <h2 className="text-xl md:text-2xl font-bold dark:text-white capitalize hidden md:block text-[#0d1b0f]">
+          <header className="h-12 sm:h-14 md:h-16 lg:h-20 bg-white dark:bg-[#1a2e21] border-b border-[#d0e5d5] dark:border-white/10 px-3 sm:px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+            <h2 className="text-sm sm:text-base md:text-xl lg:text-2xl font-bold dark:text-white capitalize hidden md:block text-[#0d1b0f]">
               {currentView.replace('-', ' ')}
             </h2>
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-2 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+              className="lg:hidden p-1 sm:p-1.5 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
-              <span className="material-symbols-outlined">menu</span>
+              <span className="material-symbols-outlined text-base sm:text-xl">menu</span>
             </button>
 
-            <div className="flex items-center gap-4 ml-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 ml-auto">
               {/* Search Bar - only visible on shop */}
               {currentView === 'shop' && (
-                <div className="relative hidden md:block w-64">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+                <div className="relative hidden md:block w-32 lg:w-48 xl:w-64">
+                  <span className="material-symbols-outlined absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm">search</span>
                   <input
                     type="text"
                     placeholder="Quick Search..."
-                    className="w-full pl-9 pr-4 py-2 bg-gray-100 dark:bg-white/5 rounded-lg text-sm border-none focus:ring-1 focus:ring-primary"
+                    className="w-full pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 bg-gray-100 dark:bg-white/5 rounded-lg text-xs sm:text-sm border-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
               )}
@@ -468,36 +468,36 @@ const UserDashboard: React.FC = () => {
               <div className="relative" ref={notifRef}>
                 <button
                   onClick={() => setIsNotifOpen(!isNotifOpen)}
-                  className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-[#0d1b12] dark:text-white relative hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                  className="p-1.5 sm:p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-[#0d1b12] dark:text-white relative hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                 >
-                  <span className="material-symbols-outlined">notifications</span>
+                  <span className="material-symbols-outlined text-base sm:text-xl">notifications</span>
                   {unreadCount > 0 && (
-                    <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-[#1a2e21]"></span>
+                    <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 size-1.5 sm:size-2 bg-red-500 rounded-full border border-white dark:border-[#1a2e21]"></span>
                   )}
                 </button>
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-[#1a2e21] rounded-xl shadow-2xl border border-gray-100 dark:border-white/10 overflow-hidden z-50 animate-in slide-in-from-top-2">
-                    <div className="p-3 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5">
-                      <h3 className="font-bold text-xs dark:text-white">Notifications</h3>
-                      {unreadCount > 0 && <span className="bg-primary text-forest text-[10px] px-2 py-0.5 rounded-full font-bold">{unreadCount} New</span>}
+                  <div className="absolute right-0 mt-2 w-56 sm:w-64 md:w-72 bg-white dark:bg-[#1a2e21] rounded-lg sm:rounded-xl shadow-2xl border border-gray-100 dark:border-white/10 overflow-hidden z-50 animate-in slide-in-from-top-2">
+                    <div className="p-2.5 sm:p-3 border-b border-gray-100 dark:border-white/10 flex justify-between items-center bg-gray-50 dark:bg-white/5">
+                      <h3 className="font-bold text-xs sm:text-sm dark:text-white">Notifications</h3>
+                      {unreadCount > 0 && <span className="bg-primary text-forest text-[9px] sm:text-xs px-2 py-0.5 rounded-full font-bold">{unreadCount} New</span>}
                     </div>
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="max-h-64 sm:max-h-80 overflow-y-auto">
                       {notifications.length > 0 ? (
                         notifications.map(n => (
                           <div
                             key={n.id}
                             onClick={() => markNotificationRead(n.id)}
-                            className={`p-4 border-b border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
+                            className={`p-2.5 sm:p-3 sm:p-4 border-b border-gray-100 dark:border-white/5 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${!n.read ? 'bg-primary/5' : ''}`}
                           >
-                            <div className="flex justify-between items-start mb-1">
-                              <p className={`text-sm font-bold ${!n.read ? 'text-forest dark:text-white' : 'text-gray-500'}`}>{n.title}</p>
-                              <span className="text-[10px] text-gray-400">{n.date}</span>
+                            <div className="flex justify-between items-start mb-0.5 sm:mb-1">
+                              <p className={`text-xs sm:text-sm font-bold ${!n.read ? 'text-forest dark:text-white' : 'text-gray-500'}`}>{n.title}</p>
+                              <span className="text-[9px] sm:text-xs text-gray-400">{n.date}</span>
                             </div>
-                            <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{n.message}</p>
+                            <p className="text-xs sm:text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{n.message}</p>
                           </div>
                         ))
                       ) : (
-                        <div className="p-8 text-center text-gray-400 text-xs">No notifications yet.</div>
+                        <div className="p-6 sm:p-8 text-center text-gray-400 text-xs">No notifications yet.</div>
                       )}
                     </div>
                   </div>
@@ -506,10 +506,10 @@ const UserDashboard: React.FC = () => {
 
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                className="p-1.5 sm:p-2 rounded-lg bg-gray-50 dark:bg-white/5 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                 title="Toggle Theme"
               >
-                <span className="material-symbols-outlined">{isDark ? 'light_mode' : 'dark_mode'}</span>
+                <span className="material-symbols-outlined text-base sm:text-xl">{isDark ? 'light_mode' : 'dark_mode'}</span>
               </button>
             </div>
           </header>

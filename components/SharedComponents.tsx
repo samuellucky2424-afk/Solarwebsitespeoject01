@@ -7,7 +7,9 @@ import { useSupportEmail } from '../src/lib/contactInfo';
 // --- SVGs ---
 
 export const Logo: React.FC<{ className?: string }> = ({ className = "size-8" }) => (
-  <img src="/logo.png" alt="Greenlife Solar" className={`${className} object-contain`} />
+  <div className={`${className} rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center shrink-0`}>
+    <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-cover" />
+  </div>
 );
 
 // --- Cart Components ---
@@ -151,8 +153,8 @@ export const PublicHeader: React.FC = () => {
         {/* Full width header */}
         <div className="w-full flex items-center justify-between px-6 lg:px-12 py-4">
           <Link to="/" className="flex items-center gap-3 relative z-50">
-            <div className="size-10 rounded-full flex items-center justify-center">
-              <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
+            <div className="size-10 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-cover" />
             </div>
             <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
           </Link>
@@ -288,8 +290,8 @@ export const PublicFooter: React.FC = () => {
     <div className="w-full px-6 lg:px-12 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full flex items-center justify-center">
-            <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
+          <div className="size-10 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10">
+            <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-cover" />
           </div>
           <h2 className="text-forest dark:text-white text-xl font-bold tracking-tight">Greenlife Solar</h2>
         </div>

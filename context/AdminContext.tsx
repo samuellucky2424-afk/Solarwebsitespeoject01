@@ -595,6 +595,9 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
 
+    // Optimistically update local state immediately
+    setRequests((prev: ServiceRequest[]) => [req, ...prev]);
+
     if (activeUser) {
       addNotification(activeUser.id, "Request Received", `We received your ${req.type} request.`, "info");
       setTimeout(() => {
@@ -602,7 +605,128 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       }, 3000);
     }
 
-    await fetchData();
+    // Send email notifications (non-blocking)
+    const sendEmailNotifications = async () => {
+      try {
+        const authToken = (await supabase.auth.getSession()).data.session?.access_token;
+        if (!authToken) {
+          console.warn('No auth token available for email sending');
+          return;
+        }
+
+        // Sanitize tags to only contain ASCII letters, numbers, underscores, or dashes
+        const sanitizeTag = (str: string) => str.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 128);
+
+        // Get correct API URL
+        const apiBaseUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'http://127.0.0.1:3001'
+          : '';
+        const emailApiUrl = `${apiBaseUrl}/api/send-email`;
+
+        const customerEmailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4CAF50;">Request Confirmation</h2>
+            <p>Hi ${req.customer},</p>
+            <p>Thank you for submitting your <strong>${req.type}</strong> request. We have received it and will review your details shortly.</p>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <p><strong>Request Type:</strong> ${req.type}</p>
+              <p><strong>Description:</strong> ${req.description}</p>
+              <p><strong>Status:</strong> ${req.status}</p>
+              <p><strong>Submitted:</strong> ${req.date}</p>
+            </div>
+            <p>We'll be in touch with you soon!</p>
+            <p>Best regards,<br>Greenlife Solar Team</p>
+          </div>
+        `;
+
+        // Send customer confirmation email
+        console.log('📧 Sending customer confirmation email to:', req.email);
+        const customerResponse = await fetch(emailApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            to: req.email,
+            subject: `${req.type} - Request Confirmation`,
+            html: customerEmailHtml,
+            tags: {
+              type: sanitizeTag(req.type),
+              status: 'confirmation'
+            }
+          }),
+        });
+
+        const customerResult = await customerResponse.json();
+        if (!customerResponse.ok) {
+          console.error('❌ Customer email failed:', customerResponse.status, customerResult);
+        } else {
+          console.log('✅ Customer email sent successfully:', customerResult.id);
+        }
+
+        // Send admin notification email
+        const adminEmailHtml = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #4CAF50;">New ${req.type} Request</h2>
+            <p><strong>Customer:</strong> ${req.customer}</p>
+            <p><strong>Email:</strong> ${req.email}</p>
+            <p><strong>Phone:</strong> ${req.phone}</p>
+            <p><strong>Address:</strong> ${req.address}</p>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <p><strong>Type:</strong> ${req.type}</p>
+              <p><strong>Title:</strong> ${req.title}</p>
+              <p><strong>Description:</strong> ${req.description}</p>
+              <p><strong>Priority:</strong> ${req.priority}</p>
+              <p><strong>Status:</strong> ${req.status}</p>
+              <p><strong>Submitted:</strong> ${req.date}</p>
+            </div>
+            <p>Log in to the admin panel to review and respond.</p>
+          </div>
+        `;
+
+        console.log('📧 Sending admin notification email');
+        const adminResponse = await fetch(emailApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            useAdminEmail: true,
+            subject: `New ${req.type} Request from ${req.customer}`,
+            html: adminEmailHtml,
+            tags: {
+              type: sanitizeTag(req.type),
+              customer: sanitizeTag(req.customer),
+              status: 'admin_notification'
+            }
+          }),
+        });
+
+        const adminResult = await adminResponse.json();
+        if (!adminResponse.ok) {
+          console.error('❌ Admin email failed:', adminResponse.status, adminResult);
+        } else {
+          console.log('✅ Admin email sent successfully:', adminResult.id);
+        }
+      } catch (err) {
+        console.error('❌ Error sending email notifications:', err);
+      }
+    };
+
+    // Send emails in background without blocking
+    sendEmailNotifications();
+
+    // Refresh data asynchronously without blocking
+    // Add a 10-second timeout to prevent hanging
+    const fetchTimeout = Promise.race([
+      fetchData(),
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Fetch timeout')), 10000))
+    ]).catch(err => {
+      console.warn('Failed to refresh data after request:', err);
+    });
+
     return true;
   };
 

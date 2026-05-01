@@ -58,8 +58,8 @@ const PageLoader = () => (
   <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background-light dark:bg-background-dark fixed inset-0 z-[100]">
     <div className="flex flex-col items-center gap-6">
       <div className="relative">
-        <div className="size-20 bg-primary/10 rounded-full flex items-center justify-center border border-primary/20 shadow-xl shadow-primary/10">
-          <img src="/logo.png" alt="Loading..." className="w-12 h-12 object-contain animate-pulse" />
+        <div className="size-20 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center border border-primary/20 shadow-xl shadow-primary/10 overflow-hidden">
+          <img src="/logo.png" alt="Loading..." className="w-full h-full object-cover animate-pulse" />
         </div>
         <div className="absolute -bottom-2 -right-2 size-6 bg-forest text-primary rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark animate-spin">
           <span className="material-symbols-outlined text-xs">refresh</span>
