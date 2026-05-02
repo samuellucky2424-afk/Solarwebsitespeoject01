@@ -102,9 +102,24 @@ const ProductCatalog: React.FC = () => {
 
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
-  // Derive unique brands/categories from inventory for filters
-  const uniqueCategories = useMemo(() => Array.from(new Set(inventory.map(p => p.category))), [inventory]);
-  const uniqueBrands = useMemo(() => Array.from(new Set(inventory.map(p => p.brand))), [inventory]);
+  // Derive unique brands/categories from inventory for filters.
+  // Always include the full base catalog list so admin's complete category set
+  // appears on the public storefront even when no products exist in a category yet.
+  const BASE_CATEGORIES = [
+    'Solar Panels',
+    'Inverters',
+    'Batteries',
+    'Solar Kits',
+    'Power Banks',
+    'Fans',
+    'Accessories',
+    'Solar Lights',
+  ];
+  const uniqueCategories = useMemo(() => {
+    const fromInventory = inventory.map(p => p.category).filter(Boolean);
+    return Array.from(new Set([...BASE_CATEGORIES, ...fromInventory]));
+  }, [inventory]);
+  const uniqueBrands = useMemo(() => Array.from(new Set(inventory.map(p => p.brand).filter(Boolean))), [inventory]);
 
 
   // --- GSAP Animations ---

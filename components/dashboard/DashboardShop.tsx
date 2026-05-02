@@ -12,7 +12,11 @@ const DashboardShop: React.FC = () => {
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    const categories = ["All", ...Array.from(new Set(inventory.map(p => p.category)))];
+    const BASE_CATEGORIES = [
+        'Solar Panels', 'Inverters', 'Batteries', 'Solar Kits',
+        'Power Banks', 'Fans', 'Accessories', 'Solar Lights',
+    ];
+    const categories = ["All", ...Array.from(new Set([...BASE_CATEGORIES, ...inventory.map(p => p.category).filter(Boolean)]))];
 
     const filteredProducts = useMemo(() => {
         return inventory.filter(p => {
