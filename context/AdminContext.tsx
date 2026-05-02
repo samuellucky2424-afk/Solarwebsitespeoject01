@@ -44,6 +44,7 @@ export interface GalleryImage {
   title: string;
   category: string;
   description?: string;
+  images?: string[];
 }
 
 import { Product } from '../data/products';
@@ -56,6 +57,7 @@ export interface SolarPackage {
   appliances: string[];
   powerCapacity?: string;
   img?: string;
+  images?: string[];
 }
 
 export interface UserProfile {
@@ -506,7 +508,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         brand: product.brand,
         series: product.series,
         efficiency: product.eff,
-        reviews: product.reviews || 0
+        reviews: product.reviews || 0,
+        images: product.images && product.images.length ? product.images : (product.img ? [product.img] : [])
       }
     }]);
 
@@ -533,7 +536,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         brand: updates.brand,
         series: updates.series,
         efficiency: updates.eff,
-        reviews: updates.reviews || 0
+        reviews: updates.reviews || 0,
+        images: updates.images && updates.images.length ? updates.images : (updates.img ? [updates.img] : [])
       }
     }).eq('id', id);
 
@@ -766,7 +770,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       price: pkg.price,
       description: pkg.description,
       image_url: pkg.img,
-      metadata: { appliances: pkg.appliances, powerCapacity: pkg.powerCapacity }
+      metadata: {
+        appliances: pkg.appliances,
+        powerCapacity: pkg.powerCapacity,
+        images: pkg.images && pkg.images.length ? pkg.images : (pkg.img ? [pkg.img] : [])
+      }
     }]);
 
     if (!error) {
@@ -932,7 +940,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     stockStatus: item.status || 'In Stock',
     eff: item.metadata?.efficiency || '',
     spec: item.description,
-    reviews: item.metadata?.reviews || 0
+    reviews: item.metadata?.reviews || 0,
+    images: Array.isArray(item.metadata?.images) ? item.metadata.images : (item.image_url ? [item.image_url] : [])
   });
 
   const mapToPackage = (item: any): SolarPackage => ({
@@ -942,7 +951,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     description: item.description || item.metadata?.description || '',
     img: item.image_url || item.img,
     appliances: normalizePackageAppliances(item.metadata?.appliances ?? item.appliances),
-    powerCapacity: item.metadata?.powerCapacity || item.power_capacity || item.metadata?.capacity
+    powerCapacity: item.metadata?.powerCapacity || item.power_capacity || item.metadata?.capacity,
+    images: Array.isArray(item.metadata?.images) ? item.metadata.images : ((item.image_url || item.img) ? [item.image_url || item.img] : [])
   });
 
   const mapToRequest = (item: any): ServiceRequest => ({
@@ -989,7 +999,10 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       title: image.title,
       category: image.category,
       description: image.description,
-      image_url: image.url
+      image_url: image.url,
+      metadata: {
+        images: image.images && image.images.length ? image.images : (image.url ? [image.url] : [])
+      }
     }]);
 
     if (!error) {
@@ -1017,7 +1030,8 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     url: item.image_url,
     title: item.title,
     category: item.category,
-    description: item.description
+    description: item.description,
+    images: Array.isArray(item.metadata?.images) ? item.metadata.images : (item.image_url ? [item.image_url] : [])
   });
 
   const mapToUserProfile = (data: any): UserProfile => {

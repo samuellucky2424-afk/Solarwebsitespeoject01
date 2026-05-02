@@ -21,27 +21,33 @@ const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, o
     // Upload State
     const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
     const [imageUrl, setImageUrl] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [toastMsg, setToastMsg] = useState<string | null>(null);
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        setUploading(true);
         if (!name || !price) return;
+        setUploading(true);
 
-        let finalImageUrl = imageUrl;
+        const uploadedUrls: string[] = [];
 
-        if (imageMode === 'upload' && imageFile) {
-            const uploadResult = await uploadImage(imageFile, 'greenlife-assets', 'packages');
-            if (uploadResult.url) {
-                finalImageUrl = uploadResult.url;
-            } else {
-                setToastMsg(uploadResult.error || "Failed to upload image. Please try again.");
-                setUploading(false);
-                return;
+        if (imageMode === 'upload' && imageFiles.length > 0) {
+            for (const file of imageFiles) {
+                const uploadResult = await uploadImage(file, 'greenlife-assets', 'packages');
+                if (uploadResult.url) {
+                    uploadedUrls.push(uploadResult.url);
+                } else {
+                    setToastMsg(uploadResult.error || `Failed to upload ${file.name}.`);
+                    setUploading(false);
+                    return;
+                }
             }
+        } else if (imageMode === 'url' && imageUrl) {
+            uploadedUrls.push(imageUrl);
         }
+
+        const finalCover = uploadedUrls[0] || 'https://placehold.co/600x400?text=Solar+Package';
 
         const success = await addPackage({
             name,
@@ -49,7 +55,8 @@ const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, o
             description,
             appliances: appliancesStr.split(',').map(s => s.trim()).filter(s => s.length > 0),
             powerCapacity,
-            img: finalImageUrl || 'https://placehold.co/600x400?text=Solar+Package'
+            img: finalCover,
+            images: uploadedUrls.length ? uploadedUrls : [finalCover]
         });
 
         if (success) {
@@ -59,8 +66,8 @@ const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, o
             setAppliancesStr('');
             setPowerCapacity('');
             setImageUrl('');
-            setImageFile(null);
-            setToastMsg("Package added successfully!");
+            setImageFiles([]);
+            setToastMsg(`Package added with ${uploadedUrls.length || 1} image${(uploadedUrls.length || 1) > 1 ? 's' : ''}!`);
         } else {
             setToastMsg("Failed to add package.");
         }
@@ -134,7 +141,12 @@ const PackageManagement: React.FC<PackageManagementProps> = ({ focusPackageId, o
                                 {imageMode === 'url' ? (
                                     <input type="url" value={imageUrl} onChange={e => setImageUrl(e.target.value)} className="w-full p-2 rounded bg-background-light dark:bg-black/20 border border-[#e7f3eb] dark:border-white/10 text-sm focus:ring-primary focus:ring-2 outline-none" placeholder="https://..." />
                                 ) : (
-                                    <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files ? e.target.files[0] : null)} className="w-full p-2 rounded bg-background-light dark:bg-black/20 border border-[#e7f3eb] dark:border-white/10 text-sm focus:ring-primary focus:ring-2 outline-none" />
+                                    <>
+                                        <input type="file" accept="image/*" multiple onChange={e => setImageFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full p-2 rounded bg-background-light dark:bg-black/20 border border-[#e7f3eb] dark:border-white/10 text-sm focus:ring-primary focus:ring-2 outline-none" />
+                                        {imageFiles.length > 0 && (
+                                            <p className="text-xs text-[#4c9a52] mt-1">{imageFiles.length} image{imageFiles.length > 1 ? 's' : ''} selected</p>
+                                        )}
+                                    </>
                                 )}
                             </div>
 

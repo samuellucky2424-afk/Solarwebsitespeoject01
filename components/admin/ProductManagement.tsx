@@ -15,7 +15,7 @@ const ProductManagement: React.FC = () => {
 
     // Upload State
     const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -53,7 +53,7 @@ const ProductManagement: React.FC = () => {
 
     // Handlers
     const handleOpenModal = (product?: Product) => {
-        setImageFile(null);
+        setImageFiles([]);
         setImageMode('url');
         if (product) {
             setEditingProduct(product);
@@ -94,21 +94,28 @@ const ProductManagement: React.FC = () => {
         if (!formData.name || !formData.price) return;
 
         let finalImageUrl = formData.img;
+        let finalImages: string[] = formData.images && formData.images.length ? [...formData.images] : (formData.img ? [formData.img] : []);
 
-        if (imageMode === 'upload' && imageFile) {
-            const uploadResult = await uploadImage(imageFile, 'greenlife-assets', 'products');
-            if (uploadResult.url) {
-                finalImageUrl = uploadResult.url;
-            } else {
-                setToastMsg(uploadResult.error || "Failed to upload image. Please try again.");
-                setUploading(false);
-                return;
+        if (imageMode === 'upload' && imageFiles.length > 0) {
+            const uploaded: string[] = [];
+            for (const file of imageFiles) {
+                const uploadResult = await uploadImage(file, 'greenlife-assets', 'products');
+                if (uploadResult.url) {
+                    uploaded.push(uploadResult.url);
+                } else {
+                    setToastMsg(uploadResult.error || `Failed to upload ${file.name}.`);
+                    setUploading(false);
+                    return;
+                }
             }
+            finalImageUrl = uploaded[0];
+            finalImages = uploaded;
         }
 
         const productData = {
             ...formData,
             img: finalImageUrl || 'https://placehold.co/400',
+            images: finalImages.length ? finalImages : (finalImageUrl ? [finalImageUrl] : []),
             brand: formData.brand || 'GreenLife',
             eff: formData.eff || 'N/A',
             spec: formData.description || 'Standard'
@@ -282,7 +289,12 @@ const ProductManagement: React.FC = () => {
                                     {imageMode === 'url' ? (
                                         <input type="url" value={formData.img ?? ''} onChange={e => setFormData({ ...formData, img: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="https://..." />
                                     ) : (
-                                        <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files ? e.target.files[0] : null)} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" />
+                                        <>
+                                            <input type="file" accept="image/*" multiple onChange={e => setImageFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" />
+                                            {imageFiles.length > 0 && (
+                                                <p className="text-xs text-[#4c9a52] mt-1">{imageFiles.length} image{imageFiles.length > 1 ? 's' : ''} selected — first will be the cover</p>
+                                            )}
+                                        </>
                                     )}
                                 </div>
 

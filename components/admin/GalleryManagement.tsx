@@ -14,47 +14,52 @@ const GalleryManagement: React.FC = () => {
     // Upload State
     const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
     const [newUrl, setNewUrl] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
     const [toastMsg, setToastMsg] = useState<string | null>(null);
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
-        setUploading(true);
         if (!newTitle) return;
+        setUploading(true);
 
-        let finalImageUrl = newUrl;
+        const uploadedUrls: string[] = [];
 
-        if (imageMode === 'upload' && imageFile) {
-            const uploadResult = await uploadImage(imageFile, 'greenlife-assets', 'gallery');
-            if (uploadResult.url) {
-                finalImageUrl = uploadResult.url;
-            } else {
-                setToastMsg(uploadResult.error || "Failed to upload image. Please try again.");
-                setUploading(false);
-                return;
+        if (imageMode === 'upload' && imageFiles.length > 0) {
+            for (const file of imageFiles) {
+                const uploadResult = await uploadImage(file, 'greenlife-assets', 'gallery');
+                if (uploadResult.url) {
+                    uploadedUrls.push(uploadResult.url);
+                } else {
+                    setToastMsg(uploadResult.error || `Failed to upload ${file.name}.`);
+                    setUploading(false);
+                    return;
+                }
             }
+        } else if (imageMode === 'url' && newUrl) {
+            uploadedUrls.push(newUrl);
         }
 
-        if (!finalImageUrl) {
-            setToastMsg("Please provide an image URL or upload a file.");
+        if (uploadedUrls.length === 0) {
+            setToastMsg("Please provide an image URL or upload at least one file.");
             setUploading(false);
             return;
         }
 
         const success = await addImage({
-            url: finalImageUrl,
+            url: uploadedUrls[0],
             title: newTitle,
             category: newCategory,
-            description: newDescription
+            description: newDescription,
+            images: uploadedUrls
         });
 
         if (success) {
             setNewUrl('');
             setNewTitle('');
             setNewDescription('');
-            setImageFile(null);
-            setToastMsg('Image added to gallery successfully');
+            setImageFiles([]);
+            setToastMsg(`${uploadedUrls.length} image${uploadedUrls.length > 1 ? 's' : ''} added to gallery successfully`);
         } else {
             setToastMsg('Failed to add image. Check console.');
         }
@@ -128,7 +133,12 @@ const GalleryManagement: React.FC = () => {
                             {imageMode === 'url' ? (
                                 <input type="url" value={newUrl} onChange={e => setNewUrl(e.target.value)} className="w-full bg-background-light dark:bg-black/20 border border-[#e7f3eb] dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" placeholder="https://..." />
                             ) : (
-                                <input type="file" accept="image/*" onChange={e => setImageFile(e.target.files ? e.target.files[0] : null)} className="w-full bg-background-light dark:bg-black/20 border border-[#e7f3eb] dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
+                                <>
+                                    <input type="file" accept="image/*" multiple onChange={e => setImageFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full bg-background-light dark:bg-black/20 border border-[#e7f3eb] dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none" />
+                                    {imageFiles.length > 0 && (
+                                        <p className="text-xs text-[#4c9a52] mt-1">{imageFiles.length} image{imageFiles.length > 1 ? 's' : ''} selected</p>
+                                    )}
+                                </>
                             )}
                         </div>
                         <div className="flex items-end">
