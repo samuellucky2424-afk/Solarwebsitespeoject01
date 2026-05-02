@@ -198,11 +198,35 @@ const LandingPage: React.FC = () => {
           { y: 30, opacity: 0 },
           {
             y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out",
-            scrollTrigger: { trigger: selector, start: "top 85%" }
+            scrollTrigger: {
+              trigger: selector,
+              start: "top 95%",
+              toggleActions: "play none none none",
+              once: true,
+            }
           }
         );
       }
     });
+
+    // Refresh ScrollTrigger once images/fonts have finished loading so that
+    // positions are calculated correctly on first paint (otherwise sections
+    // can stay invisible until the user opens DevTools / resizes the window).
+    const refresh = () => ScrollTrigger.refresh();
+    if (document.readyState === 'complete') {
+      // run on next tick to allow layout to settle
+      setTimeout(refresh, 50);
+    } else {
+      window.addEventListener('load', refresh, { once: true });
+    }
+    // Extra safety net: refresh again after a short delay for late-loading images.
+    const t1 = setTimeout(refresh, 600);
+    const t2 = setTimeout(refresh, 1500);
+    return () => {
+      window.removeEventListener('load', refresh);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
 
   }, { scope: container, dependencies: [inventory, packages, packagesLoading] });
 
