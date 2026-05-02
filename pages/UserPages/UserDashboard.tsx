@@ -234,9 +234,9 @@ const UserDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile Sidebar Drawer */}
+      {/* Sidebar Drawer (mobile + desktop) */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        className={`fixed inset-0 z-50 ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
       >
         {/* Backdrop */}
         <div
@@ -350,8 +350,8 @@ const UserDashboard: React.FC = () => {
       </div>
 
       <div className="flex w-full h-full flex-1">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-full sticky top-0 hidden lg:flex shrink-0">
+        {/* Sidebar (hidden — replaced by hamburger drawer) */}
+        <aside className="w-64 bg-white dark:bg-[#1a2e21] border-r border-[#e7f3eb] dark:border-white/10 flex flex-col h-full sticky top-0 hidden shrink-0">
           <div className="p-4 flex flex-col h-full">
             <div className="flex items-center gap-2.5 mb-8 px-2">
               <div className="size-8 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 to-primary/10">
@@ -455,7 +455,7 @@ const UserDashboard: React.FC = () => {
           <header className="h-12 sm:h-14 md:h-16 lg:h-20 bg-white dark:bg-[#1a2e21] border-b border-[#d0e5d5] dark:border-white/10 px-3 sm:px-4 md:px-6 lg:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
             {/* Mobile Menu Toggle - Left Side */}
             <button
-              className="lg:hidden p-1 sm:p-1.5 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+              className="p-1 sm:p-1.5 text-[#0d1b12] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <span className="material-symbols-outlined text-lg sm:text-2xl">menu</span>
