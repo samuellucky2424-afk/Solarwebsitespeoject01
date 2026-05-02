@@ -141,7 +141,7 @@ const DashboardProductDetail: React.FC = () => {
             </div>
 
             {/* Reviews */}
-            <ReviewsSection targetId={product.id} targetType="product" />
+            <ReviewsSection targetId={String(product.id)} targetType="product" />
 
             {/* Related Products */}
             {relatedProducts.length > 0 && (
