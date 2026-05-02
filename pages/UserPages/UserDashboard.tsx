@@ -141,9 +141,27 @@ const UserDashboard: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    if (window.confirm("Are you sure you want to log out?")) {
-      await signOut();
-      navigate('/login');
+    if (!window.confirm("Are you sure you want to log out?")) return;
+
+    // Close menu immediately for instant feedback
+    setIsMobileMenuOpen(false);
+
+    // Navigate first so the UI responds instantly even if signOut is slow.
+    navigate('/login', { replace: true });
+
+    // Fire signOut in the background. If it hangs (e.g. flaky network), force-redirect
+    // after 1.5s to guarantee the user lands on /login without needing a refresh.
+    try {
+      await Promise.race([
+        signOut(),
+        new Promise((resolve) => setTimeout(resolve, 1500)),
+      ]);
+    } catch (err) {
+      console.error('signOut failed:', err);
+    } finally {
+      if (window.location.pathname !== '/login') {
+        window.location.replace('/login');
+      }
     }
   };
 
