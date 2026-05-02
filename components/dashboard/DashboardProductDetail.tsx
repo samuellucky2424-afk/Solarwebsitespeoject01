@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../context/AdminContext';
 import { useCart } from '../../context/CartContext';
 import { Toast } from '../../components/SharedComponents';
+import ReviewsSection from '../ReviewsSection';
 
 const DashboardProductDetail: React.FC = () => {
     const { productId } = useParams<{ productId: string }>();
@@ -138,6 +139,9 @@ const DashboardProductDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Reviews */}
+            <ReviewsSection targetId={product.id} targetType="product" />
 
             {/* Related Products */}
             {relatedProducts.length > 0 && (

@@ -2,6 +2,7 @@ import React from 'react';
 import { useAdmin, ServiceRequest, SolarPackage } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
 import { Toast } from '../../components/SharedComponents';
+import ReviewsSection from '../ReviewsSection';
 
 const DashboardPackages: React.FC = () => {
     const { packages, addRequest, activeUser } = useAdmin();
@@ -203,6 +204,11 @@ const DashboardPackages: React.FC = () => {
                                     {requestingPackageId === selectedPackage.id ? 'Submitting...' : 'Request Package'}
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Reviews */}
+                        <div className="mt-8">
+                            <ReviewsSection targetId={selectedPackage.id} targetType="package" />
                         </div>
                     </div>
                 </div>
