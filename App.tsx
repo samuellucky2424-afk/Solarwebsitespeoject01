@@ -61,10 +61,11 @@ const AuthRedirectBridge = () => {
 
   useEffect(() => {
     const normalizedPath = window.location.pathname.replace(/\/+$/, '');
+    const directHashRoutes = new Set(['/forgot-password', '/reset-password']);
 
-    if (normalizedPath === '/reset-password') {
-      window.history.replaceState(window.history.state, '', `${window.location.origin}/#/reset-password`);
-      navigate('/reset-password', { replace: true });
+    if (directHashRoutes.has(normalizedPath)) {
+      window.history.replaceState(window.history.state, '', `${window.location.origin}/#${normalizedPath}`);
+      navigate(normalizedPath, { replace: true });
     }
   }, [navigate]);
 
