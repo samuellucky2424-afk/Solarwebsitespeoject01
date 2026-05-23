@@ -179,9 +179,12 @@ const LandingPage: React.FC = () => {
 
 
   useGSAP(() => {
+    const root = container.current;
+    if (!root) return;
+
     // Hero Animation
     const tl = gsap.timeline();
-    const heroBadge = document.querySelector(".hero-badge");
+    const heroBadge = root.querySelector(".hero-badge");
     if (heroBadge) {
       tl.fromTo(".hero-badge", { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" })
         .fromTo(".hero-title", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, "-=0.4")
@@ -192,43 +195,86 @@ const LandingPage: React.FC = () => {
     // Stats, Services, Gallery, Products, Packages Animations...
     const sections = [".stats-item", ".service-card", ".homepage-package-card", ".gallery-track-container", ".product-card", ".cta-container"];
     sections.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
+      const elements = Array.from(root.querySelectorAll<HTMLElement>(selector));
       if (elements.length > 0) {
-        gsap.fromTo(selector,
-          { y: 30, opacity: 0 },
-          {
-            y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power2.out",
-            scrollTrigger: {
-              trigger: selector,
-              start: "top 95%",
-              toggleActions: "play none none none",
-              once: true,
+        elements.forEach((element, index) => {
+          gsap.fromTo(element,
+            { y: 30, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              delay: Math.min(index * 0.06, 0.3),
+              ease: "power2.out",
+              clearProps: "transform,opacity",
+              scrollTrigger: {
+                trigger: element,
+                start: "top 95%",
+                toggleActions: "play none none none",
+                once: true,
+                invalidateOnRefresh: true,
+              }
             }
-          }
-        );
+          );
+        });
       }
     });
 
-    // Refresh ScrollTrigger once images/fonts have finished loading so that
-    // positions are calculated correctly on first paint (otherwise sections
-    // can stay invisible until the user opens DevTools / resizes the window).
-    const refresh = () => ScrollTrigger.refresh();
-    if (document.readyState === 'complete') {
-      // run on next tick to allow layout to settle
-      setTimeout(refresh, 50);
-    } else {
-      window.addEventListener('load', refresh, { once: true });
+    const scheduleRefresh = () => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => ScrollTrigger.refresh());
+      });
+    };
+
+    const pendingImages = Array.from(root.querySelectorAll<HTMLImageElement>('img')).filter(img => !img.complete);
+    pendingImages.forEach((img) => {
+      img.addEventListener('load', scheduleRefresh, { once: true });
+      img.addEventListener('error', scheduleRefresh, { once: true });
+    });
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(scheduleRefresh).catch(() => undefined);
     }
-    // Extra safety net: refresh again after a short delay for late-loading images.
-    const t1 = setTimeout(refresh, 600);
-    const t2 = setTimeout(refresh, 1500);
+
+    // Refresh ScrollTrigger once images/fonts have finished loading so that
+    // positions are calculated correctly on first paint.
+    if (document.readyState === 'complete') {
+      scheduleRefresh();
+    } else {
+      window.addEventListener('load', scheduleRefresh, { once: true });
+    }
+    // Extra safety net for late background images and async data.
+    const t1 = setTimeout(scheduleRefresh, 600);
+    const t2 = setTimeout(scheduleRefresh, 1500);
     return () => {
-      window.removeEventListener('load', refresh);
+      window.removeEventListener('load', scheduleRefresh);
+      pendingImages.forEach((img) => {
+        img.removeEventListener('load', scheduleRefresh);
+        img.removeEventListener('error', scheduleRefresh);
+      });
       clearTimeout(t1);
       clearTimeout(t2);
     };
 
-  }, { scope: container, dependencies: [inventory, packages, packagesLoading] });
+  }, { scope: container, dependencies: [inventory.length, packages.length, packagesLoading, images.length] });
+
+  useGSAP(() => {
+    const root = container.current;
+    if (!root) return;
+
+    const visibleCards = root.querySelectorAll(".stats-item, .service-card, .homepage-package-card, .gallery-track-container, .product-card, .cta-container");
+    if (visibleCards.length > 0) {
+      const fallbackTimer = window.setTimeout(() => {
+        visibleCards.forEach((element) => {
+          const styles = window.getComputedStyle(element);
+          if (styles.opacity === '0') {
+            gsap.set(element, { opacity: 1, y: 0, clearProps: "transform,opacity" });
+          }
+        });
+      }, 2500);
+      return () => window.clearTimeout(fallbackTimer);
+    }
+  }, { scope: container, dependencies: [inventory.length, packages.length, packagesLoading, images.length] });
 
   return (
     <div ref={container} className="min-h-screen flex flex-col overflow-x-hidden">

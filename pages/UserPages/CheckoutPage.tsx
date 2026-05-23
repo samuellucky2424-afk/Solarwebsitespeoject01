@@ -52,6 +52,60 @@ async function getFunctionErrorMessage(error: any) {
 const getFLWPublicKey = () => getConfig()?.flutterwavePublicKey || import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '';
 const isValidFLWPublicKey = (key: string) => /^FLWPUBK-[A-Za-z0-9-]+$/i.test(key.trim());
 const NAIRA_SYMBOL = "\u20A6";
+const FLUTTERWAVE_SCRIPT_SRC = 'https://checkout.flutterwave.com/v3.js';
+let flutterwaveScriptPromise: Promise<void> | null = null;
+
+const loadFlutterwaveCheckout = () => {
+    if (window.FlutterwaveCheckout) {
+        return Promise.resolve();
+    }
+
+    if (flutterwaveScriptPromise) {
+        return flutterwaveScriptPromise;
+    }
+
+    flutterwaveScriptPromise = new Promise<void>((resolve, reject) => {
+        const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${FLUTTERWAVE_SCRIPT_SRC}"]`);
+        const timeoutId = window.setTimeout(() => {
+            reject(new Error('Flutterwave checkout timed out while loading.'));
+        }, 15000);
+
+        const handleLoaded = () => {
+            if (window.FlutterwaveCheckout) {
+                window.clearTimeout(timeoutId);
+                resolve();
+            } else {
+                window.clearTimeout(timeoutId);
+                reject(new Error('Flutterwave checkout did not initialize.'));
+            }
+        };
+
+        if (existingScript) {
+            existingScript.addEventListener('load', handleLoaded, { once: true });
+            existingScript.addEventListener('error', () => {
+                window.clearTimeout(timeoutId);
+                reject(new Error('Flutterwave checkout failed to load.'));
+            }, { once: true });
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = FLUTTERWAVE_SCRIPT_SRC;
+        script.async = true;
+        script.onload = handleLoaded;
+        script.onerror = () => {
+            window.clearTimeout(timeoutId);
+            reject(new Error('Flutterwave checkout failed to load.'));
+        };
+        document.body.appendChild(script);
+    }).catch((error) => {
+        flutterwaveScriptPromise = null;
+        throw error;
+    });
+
+    return flutterwaveScriptPromise;
+};
+
 const getFunctionsBaseUrl = () =>
     getConfig()?.supabaseFunctionUrl ||
     import.meta.env.VITE_SUPABASE_FUNCTION_URL ||
@@ -123,9 +177,17 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
             return;
         }
 
-        // Guard: Flutterwave SDK not loaded
-        if (!window.FlutterwaveCheckout) {
+        try {
+            await loadFlutterwaveCheckout();
+        } catch (error) {
+            console.error("Flutterwave SDK load error:", error);
             setToast({ msg: "Payment gateway failed to load. Please refresh the page and try again." });
+            return;
+        }
+
+        const openFlutterwaveCheckout = window.FlutterwaveCheckout;
+        if (!openFlutterwaveCheckout) {
+            setToast({ msg: "Payment gateway failed to initialize. Please refresh the page and try again." });
             return;
         }
 
@@ -157,7 +219,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                 return;
             }
 
-            if (!createOrderData?.order_id || !createOrderData?.tx_ref) {
+            if (!createOrderData?.order_id || !createOrderData?.tx_ref || typeof createOrderData?.amount !== 'number') {
                 console.error("Invalid order response:", createOrderData);
                 setToast({ msg: "Order creation returned invalid data. Please try again." });
                 setIsSubmitting(false);
@@ -165,13 +227,14 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
             }
 
             const { order_id, tx_ref } = createOrderData;
+            const verifiedOrderAmount = Number(createOrderData.amount);
 
             // Step 2 - Open Flutterwave payment modal
-            window.FlutterwaveCheckout({
+            openFlutterwaveCheckout({
                 public_key: flutterwavePublicKey,
                 tx_ref,
-                amount: totalPrice,
-                currency: "NGN",
+                amount: verifiedOrderAmount,
+                currency: createOrderData.currency || "NGN",
                 customer: {
                     email: formData.email,
                     phone_number: formData.phone.replace(/[^0-9]/g, '') || '00000000000',
@@ -213,7 +276,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                             type: 'request',
                             title: `Paid order from ${formData.name}`,
                             status: 'Completed',
-                            description: `Order contains ${cartItems.length} item(s). Total: ${NAIRA_SYMBOL}${totalPrice.toLocaleString()}`,
+                            description: `Order contains ${cartItems.length} item(s). Total: ${NAIRA_SYMBOL}${verifiedOrderAmount.toLocaleString()}`,
                             user_id: user.id,
                             metadata: {
                                 type: 'Order',
@@ -229,7 +292,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                                     quantity: item.quantity,
                                     price: item.price
                                 })),
-                                totalAmount: totalPrice,
+                                totalAmount: verifiedOrderAmount,
                                 notes: formData.notes,
                                 orderId: order_id,
                                 tx_ref,
@@ -261,7 +324,7 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                                 quantity: item.quantity,
                                 price: item.price
                             })),
-                            totalAmount: totalPrice,
+                            totalAmount: verifiedOrderAmount,
                             orderDate: new Date().toISOString()
                         });
 
