@@ -52,13 +52,33 @@ async function getAdminClientAndToken() {
   return { supabase, accessToken };
 }
 
-function throwFunctionError(functionName: string, error: any): never {
+async function throwFunctionError(functionName: string, error: any): Promise<never> {
   const message = String(error?.message || error || '');
   const isNetworkFailure = error?.name === 'FunctionsFetchError'
     || message.includes('Failed to send a request to the Edge Function');
 
   if (isNetworkFailure) {
     throw new Error(`The Supabase Edge Function "${functionName}" is not reachable. Deploy this function in Supabase, then refresh the admin dashboard.`);
+  }
+
+  if (error?.name === 'FunctionsHttpError' && error.context) {
+    const response = error.context as Response;
+    let details = '';
+
+    try {
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const body = await response.clone().json();
+        details = String(body?.error || body?.message || JSON.stringify(body));
+      } else {
+        details = await response.clone().text();
+      }
+    } catch {
+      details = '';
+    }
+
+    const statusText = response.statusText ? ` ${response.statusText}` : '';
+    throw new Error(`The Supabase Edge Function "${functionName}" returned ${response.status}${statusText}${details ? `: ${details}` : ''}`);
   }
 
   throw error;
@@ -70,7 +90,7 @@ export async function adminListUsers() {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throwFunctionError('admin-list-users', error);
+  if (error) await throwFunctionError('admin-list-users', error);
   return (data as any)?.users || [];
 }
 
@@ -81,7 +101,7 @@ export async function adminUserDetails(userId: string) {
     body: { user_id: userId },
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throwFunctionError('admin-user-details', error);
+  if (error) await throwFunctionError('admin-user-details', error);
   return data as any;
 }
 
@@ -91,7 +111,7 @@ export async function adminListOrders(): Promise<AdminOrderRecord[]> {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throwFunctionError('admin-list-orders', error);
+  if (error) await throwFunctionError('admin-list-orders', error);
 
   const orders = (data as any)?.orders || [];
   return orders.map((order: any) => ({
@@ -115,7 +135,7 @@ export async function adminUpdateOrderFulfillmentStatus(
     },
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throwFunctionError('admin-update-order-status', error);
+  if (error) await throwFunctionError('admin-update-order-status', error);
 
   const order = (data as any)?.order;
   return {
