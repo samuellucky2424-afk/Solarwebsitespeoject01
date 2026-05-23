@@ -1,18 +1,23 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getSupabase, loadConfig } from '../../config/supabaseClient';
-import { clearAuthPreference } from '../../context/AuthContext';
+import { clearAuthPreference, useAuth } from '../../context/AuthContext';
+
+const isSessionLockError = (err: any) => {
+  const message = String(err?.message || err || '').toLowerCase();
+  return message.includes('lock:') || message.includes('another request stole it');
+};
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
-  const [hasSession, setHasSession] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const hasSession = Boolean(session);
 
   const passwordError = useMemo(() => {
     if (!password) return null;
@@ -20,43 +25,6 @@ const ResetPassword: React.FC = () => {
     if (confirmPassword && password !== confirmPassword) return 'Passwords do not match.';
     return null;
   }, [password, confirmPassword]);
-
-  useEffect(() => {
-    let mounted = true;
-    let subscription: { unsubscribe: () => void } | null = null;
-
-    const initialize = async () => {
-      try {
-        await loadConfig();
-        const client = getSupabase();
-        const { data } = await client.auth.getSession();
-
-        if (mounted) {
-          setHasSession(Boolean(data.session));
-          setCheckingSession(false);
-        }
-
-        const { data: listener } = client.auth.onAuthStateChange((event, session) => {
-          if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            setHasSession(Boolean(session));
-          }
-        });
-        subscription = listener.subscription;
-      } catch (err) {
-        if (mounted) {
-          setHasSession(false);
-          setCheckingSession(false);
-        }
-      }
-    };
-
-    initialize();
-
-    return () => {
-      mounted = false;
-      subscription?.unsubscribe();
-    };
-  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -74,6 +42,13 @@ const ResetPassword: React.FC = () => {
     }
 
     setLoading(true);
+    let passwordWasUpdated = false;
+
+    const sendToLogin = () => {
+      window.setTimeout(() => {
+        navigate('/login', { replace: true });
+      }, 1400);
+    };
 
     try {
       await loadConfig();
@@ -81,16 +56,29 @@ const ResetPassword: React.FC = () => {
       const { error: updateError } = await client.auth.updateUser({ password });
 
       if (updateError) throw updateError;
+      passwordWasUpdated = true;
 
       setMessage('Password updated successfully. Please sign in with your new password.');
+      setPassword('');
+      setConfirmPassword('');
       clearAuthPreference();
-      await client.auth.signOut();
-
-      window.setTimeout(() => {
-        navigate('/login', { replace: true });
-      }, 1400);
+      client.auth.signOut().catch((signOutError) => {
+        console.warn('Password reset sign-out cleanup failed:', signOutError);
+      });
+      sendToLogin();
     } catch (err: any) {
-      setError(err.message || 'Could not update password. Please request a new reset link.');
+      if (passwordWasUpdated || isSessionLockError(err)) {
+        setMessage('Password updated successfully. Please sign in with your new password.');
+        setPassword('');
+        setConfirmPassword('');
+        clearAuthPreference();
+        getSupabase().auth.signOut().catch((signOutError) => {
+          console.warn('Password reset sign-out cleanup failed:', signOutError);
+        });
+        sendToLogin();
+      } else {
+        setError(err.message || 'Could not update password. Please request a new reset link.');
+      }
     } finally {
       setLoading(false);
     }
@@ -118,12 +106,7 @@ const ResetPassword: React.FC = () => {
             Choose a strong password for your Greenlife Solar account.
           </p>
 
-          {checkingSession ? (
-            <div className="flex items-center gap-3 rounded-xl border border-[#cfe7d1] dark:border-white/10 px-4 py-3 text-sm font-semibold">
-              <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-              Checking reset link
-            </div>
-          ) : !hasSession ? (
+          {!hasSession ? (
             <div className="space-y-5">
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100">
                 This reset link is invalid or expired. Please request a new password reset email.
