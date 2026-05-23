@@ -1,4 +1,4 @@
-import { supabase } from '../../config/supabaseClient';
+import { getSupabase, loadConfig } from '../../config/supabaseClient';
 import { type FulfillmentStatus, normalizeFulfillmentStatus } from './orderTracking';
 
 export interface OrderSnapshotItem {
@@ -39,44 +39,59 @@ export interface AdminOrderRecord {
   } | null;
 }
 
-async function getAdminAccessToken() {
+async function getAdminClientAndToken() {
+  await loadConfig();
+
+  const supabase = getSupabase();
   const { data: sessionData } = await supabase.auth.getSession();
   const accessToken = sessionData?.session?.access_token;
   if (!accessToken) {
     throw new Error("No active admin session. Please log in as admin.");
   }
 
-  return accessToken;
+  return { supabase, accessToken };
+}
+
+function throwFunctionError(functionName: string, error: any): never {
+  const message = String(error?.message || error || '');
+  const isNetworkFailure = error?.name === 'FunctionsFetchError'
+    || message.includes('Failed to send a request to the Edge Function');
+
+  if (isNetworkFailure) {
+    throw new Error(`The Supabase Edge Function "${functionName}" is not reachable. Deploy this function in Supabase, then refresh the admin dashboard.`);
+  }
+
+  throw error;
 }
 
 export async function adminListUsers() {
-  const accessToken = await getAdminAccessToken();
+  const { supabase, accessToken } = await getAdminClientAndToken();
   const { data, error } = await supabase.functions.invoke('admin-list-users', {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throw error;
+  if (error) throwFunctionError('admin-list-users', error);
   return (data as any)?.users || [];
 }
 
 export async function adminUserDetails(userId: string) {
-  const accessToken = await getAdminAccessToken();
+  const { supabase, accessToken } = await getAdminClientAndToken();
   const { data, error } = await supabase.functions.invoke('admin-user-details', {
     method: 'POST',
     body: { user_id: userId },
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throw error;
+  if (error) throwFunctionError('admin-user-details', error);
   return data as any;
 }
 
 export async function adminListOrders(): Promise<AdminOrderRecord[]> {
-  const accessToken = await getAdminAccessToken();
+  const { supabase, accessToken } = await getAdminClientAndToken();
   const { data, error } = await supabase.functions.invoke('admin-list-orders', {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throw error;
+  if (error) throwFunctionError('admin-list-orders', error);
 
   const orders = (data as any)?.orders || [];
   return orders.map((order: any) => ({
@@ -90,7 +105,7 @@ export async function adminUpdateOrderFulfillmentStatus(
   fulfillmentStatus: FulfillmentStatus,
   note?: string
 ): Promise<AdminOrderRecord> {
-  const accessToken = await getAdminAccessToken();
+  const { supabase, accessToken } = await getAdminClientAndToken();
   const { data, error } = await supabase.functions.invoke('admin-update-order-status', {
     method: 'POST',
     body: {
@@ -100,7 +115,7 @@ export async function adminUpdateOrderFulfillmentStatus(
     },
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (error) throw error;
+  if (error) throwFunctionError('admin-update-order-status', error);
 
   const order = (data as any)?.order;
   return {

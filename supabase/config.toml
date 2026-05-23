@@ -8,3 +8,15 @@ verify_jwt = true
 
 [functions.flutterwave-webhook]
 verify_jwt = false
+
+[functions.admin-list-users]
+verify_jwt = true
+
+[functions.admin-user-details]
+verify_jwt = true
+
+[functions.admin-list-orders]
+verify_jwt = true
+
+[functions.admin-update-order-status]
+verify_jwt = true
