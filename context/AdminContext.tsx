@@ -502,12 +502,13 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       price: product.price,
       category: product.category,
       image_url: product.img,
-      description: product.spec,
-      status: product.stockStatus || 'In Stock',
+      description: product.description || product.spec || '',
+      status: product.stockStatus || product.badge || 'In Stock',
       metadata: {
         brand: product.brand,
         series: product.series,
         efficiency: product.eff,
+        spec: product.spec,
         reviews: product.reviews || 0,
         images: product.images && product.images.length ? product.images : (product.img ? [product.img] : [])
       }
@@ -524,20 +525,24 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProduct = async (id: any, updates: Partial<Product>) => {
+    const existingProduct = inventory.find((product) => String(product.id) === String(id));
+    const nextProduct = { ...existingProduct, ...updates };
+
     const { error } = await supabase.from('greenlife_hub').update({
       user_id: activeUser?.id,
-      name: updates.name,
-      price: updates.price,
-      category: updates.category,
-      image_url: updates.img,
-      description: updates.spec,
-      status: updates.stockStatus || updates.badge || 'In Stock',
+      name: nextProduct.name,
+      price: nextProduct.price,
+      category: nextProduct.category,
+      image_url: nextProduct.img,
+      description: nextProduct.description ?? nextProduct.spec ?? '',
+      status: nextProduct.stockStatus || nextProduct.badge || 'In Stock',
       metadata: {
-        brand: updates.brand,
-        series: updates.series,
-        efficiency: updates.eff,
-        reviews: updates.reviews || 0,
-        images: updates.images && updates.images.length ? updates.images : (updates.img ? [updates.img] : [])
+        brand: nextProduct.brand,
+        series: nextProduct.series,
+        efficiency: nextProduct.eff,
+        spec: nextProduct.spec,
+        reviews: nextProduct.reviews || 0,
+        images: nextProduct.images && nextProduct.images.length ? nextProduct.images : (nextProduct.img ? [nextProduct.img] : [])
       }
     }).eq('id', id);
 
@@ -937,9 +942,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     category: item.category,
     brand: item.metadata?.brand || '',
     series: item.metadata?.series || '',
+    badge: item.status || 'In Stock',
     stockStatus: item.status || 'In Stock',
     eff: item.metadata?.efficiency || '',
-    spec: item.description,
+    spec: item.metadata?.spec || item.metadata?.specification || item.description || 'Standard',
+    description: item.description || item.metadata?.description || '',
     reviews: item.metadata?.reviews || 0,
     images: Array.isArray(item.metadata?.images) ? item.metadata.images : (item.image_url ? [item.image_url] : [])
   });

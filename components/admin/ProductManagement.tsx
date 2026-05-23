@@ -90,50 +90,64 @@ const ProductManagement: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setUploading(true);
-        if (!formData.name || !formData.price) return;
-
-        let finalImageUrl = formData.img;
-        let finalImages: string[] = formData.images && formData.images.length ? [...formData.images] : (formData.img ? [formData.img] : []);
-
-        if (imageMode === 'upload' && imageFiles.length > 0) {
-            const uploaded: string[] = [];
-            for (const file of imageFiles) {
-                const uploadResult = await uploadImage(file, 'greenlife-assets', 'products');
-                if (uploadResult.url) {
-                    uploaded.push(uploadResult.url);
-                } else {
-                    setToastMsg(uploadResult.error || `Failed to upload ${file.name}.`);
-                    setUploading(false);
-                    return;
-                }
-            }
-            finalImageUrl = uploaded[0];
-            finalImages = uploaded;
+        const price = Number(formData.price);
+        if (!formData.name?.trim() || !Number.isFinite(price) || price <= 0) {
+            setToastMsg("Please enter a product name and a valid price.");
+            return;
         }
 
-        const productData = {
-            ...formData,
-            img: finalImageUrl || 'https://placehold.co/400',
-            images: finalImages.length ? finalImages : (finalImageUrl ? [finalImageUrl] : []),
-            brand: formData.brand || 'GreenLife',
-            eff: formData.eff || 'N/A',
-            spec: formData.description || 'Standard'
-        };
+        setUploading(true);
 
-        if (editingProduct) {
-            updateProduct(editingProduct.id, productData);
-            setToastMsg("Product updated successfully");
-            setUploading(false);
-            setIsModalOpen(false);
-        } else {
-            const success = await addProduct(productData as Product);
+        try {
+            let finalImageUrl = formData.img;
+            let finalImages: string[] = formData.images && formData.images.length ? [...formData.images] : (formData.img ? [formData.img] : []);
+
+            if (imageMode === 'upload' && imageFiles.length > 0) {
+                const uploaded: string[] = [];
+                for (const file of imageFiles) {
+                    const uploadResult = await uploadImage(file, 'greenlife-assets', 'products');
+                    if (uploadResult.url) {
+                        uploaded.push(uploadResult.url);
+                    } else {
+                        setToastMsg(uploadResult.error || `Failed to upload ${file.name}.`);
+                        return;
+                    }
+                }
+                finalImageUrl = uploaded[0];
+                finalImages = uploaded;
+            }
+
+            const coverImage = finalImageUrl || 'https://placehold.co/400';
+            if (imageMode === 'url') {
+                finalImages = [coverImage, ...finalImages.filter(url => url && url !== coverImage)];
+            }
+
+            const stockStatus = formData.badge || formData.stockStatus || 'In Stock';
+            const productData = {
+                ...formData,
+                name: formData.name.trim(),
+                price,
+                img: coverImage,
+                images: finalImages.length ? finalImages : [coverImage],
+                brand: formData.brand || 'GreenLife',
+                eff: formData.eff || 'N/A',
+                spec: formData.spec || 'Standard',
+                description: formData.description || '',
+                badge: stockStatus,
+                stockStatus
+            };
+
+            const success = editingProduct
+                ? await updateProduct(editingProduct.id, productData)
+                : await addProduct(productData as Product);
+
             if (success) {
-                setToastMsg("Product created successfully");
+                setToastMsg(editingProduct ? "Product updated successfully" : "Product created successfully");
                 setIsModalOpen(false);
             } else {
-                setToastMsg("Failed to create product. See console for details.");
+                setToastMsg(editingProduct ? "Failed to update product. See console for details." : "Failed to create product. See console for details.");
             }
+        } finally {
             setUploading(false);
         }
     };
@@ -203,6 +217,7 @@ const ProductManagement: React.FC = () => {
                                                 <div className="min-w-0">
                                                     <p className="text-sm font-bold truncate max-w-[200px]">{item.name}</p>
                                                     <p className="text-[10px] text-slate-400">Series: {item.series}</p>
+                                                    {item.description && <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[260px] mt-0.5">{item.description}</p>}
                                                 </div>
                                             </div>
                                         </td>

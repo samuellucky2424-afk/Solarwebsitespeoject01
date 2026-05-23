@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
-import { productsData } from '../../data/products';
+import { Product } from '../../data/products';
+import { useAdmin } from '../../context/AdminContext';
 import { useCart } from '../../context/CartContext';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<typeof productsData[0] | null>(null);
+  const { inventory, packagesLoading } = useAdmin();
+  const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [toast, setToast] = useState<{ msg: string } | null>(null);
   const { addToCart } = useCart();
@@ -16,9 +18,12 @@ const ProductDetail: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const found = productsData.find(p => p.id === Number(id));
-    if (found) setProduct(found);
   }, [id]);
+
+  useEffect(() => {
+    const found = inventory.find(p => String(p.id) === String(id));
+    setProduct(found || null);
+  }, [id, inventory]);
 
   useGSAP(() => {
     if (!product) return;
@@ -42,6 +47,19 @@ const ProductDetail: React.FC = () => {
     });
 
   }, { scope: containerRef, dependencies: [product] });
+
+  if (!product && packagesLoading) {
+    return (
+      <div className="bg-background-light dark:bg-background-dark min-h-screen flex flex-col">
+        <PublicHeader />
+        <div className="flex-1 flex flex-col items-center justify-center text-forest dark:text-white">
+          <span className="material-symbols-outlined text-6xl mb-4 opacity-50 animate-spin">progress_activity</span>
+          <h2 className="text-2xl font-bold">Loading Product</h2>
+        </div>
+        <PublicFooter />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
