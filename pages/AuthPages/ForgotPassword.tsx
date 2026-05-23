@@ -2,9 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getSupabase, loadConfig } from '../../config/supabaseClient';
 
+const PRODUCTION_ORIGIN = 'https://www.greenlifesolarsolution.com';
+
 const getResetRedirectUrl = () => {
   if (typeof window === 'undefined') return '/reset-password';
-  return `${window.location.origin}/reset-password`;
+
+  const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+  const origin = isLocalHost ? PRODUCTION_ORIGIN : window.location.origin;
+
+  return `${origin}/reset-password`;
 };
 
 const ForgotPassword: React.FC = () => {
