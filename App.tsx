@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { HashRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AdminProvider } from './context/AdminContext';
@@ -18,6 +18,8 @@ const PackagesPage = lazy(() => import('./pages/PublicPages/PackagesPage'));
 const ContactPage = lazy(() => import('./pages/PublicPages/ContactPage'));
 const SupportPage = lazy(() => import('./pages/PublicPages/SupportPage'));
 const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
+const ForgotPassword = lazy(() => import('./pages/AuthPages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/AuthPages/ResetPassword'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
 const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
 const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestForm'));
@@ -50,6 +52,21 @@ const ScrollToTop = () => {
     window.addEventListener('unhandledrejection', handleRejection);
     return () => window.removeEventListener('unhandledrejection', handleRejection);
   }, []);
+
+  return null;
+};
+
+const AuthRedirectBridge = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const normalizedPath = window.location.pathname.replace(/\/+$/, '');
+
+    if (normalizedPath === '/reset-password') {
+      window.history.replaceState(window.history.state, '', `${window.location.origin}/#/reset-password`);
+      navigate('/reset-password', { replace: true });
+    }
+  }, [navigate]);
 
   return null;
 };
@@ -99,6 +116,7 @@ const App: React.FC = () => {
           <GalleryProvider>
             <CartProvider>
               <ScrollToTop />
+              <AuthRedirectBridge />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes */}
@@ -116,6 +134,8 @@ const App: React.FC = () => {
 
                   {/* Auth Routes */}
                   <Route path="/login" element={<UserLogin />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/php/greenlife/privatelog" element={<AdminLogin />} />
 
                   {/* User Protected Routes */}

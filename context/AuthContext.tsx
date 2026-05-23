@@ -66,8 +66,40 @@ export function clearAuthPreference() {
   window.sessionStorage.removeItem(TEMP_SESSION_KEY);
 }
 
+function decodeJwtPayload(token: string | undefined): any | null {
+  if (!token || typeof window === 'undefined') return null;
+
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+    return JSON.parse(window.atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+function isPasswordRecoverySession(session: Session) {
+  const claims = decodeJwtPayload(session.access_token);
+  const authMethods = claims?.amr;
+
+  return Array.isArray(authMethods) && authMethods.some((method) => {
+    if (typeof method === 'string') return method === 'recovery';
+    return method?.method === 'recovery';
+  });
+}
+
 function shouldInvalidateRecoveredSession(session: Session) {
   if (typeof window === 'undefined') return false;
+
+  const resetHash = window.location.hash.includes('/reset-password') || window.location.hash.includes('type=recovery');
+  const resetSearch = window.location.search.includes('type=recovery') || window.location.search.includes('auth=reset-password');
+
+  if (isPasswordRecoverySession(session) || resetHash || resetSearch) {
+    return false;
+  }
 
   const persistence = readAuthPersistence();
 

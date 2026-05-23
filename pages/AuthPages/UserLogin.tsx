@@ -299,7 +299,7 @@ const UserLogin: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-bold">Password</label>
-                      <a className="text-xs font-bold text-primary hover:underline" href="#">Forgot password?</a>
+                      <Link className="text-xs font-bold text-primary hover:underline" to="/forgot-password">Forgot password?</Link>
                     </div>
                     <div className="relative">
                       <input ref={passwordRef} required className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 placeholder:text-gray-400 focus:ring-primary focus:border-primary transition-all" placeholder="••••••••" type="password" />
