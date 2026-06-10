@@ -77,7 +77,7 @@ serve(async (req: Request) => {
     ] = await Promise.all([
       supabaseAdmin
         .from("profiles")
-        .select("id, full_name, email, phone, address, role, created_at, avatar_url, metadata")
+        .select("id, full_name, email, phone, address, role, created_at, avatar_url, metadata, suspended, failed_login_attempts, suspended_at, suspension_reason")
         .eq("id", userId)
         .maybeSingle(),
       supabaseAdmin.from("user_systems").select("*").eq("user_id", userId).order("created_at", { ascending: false }),

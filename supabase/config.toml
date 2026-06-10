@@ -9,6 +9,9 @@ verify_jwt = true
 [functions.flutterwave-webhook]
 verify_jwt = false
 
+[functions.password-login]
+verify_jwt = false
+
 [functions.admin-list-users]
 verify_jwt = true
 

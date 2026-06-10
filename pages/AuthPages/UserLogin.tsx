@@ -3,8 +3,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { getSupabase } from '../../config/supabaseClient';
+import { getSupabase, uploadPrivateFile } from '../../config/supabaseClient';
 import { clearAuthPreference, persistAuthPreference, useAuth } from '../../context/AuthContext';
+import { applySecureLoginSession, securePasswordLogin, type SecureLoginError } from '../../src/lib/secureLogin';
+import TurnstileWidget from '../../src/lib/TurnstileWidget';
 
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +18,22 @@ const UserLogin: React.FC = () => {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+
+  const resetCaptchaChallenge = () => {
+    setCaptchaToken('');
+    setCaptchaError(null);
+    setCaptchaResetSignal(signal => signal + 1);
+  };
+
+  const handleAuthModeChange = (mode: 'signin' | 'signup') => {
+    if (mode !== authMode) {
+      setAuthMode(mode);
+      resetCaptchaChallenge();
+    }
+  };
 
   // Automatically redirect if already authenticated
   useEffect(() => {
@@ -28,10 +46,13 @@ const UserLogin: React.FC = () => {
 
   // Sign Up Form State
   const [signUpData, setSignUpData] = useState({
+    roleRequested: 'user',
     fullName: '',
     email: '',
     phone: '',
     address: '',
+    businessName: '',
+    businessAddress: '',
     password: '',
     confirmPassword: '',
     hasSolar: false,
@@ -42,12 +63,32 @@ const UserLogin: React.FC = () => {
     installTime: ''
   });
 
+  const [verificationFiles, setVerificationFiles] = useState<{
+    cacDocument: File | null;
+    idDocument: File | null;
+    storePhoto: File | null;
+    storeVideo: File | null;
+    workPhoto: File | null;
+    workVideo: File | null;
+  }>({
+    cacDocument: null,
+    idDocument: null,
+    storePhoto: null,
+    storeVideo: null,
+    workPhoto: null,
+    workVideo: null,
+  });
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setSignUpData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
+  };
+
+  const handleVerificationFileChange = (field: keyof typeof verificationFiles, file: File | null) => {
+    setVerificationFiles(prev => ({ ...prev, [field]: file }));
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -62,15 +103,46 @@ const UserLogin: React.FC = () => {
           return;
         }
 
+        const isDealerRequest = signUpData.roleRequested === 'installer' || signUpData.roleRequested === 'retailer';
+        const isInstallerRequest = signUpData.roleRequested === 'installer';
+        const isRetailerRequest = signUpData.roleRequested === 'retailer';
+        if (isDealerRequest) {
+          if (!signUpData.businessName.trim() || !signUpData.businessAddress.trim()) {
+            alert("Please enter your business name and business address.");
+            setLoading(false);
+            return;
+          }
+
+          if (isInstallerRequest && (!verificationFiles.cacDocument || !verificationFiles.workPhoto || !verificationFiles.workVideo)) {
+            alert("Please upload your CAC document, working photo, and working video.");
+            setLoading(false);
+            return;
+          }
+
+          if (isRetailerRequest && (!verificationFiles.idDocument || !verificationFiles.storePhoto || !verificationFiles.storeVideo)) {
+            alert("Please upload your ID document, store photo, and store video.");
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (!captchaToken) {
+          alert("Please complete the security check.");
+          setLoading(false);
+          return;
+        }
+
         // 1. Sign Up with Supabase Auth
         const { data: authData, error: authError } = await getSupabase().auth.signUp({
           email: signUpData.email,
           password: signUpData.password,
           options: {
+            captchaToken,
             data: {
               full_name: signUpData.fullName,
               phone: signUpData.phone,
-              address: signUpData.address
+              address: signUpData.address,
+              role_requested: signUpData.roleRequested
             }
           }
         });
@@ -92,6 +164,8 @@ const UserLogin: React.FC = () => {
             address: signUpData.address,
             metadata: {
               plan: 'Standard Plan',
+              role_requested: signUpData.roleRequested,
+              verification_status: isDealerRequest ? 'pending' : null,
               systemName: signUpData.hasSolar ? `${signUpData.systemSize} System` : 'No System',
               solar_details: signUpData.hasSolar ? {
                 inverter: signUpData.inverterType,
@@ -107,7 +181,60 @@ const UserLogin: React.FC = () => {
             console.error("Profile upsert error:", profileError);
           }
 
-          alert("Account created! Please check your email for verification.");
+          if (isDealerRequest) {
+            if (!authData.session) {
+              alert("Account created. Please verify your email, then sign in to submit your dealer verification documents.");
+              return;
+            }
+
+            const folder = `${authData.user.id}/dealer-verifications`;
+            const uploadRequiredFile = async (file: File | null, label: string) => {
+              if (!file) return null;
+              const result = await uploadPrivateFile(file, 'greenlife-verifications', folder);
+              if (!result.path) {
+                throw new Error(result.error || `Could not upload ${label}.`);
+              }
+              return result.path;
+            };
+
+            const [
+              cacDocumentUrl,
+              idDocumentUrl,
+              storePhotoUrl,
+              storeVideoUrl,
+              workPhotoUrl,
+              workVideoUrl,
+            ] = await Promise.all([
+              uploadRequiredFile(isInstallerRequest ? verificationFiles.cacDocument : null, 'CAC document'),
+              uploadRequiredFile(isRetailerRequest ? verificationFiles.idDocument : null, 'ID document'),
+              uploadRequiredFile(isRetailerRequest ? verificationFiles.storePhoto : null, 'store photo'),
+              uploadRequiredFile(isRetailerRequest ? verificationFiles.storeVideo : null, 'store video'),
+              uploadRequiredFile(isInstallerRequest ? verificationFiles.workPhoto : null, 'working photo'),
+              uploadRequiredFile(isInstallerRequest ? verificationFiles.workVideo : null, 'working video'),
+            ]);
+
+            const { error: verificationError } = await getSupabase()
+              .from('role_verification_requests')
+              .insert({
+                user_id: authData.user.id,
+                role_requested: signUpData.roleRequested,
+                business_name: signUpData.businessName.trim(),
+                business_address: signUpData.businessAddress.trim(),
+                cac_document_url: cacDocumentUrl,
+                id_document_url: idDocumentUrl,
+                store_photo_url: storePhotoUrl,
+                store_video_url: storeVideoUrl,
+                work_photo_url: workPhotoUrl,
+                work_video_url: workVideoUrl,
+                status: 'pending',
+              });
+
+            if (verificationError) throw verificationError;
+          }
+
+          alert(isDealerRequest
+            ? "Account created and verification submitted for admin review."
+            : "Account created! Please check your email for verification.");
         }
 
       } else {
@@ -122,6 +249,7 @@ const UserLogin: React.FC = () => {
     } catch (error: any) {
       alert(error.message || "Authentication failed");
     } finally {
+      resetCaptchaChallenge();
       setLoading(false);
     }
   };
@@ -137,49 +265,48 @@ const UserLogin: React.FC = () => {
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
 
-    console.log('🔐 Login attempt:', { email, hasPassword: !!password });
-
     if (!email || !password) {
       alert("Please enter email and password");
       setLoading(false);
       return;
     }
 
+    if (!captchaToken) {
+      alert("Please complete the security check.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      console.log('📝 Persisting auth preference...');
+      const loginData = await securePasswordLogin(email, password, captchaToken);
+      const data = await applySecureLoginSession(loginData);
       persistAuthPreference(rememberMe);
 
-      console.log('🔑 Sending login request to Supabase...');
-      const { data, error } = await getSupabase().auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        console.error('❌ Supabase auth error:', error);
-        throw error;
-      }
-
-      console.log('✅ Login successful! Session:', data.session?.user?.email);
-      
-      // Check session immediately to avoid race condition
       if (data.session) {
-        console.log('✅ Session established immediately, proceeding to dashboard...');
         const from = location.state?.from || '/dashboard';
         navigate(from, { replace: true });
-      } else {
-        console.log('⏳ No session in response, waiting for auth state listener...');
       }
-
     } catch (err: any) {
       clearAuthPreference();
-      console.error("❌ Login error:", err);
+      console.error("Login error:", err);
+      const loginError = err as SecureLoginError;
+
+      if (loginError.details?.suspended) {
+        alert(loginError.message || "This account is suspended. Please contact an admin.");
+        return;
+      }
+
+      if (loginError.details?.failed_login_attempts) {
+        alert(`Invalid credentials. Failed attempt ${loginError.details.failed_login_attempts} of 5. ${loginError.details.attempts_remaining || 0} attempt(s) remaining.`);
+        return;
+      }
+
       alert(err.message || "Failed to login. Please check your email and password.");
     } finally {
+      resetCaptchaChallenge();
       setLoading(false);
     }
   };
-
 
   useGSAP(() => {
     // Animate Left Panel
@@ -250,13 +377,13 @@ const UserLogin: React.FC = () => {
             <div className="mb-8">
               <div className="flex h-12 w-full items-center justify-center rounded-xl bg-gray-200/50 dark:bg-white/5 p-1.5">
                 <button
-                  onClick={() => setAuthMode('signin')}
+                  onClick={() => handleAuthModeChange('signin')}
                   className={`flex h-full grow items-center justify-center rounded-lg px-2 text-sm font-bold transition-all ${authMode === 'signin' ? 'bg-white dark:bg-white/10 shadow-sm text-forest dark:text-white' : 'text-forest/60 dark:text-white/60'}`}
                 >
                   Sign In
                 </button>
                 <button
-                  onClick={() => setAuthMode('signup')}
+                  onClick={() => handleAuthModeChange('signup')}
                   className={`flex h-full grow items-center justify-center rounded-lg px-2 text-sm font-bold transition-all ${authMode === 'signup' ? 'bg-white dark:bg-white/10 shadow-sm text-forest dark:text-white' : 'text-forest/60 dark:text-white/60'}`}
                 >
                   Sign Up
@@ -340,6 +467,66 @@ const UserLogin: React.FC = () => {
                     <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Address</label>
                     <input required name="address" value={signUpData.address} onChange={handleInputChange} className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="123 Solar Street, Lagos" type="text" />
                   </div>
+                  <div>
+                    <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Account Type</label>
+                    <select
+                      required
+                      name="roleRequested"
+                      value={signUpData.roleRequested}
+                      onChange={handleInputChange}
+                      className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary appearance-none"
+                    >
+                      <option value="user">Consumer</option>
+                      <option value="installer">Installer</option>
+                      <option value="retailer">Retailer</option>
+                    </select>
+                  </div>
+                  {(signUpData.roleRequested === 'installer' || signUpData.roleRequested === 'retailer') && (
+                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Business Name</label>
+                          <input required name="businessName" value={signUpData.businessName} onChange={handleInputChange} className="form-input block w-full rounded-lg border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-10 px-3 text-sm focus:ring-primary focus:border-primary" placeholder="Business name" type="text" />
+                        </div>
+                        <div>
+                          <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Business Address</label>
+                          <input required name="businessAddress" value={signUpData.businessAddress} onChange={handleInputChange} className="form-input block w-full rounded-lg border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-10 px-3 text-sm focus:ring-primary focus:border-primary" placeholder="Shop or office address" type="text" />
+                        </div>
+                      </div>
+                      {signUpData.roleRequested === 'installer' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">CAC Document</label>
+                            <input required accept="image/*,.pdf" type="file" onChange={e => handleVerificationFileChange('cacDocument', e.target.files?.[0] || null)} className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-forest" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Working Photo</label>
+                            <input required accept="image/*" type="file" onChange={e => handleVerificationFileChange('workPhoto', e.target.files?.[0] || null)} className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-forest" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Working Video</label>
+                            <input required accept="video/*" type="file" onChange={e => handleVerificationFileChange('workVideo', e.target.files?.[0] || null)} className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-forest" />
+                          </div>
+                        </div>
+                      )}
+                      {signUpData.roleRequested === 'retailer' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Store Photo</label>
+                            <input required accept="image/*" type="file" onChange={e => handleVerificationFileChange('storePhoto', e.target.files?.[0] || null)} className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-forest" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Store Video</label>
+                            <input required accept="video/*" type="file" onChange={e => handleVerificationFileChange('storeVideo', e.target.files?.[0] || null)} className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-forest" />
+                          </div>
+                          <div>
+                            <label className="block mb-1 text-xs font-bold uppercase text-gray-500">ID Document</label>
+                            <input required accept="image/*,.pdf" type="file" onChange={e => handleVerificationFileChange('idDocument', e.target.files?.[0] || null)} className="block w-full text-xs text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary file:px-3 file:py-2 file:text-xs file:font-bold file:text-forest" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Password</label>
@@ -395,6 +582,30 @@ const UserLogin: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              <div className="pt-1">
+                <TurnstileWidget
+                  action={authMode === 'signin' ? 'user_login' : 'user_signup'}
+                  className="min-h-[65px] w-full overflow-hidden rounded-lg"
+                  resetSignal={captchaResetSignal}
+                  theme="auto"
+                  onVerify={(token) => {
+                    setCaptchaToken(token);
+                    setCaptchaError(null);
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken('');
+                    setCaptchaError('Security check expired. Please try again.');
+                  }}
+                  onError={() => {
+                    setCaptchaToken('');
+                    setCaptchaError('Security check failed to load. Refresh the page and try again.');
+                  }}
+                />
+                {captchaError && (
+                  <p className="mt-2 text-xs font-semibold text-red-600 dark:text-red-300">{captchaError}</p>
+                )}
+              </div>
 
               <button className="w-full bg-primary hover:bg-opacity-90 text-forest font-black h-14 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95" type="submit" disabled={loading}>
                 {loading ? (

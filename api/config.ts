@@ -9,6 +9,7 @@
  *   SUPABASE_ANON_KEY
  *   SUPABASE_FUNCTION_URL
  *   FLUTTERWAVE_PUBLIC_KEY
+ *   TURNSTILE_SITE_KEY
  *   SUPPORT_EMAIL
  */
 export default function handler(req: any, res: any) {
@@ -25,6 +26,7 @@ export default function handler(req: any, res: any) {
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     supabaseFunctionUrl: process.env.SUPABASE_FUNCTION_URL || '',
     flutterwavePublicKey: process.env.FLUTTERWAVE_PUBLIC_KEY || '',
+    turnstileSiteKey: process.env.TURNSTILE_SITE_KEY || '',
     supportEmail: process.env.SUPPORT_EMAIL || '',
   });
 }

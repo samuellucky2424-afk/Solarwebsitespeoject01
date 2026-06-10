@@ -21,7 +21,7 @@ const ProductManagement: React.FC = () => {
 
     // Form State
     const [formData, setFormData] = useState<Partial<Product>>({
-        name: '', series: '', price: 0, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: 'In Stock', description: ''
+        name: '', series: '', price: 0, installerPrice: null, retailerPrice: null, stock: null, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: 'In Stock', description: ''
     });
 
     // Derived Data
@@ -65,6 +65,9 @@ const ProductManagement: React.FC = () => {
                 name: '',
                 series: '',
                 price: 0,
+                installerPrice: null,
+                retailerPrice: null,
+                stock: null,
                 category: BASE_CATEGORIES[0],
                 brand: '',
                 spec: '',
@@ -91,8 +94,17 @@ const ProductManagement: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const price = Number(formData.price);
+        const installerPrice = formData.installerPrice ? Number(formData.installerPrice) : null;
+        const retailerPrice = formData.retailerPrice ? Number(formData.retailerPrice) : null;
+        const stock = formData.stock || formData.stock === 0 ? Number(formData.stock) : null;
         if (!formData.name?.trim() || !Number.isFinite(price) || price <= 0) {
             setToastMsg("Please enter a product name and a valid price.");
+            return;
+        }
+
+        if ((installerPrice !== null && (!Number.isFinite(installerPrice) || installerPrice <= 0)) ||
+            (retailerPrice !== null && (!Number.isFinite(retailerPrice) || retailerPrice <= 0))) {
+            setToastMsg("Dealer prices must be valid positive amounts when provided.");
             return;
         }
 
@@ -127,6 +139,10 @@ const ProductManagement: React.FC = () => {
                 ...formData,
                 name: formData.name.trim(),
                 price,
+                normalPrice: price,
+                installerPrice,
+                retailerPrice,
+                stock,
                 img: coverImage,
                 images: finalImages.length ? finalImages : [coverImage],
                 brand: formData.brand || 'GreenLife',
@@ -285,6 +301,21 @@ const ProductManagement: React.FC = () => {
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Price (₦)</label>
                                     <input required type="number" step="0.01" value={formData.price ?? 0} onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="0.00" />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Installer Price</label>
+                                    <input type="number" step="0.01" value={formData.installerPrice ?? ''} onChange={e => setFormData({ ...formData, installerPrice: e.target.value ? parseFloat(e.target.value) : null })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="Optional" />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Retailer Price</label>
+                                    <input type="number" step="0.01" value={formData.retailerPrice ?? ''} onChange={e => setFormData({ ...formData, retailerPrice: e.target.value ? parseFloat(e.target.value) : null })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="Optional" />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Stock Quantity</label>
+                                    <input type="number" min="0" step="1" value={formData.stock ?? ''} onChange={e => setFormData({ ...formData, stock: e.target.value ? parseInt(e.target.value, 10) : null })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary" placeholder="Optional" />
                                 </div>
 
                                 {/* Image Selection */}

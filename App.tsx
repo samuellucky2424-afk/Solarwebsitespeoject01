@@ -109,6 +109,20 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const DealerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isAdmin, isDealer } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin && !isDealer) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App: React.FC = () => {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -142,6 +156,14 @@ const App: React.FC = () => {
                   {/* User Protected Routes */}
                   <Route path="/dashboard" element={<UserDashboard />} />
                   <Route path="/shop/:productId" element={<UserDashboard />} />
+                  <Route
+                    path="/dealer/products"
+                    element={
+                      <DealerRoute>
+                        <Navigate to="/dashboard?view=shop" replace />
+                      </DealerRoute>
+                    }
+                  />
                   <Route path="/order/:orderId" element={<OrderDetailPage />} />
                   <Route path="/requests" element={<Navigate to="/dashboard?view=requests" replace />} />
                   <Route path="/service-request" element={<ServiceRequestForm />} />

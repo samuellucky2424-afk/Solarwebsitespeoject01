@@ -60,7 +60,7 @@ serve(async (req: Request) => {
     const { data, error } = await supabaseAdmin
       .from("profiles")
       .select(
-        "id, full_name, email, phone, address, role, created_at, avatar_url, metadata"
+        "id, full_name, email, phone, address, role, created_at, avatar_url, metadata, suspended, failed_login_attempts, suspended_at, suspension_reason"
       )
       .order("created_at", { ascending: false });
 

@@ -3,7 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
 import { useAdmin } from '../../context/AdminContext'; // Use AdminContext instead of static data
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 import { Product } from '../../data/products';
+import { getPricedProduct, getProductDisplayPrice } from '../../utils/dealerPricing';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -24,6 +26,7 @@ const ProductCatalog: React.FC = () => {
   const [featuredOnly, setFeaturedOnly] = useState(false);
 
   const { addToCart } = useCart();
+  const { role } = useAuth();
   const itemsPerPage = 20;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +52,7 @@ const ProductCatalog: React.FC = () => {
   };
 
   const handleAddToCart = (product: Product) => {
-    const success = addToCart(product, 1);
+    const success = addToCart(getPricedProduct(product, role), 1);
     if (success) {
       setToastMessage(`Added ${product.name} to cart.`);
     }
@@ -70,7 +73,7 @@ const ProductCatalog: React.FC = () => {
     return inventory.filter(product => {
       const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
       const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
-      const matchPrice = product.price <= priceMax;
+      const matchPrice = getProductDisplayPrice(product, role) <= priceMax;
       const matchSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.series.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -81,19 +84,19 @@ const ProductCatalog: React.FC = () => {
 
       return matchCategory && matchBrand && matchPrice && matchSearch && matchFeatured && isInStock;
     });
-  }, [inventory, selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly]);
+  }, [inventory, selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly, role]);
 
   const sortedProducts = useMemo(() => {
     const products = [...filteredProducts];
     if (sortBy === "Price: Low to High") {
-      return products.sort((a, b) => a.price - b.price);
+      return products.sort((a, b) => getProductDisplayPrice(a, role) - getProductDisplayPrice(b, role));
     } else if (sortBy === "Price: High to Low") {
-      return products.sort((a, b) => b.price - a.price);
+      return products.sort((a, b) => getProductDisplayPrice(b, role) - getProductDisplayPrice(a, role));
     } else if (sortBy === "Name") {
       return products.sort((a, b) => a.name.localeCompare(b.name));
     }
     return products; // Default Popularity (as is in array)
-  }, [filteredProducts, sortBy]);
+  }, [filteredProducts, sortBy, role]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;

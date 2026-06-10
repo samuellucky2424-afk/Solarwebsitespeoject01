@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-type AdminView = 'overview' | 'users' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
+type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
 
 interface AdminSidebarProps {
     activeView: AdminView;
@@ -48,6 +48,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                 >
                     <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">group</span>
                     <span className="text-xs sm:text-sm">Users</span>
+                </button>
+
+                <button
+                    onClick={() => setActiveView('dealer-verifications')}
+                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'dealer-verifications' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
+                >
+                    <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">verified_user</span>
+                    <span className="text-xs sm:text-sm">Dealer Reviews</span>
                 </button>
 
                 <button

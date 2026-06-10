@@ -94,7 +94,7 @@ function parseLineItems(itemSnapshot: unknown) {
   return quantities;
 }
 
-async function buildAuthoritativeProductOrder(itemSnapshot: unknown) {
+async function buildAuthoritativeProductOrder(itemSnapshot: unknown, role = "user") {
   const snapshot = getSnapshotObject(itemSnapshot);
   const quantities = parseLineItems(itemSnapshot);
   const ids = Array.from(quantities.keys());
@@ -114,6 +114,26 @@ async function buildAuthoritativeProductOrder(itemSnapshot: unknown) {
     throw new Error("cart_item_not_found");
   }
 
+  const dealerPricesByProductId = new Map<string, Record<string, unknown>>();
+  if (role === "installer" || role === "retailer") {
+    const { data: dealerRows, error: dealerRowsError } = await supabase
+      .from("dealer_prices")
+      .select("product_id, installer_price, retailer_price")
+      .in("product_id", ids);
+
+    if (dealerRowsError) {
+      const code = String((dealerRowsError as { code?: string })?.code || "");
+      const message = String((dealerRowsError as { message?: string })?.message || "");
+      if (code !== "PGRST205" && !message.includes("Could not find the table")) {
+        console.warn("Dealer price lookup failed", dealerRowsError);
+      }
+    } else {
+      for (const row of dealerRows || []) {
+        dealerPricesByProductId.set(String(row.product_id), row);
+      }
+    }
+  }
+
   const rowsById = new Map(data.map((row) => [String(row.id), row]));
   let amount = 0;
 
@@ -123,7 +143,14 @@ async function buildAuthoritativeProductOrder(itemSnapshot: unknown) {
       throw new Error("cart_item_not_found");
     }
 
-    const price = Number(row.price);
+    const normalPrice = Number(row.price);
+    const dealerPrice = dealerPricesByProductId.get(id);
+    const rolePrice = role === "installer"
+      ? Number(dealerPrice?.installer_price)
+      : role === "retailer"
+        ? Number(dealerPrice?.retailer_price)
+        : NaN;
+    const price = Number.isFinite(rolePrice) && rolePrice > 0 ? rolePrice : normalPrice;
     if (!Number.isFinite(price) || price < 0) {
       throw new Error("invalid_catalog_price");
     }
@@ -207,6 +234,25 @@ async function buildAuthoritativePackageOrder(itemId: unknown, itemSnapshot: unk
   };
 }
 
+async function ensureActiveAccount(userId: string) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role, suspended")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Account status lookup failed", error);
+    throw new Error("account_status_lookup_failed");
+  }
+
+  if (data?.suspended) {
+    throw new Error("account_suspended");
+  }
+
+  return { role: String(data?.role || "user") };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
@@ -247,11 +293,22 @@ serve(async (req) => {
       return jsonResponse({ error: "Authentication required to create an order" }, 401);
     }
 
+    let account: { role: string };
+    try {
+      account = await ensureActiveAccount(authenticatedUserId);
+    } catch (error) {
+      const message = String((error as Error)?.message || error);
+      return jsonResponse(
+        { error: message === "account_suspended" ? "This account is suspended. Checkout is blocked." : "Could not verify account status" },
+        message === "account_suspended" ? 403 : 500,
+      );
+    }
+
     let authoritativeOrder;
     try {
       authoritativeOrder = String(kind) === "package"
         ? await buildAuthoritativePackageOrder(item_id, item_snapshot)
-        : await buildAuthoritativeProductOrder(item_snapshot);
+        : await buildAuthoritativeProductOrder(item_snapshot, account.role);
     } catch (error) {
       const message = String((error as Error)?.message || error);
       const publicMessages: Record<string, string> = {

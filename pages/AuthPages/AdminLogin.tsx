@@ -1,43 +1,56 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../../config/supabaseClient';
+import { getSupabase } from '../../config/supabaseClient';
+import { applySecureLoginSession, securePasswordLogin, type SecureLoginError } from '../../src/lib/secureLogin';
+import TurnstileWidget from '../../src/lib/TurnstileWidget';
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+
+  const resetCaptchaChallenge = () => {
+    setCaptchaToken('');
+    setCaptchaError(null);
+    setCaptchaResetSignal(signal => signal + 1);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    if (!captchaToken) {
+      alert("Please complete the security check.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const loginData = await securePasswordLogin(email, password, captchaToken);
+      const data = await applySecureLoginSession(loginData);
 
-      if (error) throw error;
-
-      if (!data.session) {
+      if (!data.session?.user) {
         throw new Error("Login successful but no session returned. Check Supabase config.");
       }
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await getSupabase()
         .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
+        .select('role, suspended')
+        .eq('id', data.session.user.id)
         .maybeSingle();
 
       if (profileError) {
-        await supabase.auth.signOut();
+        await getSupabase().auth.signOut();
         throw new Error('Could not verify admin privileges.');
       }
 
-      if (!profile || profile.role !== 'admin') {
-        await supabase.auth.signOut();
+      if (!profile || profile.role !== 'admin' || profile.suspended) {
+        await getSupabase().auth.signOut();
         throw new Error('forbidden');
       }
 
@@ -46,7 +59,7 @@ const AdminLogin: React.FC = () => {
 
       // Try to verify session was stored, but don't fail if aborted
       try {
-        await supabase.auth.getSession();
+        await getSupabase().auth.getSession();
       } catch (verifyError: any) {
         // Ignore AbortError during session verification
         if (verifyError.name === 'AbortError' || verifyError.message?.includes('aborted')) {
@@ -64,14 +77,18 @@ const AdminLogin: React.FC = () => {
       }
 
       // specific check for the user credential mismatch
-      if (err.message === 'Invalid login credentials') {
-        alert("Invalid credentials. Please verify your admin password.");
+      const loginError = err as SecureLoginError;
+      if (loginError.details?.suspended) {
+        alert(loginError.message || "This account is suspended. Use Supabase to unsuspend it or contact the site owner.");
+      } else if (loginError.details?.failed_login_attempts) {
+        alert(`Invalid credentials. Failed attempt ${loginError.details.failed_login_attempts} of 5. ${loginError.details.attempts_remaining || 0} attempt(s) remaining.`);
       } else if (err.message === 'forbidden') {
         alert("This account does not have admin access.");
       } else {
         alert(err.message || "Failed to login");
       }
     } finally {
+      resetCaptchaChallenge();
       setLoading(false);
     }
   };
@@ -152,6 +169,30 @@ const AdminLogin: React.FC = () => {
                     <p className="text-gray-400 text-[10px] md:text-[11px]">Prompt will be triggered upon credential verification.</p>
                   </div>
                 </div>
+              </div>
+
+              <div>
+                <TurnstileWidget
+                  action="admin_login"
+                  className="min-h-[65px] w-full overflow-hidden rounded-lg"
+                  resetSignal={captchaResetSignal}
+                  theme="dark"
+                  onVerify={(token) => {
+                    setCaptchaToken(token);
+                    setCaptchaError(null);
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken('');
+                    setCaptchaError('Security check expired. Please try again.');
+                  }}
+                  onError={() => {
+                    setCaptchaToken('');
+                    setCaptchaError('Security check failed to load. Refresh the page and try again.');
+                  }}
+                />
+                {captchaError && (
+                  <p className="mt-2 text-xs font-semibold text-red-300">{captchaError}</p>
+                )}
               </div>
 
               <button className="w-full bg-primary hover:bg-primary/90 text-forest font-bold py-2.5 md:py-3 rounded-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled={loading}>

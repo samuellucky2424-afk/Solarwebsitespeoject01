@@ -13,6 +13,7 @@ interface AppConfig {
     supabaseAnonKey: string;
     supabaseFunctionUrl: string;
     flutterwavePublicKey: string;
+    turnstileSiteKey: string;
     supportEmail: string;
 }
 
@@ -27,6 +28,7 @@ const viteUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const viteKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const viteFuncUrl = import.meta.env.VITE_SUPABASE_FUNCTION_URL || '';
 const viteFlwKey = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY || '';
+const viteTurnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
 const viteSupportEmail = import.meta.env.VITE_SUPPORT_EMAIL || '';
 
 if (viteUrl && viteKey && viteKey !== 'PLACEHOLDER_KEY') {
@@ -36,6 +38,7 @@ if (viteUrl && viteKey && viteKey !== 'PLACEHOLDER_KEY') {
         supabaseAnonKey: viteKey,
         supabaseFunctionUrl: viteFuncUrl,
         flutterwavePublicKey: viteFlwKey,
+        turnstileSiteKey: viteTurnstileSiteKey,
         supportEmail: viteSupportEmail,
     };
     _supabase = createClient(viteUrl, viteKey);
@@ -73,6 +76,7 @@ export async function loadConfig(): Promise<AppConfig> {
                     supabaseAnonKey: '',
                     supabaseFunctionUrl: '',
                     flutterwavePublicKey: '',
+                    turnstileSiteKey: viteTurnstileSiteKey,
                     supportEmail: viteSupportEmail,
                 };
                 _supabase = createClient('https://placeholder.supabase.co', 'PLACEHOLDER_KEY');
@@ -164,5 +168,96 @@ export const uploadImage = async (file: File, bucket: string = 'greenlife-assets
     } catch (error: any) {
         console.error('Upload exception:', error);
         return { url: null, error: error.message || 'Unknown upload error' };
+    }
+};
+
+const sanitizeStorageName = (name: string) =>
+    name
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80) || 'file';
+
+export const uploadFile = async (
+    file: File,
+    bucket: string = 'greenlife-assets',
+    folder: string = 'uploads'
+): Promise<{ url: string | null, error: string | null }> => {
+    try {
+        if (!file) {
+            return { url: null, error: 'No file selected.' };
+        }
+
+        const maxSizeMb = 50;
+        if (file.size > maxSizeMb * 1024 * 1024) {
+            return { url: null, error: `File is too large. Maximum size is ${maxSizeMb}MB.` };
+        }
+
+        const safeName = sanitizeStorageName(file.name);
+        const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const filePath = `${folder}/${uniqueId}-${safeName}`;
+
+        const { error } = await supabase.storage
+            .from(bucket)
+            .upload(filePath, file, {
+                contentType: file.type || 'application/octet-stream',
+                upsert: false
+            });
+
+        if (error) {
+            console.error('Error uploading file:', error);
+            return { url: null, error: 'Storage error: ' + error.message };
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(filePath);
+
+        return { url: publicUrl, error: null };
+    } catch (error: any) {
+        console.error('File upload exception:', error);
+        return { url: null, error: error.message || 'Unknown upload error' };
+    }
+};
+
+export const uploadPrivateFile = async (
+    file: File,
+    bucket: string,
+    folder: string
+): Promise<{ path: string | null, error: string | null }> => {
+    try {
+        if (!file) {
+            return { path: null, error: 'No file selected.' };
+        }
+
+        const maxSizeMb = 50;
+        if (file.size > maxSizeMb * 1024 * 1024) {
+            return { path: null, error: `File is too large. Maximum size is ${maxSizeMb}MB.` };
+        }
+
+        const safeName = sanitizeStorageName(file.name);
+        const uniqueId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const filePath = `${folder}/${uniqueId}-${safeName}`;
+
+        const { error } = await supabase.storage
+            .from(bucket)
+            .upload(filePath, file, {
+                contentType: file.type || 'application/octet-stream',
+                upsert: false
+            });
+
+        if (error) {
+            console.error('Error uploading private file:', error);
+            return { path: null, error: 'Storage error: ' + error.message };
+        }
+
+        return { path: filePath, error: null };
+    } catch (error: any) {
+        console.error('Private file upload exception:', error);
+        return { path: null, error: error.message || 'Unknown upload error' };
     }
 };

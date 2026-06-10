@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { adminListUsers, adminUserDetails } from '../../src/lib/supabaseFunctions';
+import { getSupabase } from '../../config/supabaseClient';
 import {
     formatFulfillmentStatus,
     formatPaymentStatus,
@@ -19,23 +20,23 @@ const UserManagement: React.FC = () => {
     const [detailsError, setDetailsError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        const load = async () => {
-            setLoadingUsers(true);
-            setUsersError(null);
-            try {
-                const res = await adminListUsers();
-                setUsers(res);
-            } catch (err: any) {
-                console.error('Failed to load users:', err);
-                setUsersError(err?.message || 'Failed to load users');
-                setUsers([]);
-            } finally {
-                setLoadingUsers(false);
-            }
-        };
+    const loadUsers = async () => {
+        setLoadingUsers(true);
+        setUsersError(null);
+        try {
+            const res = await adminListUsers();
+            setUsers(res);
+        } catch (err: any) {
+            console.error('Failed to load users:', err);
+            setUsersError(err?.message || 'Failed to load users');
+            setUsers([]);
+        } finally {
+            setLoadingUsers(false);
+        }
+    };
 
-        load();
+    useEffect(() => {
+        loadUsers();
     }, []);
 
     useEffect(() => {
@@ -71,6 +72,43 @@ const UserManagement: React.FC = () => {
         );
     }, [searchQuery, users]);
 
+    const handleUnsuspendUser = async (userId: string) => {
+        if (!window.confirm('Unsuspend this user and reset failed login attempts?')) return;
+
+        const { error } = await getSupabase()
+            .from('profiles')
+            .update({
+                suspended: false,
+                failed_login_attempts: 0,
+                suspended_at: null,
+                suspension_reason: null,
+            })
+            .eq('id', userId);
+
+        if (error) {
+            alert(error.message || 'Could not unsuspend user.');
+            return;
+        }
+
+        setUsers(prev => prev.map(user => user.id === userId
+            ? { ...user, suspended: false, failed_login_attempts: 0, suspended_at: null, suspension_reason: null }
+            : user
+        ));
+        setDetails((prev: any) => prev?.profile?.id === userId
+            ? {
+                ...prev,
+                profile: {
+                    ...prev.profile,
+                    suspended: false,
+                    failed_login_attempts: 0,
+                    suspended_at: null,
+                    suspension_reason: null,
+                },
+            }
+            : prev
+        );
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in">
             <div className="flex items-center justify-between mb-4">
@@ -102,12 +140,24 @@ const UserManagement: React.FC = () => {
                                     <div>
                                         <p className="font-bold">{user.full_name || 'User'}</p>
                                         <p className="text-xs text-gray-500">{user.email}</p>
-                                        <p className="text-[10px] text-gray-400 mt-1">Joined: {user.created_at ? new Date(user.created_at).toLocaleDateString() : ''}</p>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                                            <p className="text-[10px] text-gray-400">Joined: {user.created_at ? new Date(user.created_at).toLocaleDateString() : ''}</p>
+                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-primary/10 text-primary">{user.role || 'user'}</span>
+                                            {user.suspended && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-red-100 text-red-700">Suspended</span>}
+                                            {Number(user.failed_login_attempts || 0) > 0 && <span className="text-[10px] text-amber-600">{user.failed_login_attempts}/5 failed</span>}
+                                        </div>
                                     </div>
                                 </div>
-                                <button onClick={() => setSelectedUser(user)} className="px-4 py-2 bg-primary text-forest text-sm font-bold rounded-lg hover:brightness-105 transition-colors">
-                                    Manage
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    {user.suspended && (
+                                        <button onClick={() => handleUnsuspendUser(user.id)} className="px-3 py-2 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors">
+                                            Unsuspend
+                                        </button>
+                                    )}
+                                    <button onClick={() => setSelectedUser(user)} className="px-4 py-2 bg-primary text-forest text-sm font-bold rounded-lg hover:brightness-105 transition-colors">
+                                        Manage
+                                    </button>
+                                </div>
                             </div>
                         )) : (
                             <div className="text-center py-8 text-gray-500">No users found.</div>
@@ -142,6 +192,21 @@ const UserManagement: React.FC = () => {
                                                 <div><span className="font-bold">Email:</span> {details?.profile?.email || ''}</div>
                                                 <div><span className="font-bold">Phone:</span> {details?.profile?.phone || ''}</div>
                                                 <div><span className="font-bold">Address:</span> {details?.profile?.address || ''}</div>
+                                                <div><span className="font-bold">Role:</span> {details?.profile?.role || 'user'}</div>
+                                                <div><span className="font-bold">Failed Attempts:</span> {details?.profile?.failed_login_attempts || 0}/5</div>
+                                                <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${details?.profile?.suspended ? 'bg-red-100 text-red-700' : 'bg-primary/10 text-primary'}`}>
+                                                        {details?.profile?.suspended ? 'Suspended' : 'Active'}
+                                                    </span>
+                                                    {details?.profile?.suspension_reason && (
+                                                        <span className="text-xs text-gray-500">{details.profile.suspension_reason}</span>
+                                                    )}
+                                                    {details?.profile?.suspended && (
+                                                        <button onClick={() => handleUnsuspendUser(details.profile.id)} className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-bold rounded-lg hover:bg-red-100">
+                                                            Unsuspend User
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </section>

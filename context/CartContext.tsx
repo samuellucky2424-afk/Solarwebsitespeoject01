@@ -3,6 +3,7 @@ import { Product } from '../data/products';
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { getPricedProduct } from '../utils/dealerPricing';
 
 export interface CartItem extends Product {
   quantity: number;
@@ -25,7 +26,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const CART_KEY_PREFIX = 'greenlife_cart_';
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const prevUserIdRef = useRef<string | null>(null);
@@ -68,14 +69,16 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return false;
     }
 
+    const pricedProduct = getPricedProduct(product, role);
+
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const existing = prev.find(item => item.id === pricedProduct.id);
       if (existing) {
         return prev.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === pricedProduct.id ? { ...pricedProduct, quantity: item.quantity + quantity } : item
         );
       }
-      return [...prev, { ...product, quantity }];
+      return [...prev, { ...pricedProduct, quantity }];
     });
     return true;
   };

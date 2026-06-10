@@ -168,6 +168,26 @@ async function persistPaymentIfPossible(
   return null;
 }
 
+async function ensureActiveAccount(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("suspended")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Account status lookup failed", error);
+    throw new Error("Could not verify account status");
+  }
+
+  if (data?.suspended) {
+    throw new Error("This account is suspended. Payment verification is blocked.");
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
@@ -204,6 +224,8 @@ serve(async (req) => {
     if (authErr || !authData?.user) {
       return jsonResponse({ error: "Authentication required" }, 401);
     }
+
+    await ensureActiveAccount(supabase, authData.user.id);
 
     const verify = await verifyFlutterwaveTransaction(
       String(transaction_id),

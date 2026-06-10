@@ -3,6 +3,9 @@ export interface Product {
   name: string;
   series: string;
   price: number;
+  normalPrice?: number;
+  installerPrice?: number | null;
+  retailerPrice?: number | null;
   eff: string;
   spec: string;
   img: string;
@@ -12,6 +15,7 @@ export interface Product {
   brand: string;
   description?: string;
   stockStatus?: string;
+  stock?: number | null;
   reviews?: number;
   images?: string[];
 }

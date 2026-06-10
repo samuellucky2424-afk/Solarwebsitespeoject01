@@ -322,7 +322,7 @@ const normalizePackageAppliances = (value: unknown): string[] => {
 };
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const { session } = useAuth();
+  const { session, role } = useAuth();
   const [inventory, setInventory] = useState<Product[]>([]);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [packages, setPackages] = useState<SolarPackage[]>([]);
@@ -385,7 +385,28 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       if (data) {
         setUsingDemoData(false);
         setEnableRealtime(true);
-        const mappedInventory = data.filter((i: any) => i.type === 'product').map(mapToProduct);
+        const dealerPriceByProductId = new Map<string, any>();
+        if (session?.user && ['admin', 'installer', 'retailer'].includes(role || '')) {
+          const { data: dealerRows, error: dealerRowsError } = await supabase
+            .from('dealer_prices')
+            .select('*');
+
+          if (dealerRowsError) {
+            const msg = String(dealerRowsError.message || '');
+            const code = String((dealerRowsError as any).code || '');
+            if (code !== 'PGRST205' && !msg.includes('Could not find the table')) {
+              console.warn('Dealer price fetch failed:', dealerRowsError);
+            }
+          } else {
+            (dealerRows || []).forEach((row: any) => {
+              dealerPriceByProductId.set(String(row.product_id), row);
+            });
+          }
+        }
+
+        const mappedInventory = data
+          .filter((i: any) => i.type === 'product')
+          .map((item: any) => mapToProduct(item, dealerPriceByProductId.get(String(item.id))));
         const mappedPackages = stripLegacyDemoPackages(
           data.filter((i: any) => i.type === 'package').map(mapToPackage)
         );
@@ -463,7 +484,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Fetch public data immediately regardless of auth status
     fetchData();
-  }, [session?.access_token]); // re-fetch if session changes, but also run on mount
+  }, [session?.access_token, role]); // re-fetch if session or role changes, but also run on mount
 
   useEffect(() => {
     let mounted = true;
@@ -494,8 +515,45 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   // --- Actions ---
 
+  const normalizeDealerPrice = (value: unknown): number | null => {
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  };
+
+  const saveDealerPrices = async (productId: string | number, product: Partial<Product>) => {
+    const installerPrice = normalizeDealerPrice(product.installerPrice);
+    const retailerPrice = normalizeDealerPrice(product.retailerPrice);
+
+    if (!installerPrice && !retailerPrice) {
+      const { error } = await supabase.from('dealer_prices').delete().eq('product_id', productId);
+      if (error && !String(error.message || '').includes('Could not find the table')) {
+        console.warn('Dealer price cleanup failed:', error);
+      }
+      return;
+    }
+
+    const { error } = await supabase
+      .from('dealer_prices')
+      .upsert({
+        product_id: productId,
+        installer_price: installerPrice,
+        retailer_price: retailerPrice,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      const msg = String(error.message || '');
+      const code = String((error as any).code || '');
+      if (code === 'PGRST205' || msg.includes('Could not find the table')) {
+        console.warn('dealer_prices table is not available yet. Apply the latest Supabase migrations to enable dealer pricing.');
+        return;
+      }
+      throw error;
+    }
+  };
+
   const addProduct = async (product: Omit<Product, 'id'>) => {
-    const { error } = await supabase.from('greenlife_hub').insert([{
+    const { data, error } = await supabase.from('greenlife_hub').insert([{
       type: 'product',
       user_id: activeUser?.id,
       name: product.name,
@@ -510,11 +568,19 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         efficiency: product.eff,
         spec: product.spec,
         reviews: product.reviews || 0,
+        stock: product.stock ?? null,
         images: product.images && product.images.length ? product.images : (product.img ? [product.img] : [])
       }
-    }]);
+    }]).select('id').single();
 
     if (!error) {
+      if (data?.id) {
+        try {
+          await saveDealerPrices(data.id, product);
+        } catch (dealerPriceError) {
+          console.error('Error saving dealer prices:', dealerPriceError);
+        }
+      }
       if (activeUser) addNotification(activeUser.id, "System", `Product ${product.name} added.`, "success");
       fetchData(); // Refresh local state
       return true;
@@ -542,11 +608,17 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         efficiency: nextProduct.eff,
         spec: nextProduct.spec,
         reviews: nextProduct.reviews || 0,
+        stock: nextProduct.stock ?? null,
         images: nextProduct.images && nextProduct.images.length ? nextProduct.images : (nextProduct.img ? [nextProduct.img] : [])
       }
     }).eq('id', id);
 
     if (!error) {
+      try {
+        await saveDealerPrices(id, nextProduct);
+      } catch (dealerPriceError) {
+        console.error('Error saving dealer prices:', dealerPriceError);
+      }
       if (activeUser) addNotification(activeUser.id, "System", `Product updated.`, "success");
       fetchData(); // Refresh local state
       return true;
@@ -934,22 +1006,37 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // --- Mappers ---
-  const mapToProduct = (item: any): Product => ({
-    id: item.id,
-    name: item.name,
-    price: item.price,
-    img: item.image_url,
-    category: item.category,
-    brand: item.metadata?.brand || '',
-    series: item.metadata?.series || '',
-    badge: item.status || 'In Stock',
-    stockStatus: item.status || 'In Stock',
-    eff: item.metadata?.efficiency || '',
-    spec: item.metadata?.spec || item.metadata?.specification || item.description || 'Standard',
-    description: item.description || item.metadata?.description || '',
-    reviews: item.metadata?.reviews || 0,
-    images: Array.isArray(item.metadata?.images) ? item.metadata.images : (item.image_url ? [item.image_url] : [])
-  });
+  const mapToProduct = (item: any, dealerPrice?: any): Product => {
+    const normalPrice = Number(item.price || 0);
+    const installerPrice = normalizeDealerPrice(dealerPrice?.installer_price);
+    const retailerPrice = normalizeDealerPrice(dealerPrice?.retailer_price);
+    const displayPrice = role === 'installer'
+      ? (installerPrice ?? normalPrice)
+      : role === 'retailer'
+        ? (retailerPrice ?? normalPrice)
+        : normalPrice;
+
+    return {
+      id: item.id,
+      name: item.name,
+      price: displayPrice,
+      normalPrice,
+      installerPrice,
+      retailerPrice,
+      img: item.image_url,
+      category: item.category,
+      brand: item.metadata?.brand || '',
+      series: item.metadata?.series || '',
+      badge: item.status || 'In Stock',
+      stockStatus: item.status || 'In Stock',
+      eff: item.metadata?.efficiency || '',
+      spec: item.metadata?.spec || item.metadata?.specification || item.description || 'Standard',
+      description: item.description || item.metadata?.description || '',
+      stock: typeof item.metadata?.stock === 'number' ? item.metadata.stock : null,
+      reviews: item.metadata?.reviews || 0,
+      images: Array.isArray(item.metadata?.images) ? item.metadata.images : (item.image_url ? [item.image_url] : [])
+    };
+  };
 
   const mapToPackage = (item: any): SolarPackage => ({
     id: item.id,

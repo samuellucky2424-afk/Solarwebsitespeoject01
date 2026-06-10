@@ -6,6 +6,7 @@ import { Session, User } from '@supabase/supabase-js';
 interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isDealer: boolean;
   role: string | null;
   user: User | null;
   session: Session | null;
@@ -140,14 +141,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const client = getSupabase();
-      const { data, error } = await client
+      let { data, error } = await client
         .from('profiles')
-        .select('role')
+        .select('role, suspended')
         .eq('id', userId)
         .maybeSingle();
 
       if (error) {
+        const msg = String((error as any)?.message || '');
+        const code = String((error as any)?.code || '');
+        if (code === 'PGRST204' || msg.includes('suspended')) {
+          const fallback = await client
+            .from('profiles')
+            .select('role')
+            .eq('id', userId)
+            .maybeSingle();
+          data = fallback.data as any;
+          error = fallback.error;
+        }
+      }
+
+      if (error) {
         console.warn('Role lookup failed:', error);
+        setRole(null);
+        return;
+      }
+
+      if (data?.suspended) {
+        await client.auth.signOut();
+        clearAuthPreference();
+        setSession(null);
+        setUser(null);
         setRole(null);
         return;
       }
@@ -245,7 +269,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (loading) return;
 
-    const protectedRoutes = ['/dashboard', '/order', '/requests', '/service-request', '/admin/dashboard'];
+    const protectedRoutes = ['/dashboard', '/shop', '/order', '/requests', '/service-request', '/dealer/products', '/admin/dashboard'];
     const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
 
     if (isProtectedRoute && !session) {
@@ -256,11 +280,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (location.pathname.startsWith('/admin') && session && role !== 'admin') {
       navigate('/dashboard');
     }
+
+    if (location.pathname.startsWith('/dealer') && session && !['admin', 'installer', 'retailer'].includes(role || '')) {
+      navigate('/dashboard');
+    }
   }, [session, role, loading, location.pathname, navigate]);
 
   const value = {
     isAuthenticated: !!session,
     isAdmin: role === 'admin',
+    isDealer: role === 'installer' || role === 'retailer',
     role,
     user,
     session,
