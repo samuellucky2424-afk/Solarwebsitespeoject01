@@ -96,10 +96,14 @@ const PageLoader = () => (
 );
 
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, roleResolved } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!roleResolved) {
+    return <PageLoader />;
   }
 
   if (!isAdmin) {
@@ -110,10 +114,14 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const DealerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isAdmin, isDealer } = useAuth();
+  const { isAuthenticated, isAdmin, isDealer, roleResolved } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!roleResolved) {
+    return <PageLoader />;
   }
 
   if (!isAdmin && !isDealer) {

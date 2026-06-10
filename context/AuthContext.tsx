@@ -7,6 +7,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isDealer: boolean;
+  loading: boolean;
+  roleResolved: boolean;
   role: string | null;
   user: User | null;
   session: Session | null;
@@ -129,13 +131,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roleResolved, setRoleResolved] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const loadUserRole = async (userId: string | undefined | null) => {
+    setRoleResolved(false);
+
     if (!userId) {
       setRole(null);
+      setRoleResolved(true);
       return;
     }
 
@@ -164,6 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         console.warn('Role lookup failed:', error);
         setRole(null);
+        setRoleResolved(true);
         return;
       }
 
@@ -173,13 +180,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(null);
         setUser(null);
         setRole(null);
+        setRoleResolved(true);
         return;
       }
 
       setRole(typeof data?.role === 'string' ? data.role : null);
+      setRoleResolved(true);
     } catch (err) {
       console.warn('Role lookup exception:', err);
       setRole(null);
+      setRoleResolved(true);
     }
   };
 
@@ -209,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(null);
             setUser(null);
             setRole(null);
+            setRoleResolved(true);
             setLoading(false);
           }
           return;
@@ -224,14 +235,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Listen for changes
         console.log('👂 Setting up auth state listener...');
-        const { data } = client.auth.onAuthStateChange(async (event, currentSession) => {
+        const { data } = client.auth.onAuthStateChange((event, currentSession) => {
           console.log('🔄 Auth state changed:', { event, user: currentSession?.user?.email });
-          await loadUserRole(currentSession?.user?.id);
           if (mounted) {
             setSession(currentSession);
             setUser(currentSession?.user ?? null);
+            setRoleResolved(!currentSession?.user?.id);
+            if (!currentSession?.user?.id) {
+              setRole(null);
+            }
             setLoading(false);
           }
+
+          setTimeout(() => {
+            if (mounted) {
+              void loadUserRole(currentSession?.user?.id);
+            }
+          }, 0);
         });
         subscription = data.subscription;
         console.log('✅ Auth state listener registered');
@@ -262,12 +282,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await client.auth.signOut();
     clearAuthPreference();
     setRole(null);
+    setRoleResolved(true);
     navigate('/login');
   };
 
   // Protect Dashboard Routes
   useEffect(() => {
-    if (loading) return;
+    if (loading || !roleResolved) return;
 
     const protectedRoutes = ['/dashboard', '/shop', '/order', '/requests', '/service-request', '/dealer/products', '/admin/dashboard'];
     const isProtectedRoute = protectedRoutes.some(route => location.pathname.startsWith(route));
@@ -284,12 +305,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (location.pathname.startsWith('/dealer') && session && !['admin', 'installer', 'retailer'].includes(role || '')) {
       navigate('/dashboard');
     }
-  }, [session, role, loading, location.pathname, navigate]);
+  }, [session, role, loading, roleResolved, location.pathname, navigate]);
 
   const value = {
     isAuthenticated: !!session,
     isAdmin: role === 'admin',
     isDealer: role === 'installer' || role === 'retailer',
+    loading,
+    roleResolved,
     role,
     user,
     session,
