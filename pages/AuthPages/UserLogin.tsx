@@ -391,30 +391,6 @@ const UserLogin: React.FC = () => {
               </div>
             </div>
 
-            {/* Social Login (Google) - Placeholder for now, or use Supabase OAuth */}
-            <div className="mb-8">
-              <button
-                onClick={() => {
-                  persistAuthPreference(authMode === 'signin' ? rememberMe : false);
-                  getSupabase().auth.signInWithOAuth({ provider: 'google' });
-                }}
-                className="flex w-full items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
-                type="button"
-              >
-                <img alt="Google logo" className="size-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCANakqiGFM3lZTXJn_yhOLhAK7Ge3nzgSGv20vcWDeMFlt6AL4Qdfyv3Kd4_5cWLknMrwGjsxpoLduxMs3M79YA_PaLxV_51ODcLqyNJN45LWPh6YvP10lPVZ7MYEcA0ZzBNN9LuIs6sfFJ5581_3Mh-dRCOWCJRmsYQMIzqC44U84f9ab6cvigkW38JkNLRMYKu6ET8HLTibnXzEHQC4vuu_-ex2Ggf_LUQ7NMiS2VGWlj-DPoNP1-zLpT6uoxRHNQ6c6A32gN5g" />
-                <span className="text-sm font-bold">Continue with Google</span>
-              </button>
-            </div>
-
-            <div className="relative mb-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-white/10"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background-light dark:bg-background-dark px-3 text-gray-500">Or continue with email</span>
-              </div>
-            </div>
-
             <form className="space-y-5" onSubmit={authMode === 'signin' ? handleLoginSubmit : handleAuth}>
               {authMode === 'signin' ? (
                 // --- LOGIN FORM ---
