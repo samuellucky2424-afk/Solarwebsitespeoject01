@@ -8,6 +8,11 @@ interface VerificationRequest {
     id: string;
     user_id: string;
     role_requested: 'installer' | 'retailer';
+    applicant_full_name?: string | null;
+    applicant_email?: string | null;
+    applicant_phone?: string | null;
+    applicant_address?: string | null;
+    applicant_metadata?: Record<string, any> | null;
     business_name: string;
     business_address: string;
     cac_document_url: string;
@@ -292,6 +297,13 @@ const DealerVerificationManagement: React.FC = () => {
                     <div className="p-8 text-center text-gray-500 bg-white dark:bg-white/5 rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c]">No verification requests found.</div>
                 ) : filteredRequests.map(request => {
                     const profile: VerificationProfile = profilesById[request.user_id] || { id: request.user_id };
+                    const submittedDetails = {
+                        ...(request.applicant_metadata || {}),
+                        full_name: request.applicant_full_name || request.applicant_metadata?.full_name,
+                        email: request.applicant_email || request.applicant_metadata?.email,
+                        phone: request.applicant_phone || request.applicant_metadata?.phone,
+                        address: request.applicant_address || request.applicant_metadata?.address,
+                    };
                     const solarDetails = profile.metadata?.solar_details;
                     const solarSummary = solarDetails
                         ? [
@@ -342,10 +354,10 @@ const DealerVerificationManagement: React.FC = () => {
                             <section className="mt-5 rounded-lg border border-[#dbe8df] bg-white p-4 dark:border-white/10 dark:bg-black/10">
                                 <h4 className="text-sm font-black text-forest dark:text-white">Applicant Identity And Business Details</h4>
                                 <dl className="mt-4 grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-                                    <DetailItem label="Full Name" value={profile.full_name || profile.metadata?.full_name} />
-                                    <DetailItem label="Email Address" value={profile.email || profile.metadata?.email} />
-                                    <DetailItem label="Phone Number" value={profile.phone || profile.metadata?.phone} />
-                                    <DetailItem label="Full Address" value={profile.address || profile.metadata?.address} wide />
+                                    <DetailItem label="Full Name" value={submittedDetails.full_name || profile.full_name || profile.metadata?.full_name} />
+                                    <DetailItem label="Email Address" value={submittedDetails.email || profile.email || profile.metadata?.email} />
+                                    <DetailItem label="Phone Number" value={submittedDetails.phone || profile.phone || profile.metadata?.phone} />
+                                    <DetailItem label="Full Address" value={submittedDetails.address || profile.address || profile.metadata?.address} wide />
                                     <DetailItem label="Business Name" value={request.business_name} />
                                     <DetailItem label="Business Address" value={request.business_address} wide />
                                     <DetailItem label="Requested Role" value={request.role_requested} />
@@ -361,7 +373,7 @@ const DealerVerificationManagement: React.FC = () => {
                                 </dl>
                             </section>
 
-                            <MetadataDetails metadata={profile.metadata} />
+                            <MetadataDetails metadata={{ ...(profile.metadata || {}), ...(request.applicant_metadata || {}) }} />
 
                             <div className="mt-4 grid gap-3">
                                 <textarea

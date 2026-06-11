@@ -152,7 +152,15 @@ serve(async (req: Request) => {
       return jsonResponse({ error: "Could not verify the newly created account." }, 403);
     }
 
-    const metadata = parseMetadata(formData.get("metadata"), roleRequested);
+    const metadata = {
+      ...parseMetadata(formData.get("metadata"), roleRequested),
+      full_name: fullName,
+      email,
+      phone,
+      address,
+      business_name: businessName,
+      business_address: businessAddress,
+    };
 
     const profilePayload = {
       full_name: fullName,
@@ -218,6 +226,11 @@ serve(async (req: Request) => {
       .insert({
         user_id: userId,
         role_requested: roleRequested,
+        applicant_full_name: fullName,
+        applicant_email: email,
+        applicant_phone: phone,
+        applicant_address: address,
+        applicant_metadata: metadata,
         business_name: businessName,
         business_address: businessAddress,
         cac_document_url: cacDocumentUrl,
