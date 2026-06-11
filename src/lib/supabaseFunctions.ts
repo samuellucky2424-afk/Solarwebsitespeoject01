@@ -115,6 +115,25 @@ export async function adminListDealerVerifications() {
   return (data as any)?.requests || [];
 }
 
+export async function adminReviewDealerVerification(
+  requestId: string,
+  status: 'approved' | 'rejected',
+  adminNote?: string | null
+) {
+  const { supabase, accessToken } = await getAdminClientAndToken();
+  const { data, error } = await supabase.functions.invoke('admin-review-dealer-verification', {
+    method: 'POST',
+    body: {
+      request_id: requestId,
+      status,
+      admin_note: adminNote || null,
+    },
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (error) await throwFunctionError('admin-review-dealer-verification', error);
+  return data as any;
+}
+
 export async function adminListOrders(): Promise<AdminOrderRecord[]> {
   const { supabase, accessToken } = await getAdminClientAndToken();
   const { data, error } = await supabase.functions.invoke('admin-list-orders', {

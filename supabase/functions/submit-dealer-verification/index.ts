@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendDealerVerificationEmail } from "../_shared/dealer-verification-email.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")?.trim() || "";
 const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.trim() || "";
@@ -249,9 +250,18 @@ serve(async (req: Request) => {
       return jsonResponse({ error: "Could not save dealer verification request." }, 500);
     }
 
+    const emailResult = await sendDealerVerificationEmail({
+      to: email,
+      applicantName: fullName,
+      roleRequested,
+      businessName,
+      status: "received",
+    });
+
     return jsonResponse({
       ok: true,
       request_id: request?.id,
+      email: emailResult,
     });
   } catch (err) {
     const message = String((err as any)?.message || err || "Unexpected verification error");

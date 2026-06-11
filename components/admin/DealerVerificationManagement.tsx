@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '../../config/supabaseClient';
-import { adminListDealerVerifications } from '../../src/lib/supabaseFunctions';
+import { adminListDealerVerifications, adminReviewDealerVerification } from '../../src/lib/supabaseFunctions';
 import { Toast } from '../SharedComponents';
 
 type VerificationStatus = 'pending' | 'approved' | 'rejected';
@@ -169,41 +169,13 @@ const DealerVerificationManagement: React.FC = () => {
         setBusyId(request.id);
         try {
             const note = notes[request.id]?.trim() || null;
-            const supabase = getSupabase();
-            const { data: sessionData } = await supabase.auth.getSession();
-            const reviewerId = sessionData.session?.user.id || null;
+            const result = await adminReviewDealerVerification(request.id, nextStatus, note);
+            const emailSent = result?.email?.sent;
 
-            const { error: requestError } = await supabase
-                .from('role_verification_requests')
-                .update({
-                    status: nextStatus,
-                    admin_note: note,
-                    reviewed_at: new Date().toISOString(),
-                    reviewed_by: reviewerId,
-                })
-                .eq('id', request.id);
-
-            if (requestError) throw requestError;
-
-            const profile = profilesById[request.user_id] || {};
-            const nextMetadata = {
-                ...(profile.metadata || {}),
-                role_requested: request.role_requested,
-                verification_status: nextStatus,
-                dealer_verification_request_id: request.id,
-            };
-
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .update({
-                    role: nextStatus === 'approved' ? request.role_requested : (profile.role || 'user'),
-                    metadata: nextMetadata,
-                })
-                .eq('id', request.user_id);
-
-            if (profileError) throw profileError;
-
-            setToast(nextStatus === 'approved' ? 'Dealer role approved.' : 'Verification rejected.');
+            setToast(nextStatus === 'approved'
+                ? `Dealer role approved.${emailSent ? ' Email sent.' : ''}`
+                : `Verification rejected.${emailSent ? ' Email sent.' : ''}`
+            );
             await loadRequests();
         } catch (err: any) {
             console.error('Verification review failed:', err);
