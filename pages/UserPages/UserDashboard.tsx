@@ -9,6 +9,7 @@ import OrderHistory from '../../components/dashboard/OrderHistory';
 import RequestsList from '../../components/dashboard/RequestsList';
 import DashboardShop from '../../components/dashboard/DashboardShop';
 import DashboardProductDetail from '../../components/dashboard/DashboardProductDetail';
+import DealerWorkspace from '../../components/dashboard/DealerWorkspace';
 import UpgradeRequest from '../../components/dashboard/UpgradeRequest';
 import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
@@ -40,7 +41,7 @@ const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { productId } = useParams<{ productId: string }>();
-  const { signOut, user: authUser } = useAuth();
+  const { signOut, user: authUser, role } = useAuth();
   const { activeUser, notifications, markNotificationRead } = useAdmin();
 
   // Redirect if not logged in or profile not loaded
@@ -124,6 +125,10 @@ const UserDashboard: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  if (role === 'installer' || role === 'retailer') {
+    return <DealerWorkspace activeUser={activeUser} />;
   }
 
   // Update URL when view changes
