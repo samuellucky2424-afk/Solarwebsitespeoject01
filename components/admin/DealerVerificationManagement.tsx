@@ -22,6 +22,21 @@ interface VerificationRequest {
     created_at: string;
 }
 
+interface VerificationProfile {
+    id: string;
+    full_name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    role?: string | null;
+    created_at?: string | null;
+    metadata?: Record<string, any> | null;
+    suspended?: boolean | null;
+    failed_login_attempts?: number | null;
+    suspended_at?: string | null;
+    suspension_reason?: string | null;
+}
+
 const fileLabels: Array<[keyof VerificationRequest, string]> = [
     ['cac_document_url', 'CAC'],
     ['id_document_url', 'ID'],
@@ -31,11 +46,25 @@ const fileLabels: Array<[keyof VerificationRequest, string]> = [
     ['work_video_url', 'Work Video'],
 ];
 
+const displayValue = (value?: string | null) => value?.trim() || 'Not provided';
+
+const formatDateTime = (value?: string | null) => {
+    if (!value) return 'Not provided';
+    return new Date(value).toLocaleString();
+};
+
+const DetailItem: React.FC<{ label: string; value?: string | null; wide?: boolean }> = ({ label, value, wide }) => (
+    <div className={`min-w-0 border-l-2 border-primary/40 pl-3 ${wide ? 'md:col-span-2' : ''}`}>
+        <dt className="text-[10px] font-black uppercase tracking-wider text-gray-400">{label}</dt>
+        <dd className="mt-1 break-words text-sm font-semibold text-forest dark:text-white">{displayValue(value)}</dd>
+    </div>
+);
+
 const DealerVerificationManagement: React.FC = () => {
     const [requests, setRequests] = useState<VerificationRequest[]>([]);
-    const [profilesById, setProfilesById] = useState<Record<string, any>>({});
+    const [profilesById, setProfilesById] = useState<Record<string, VerificationProfile>>({});
     const [loading, setLoading] = useState(true);
-    const [statusFilter, setStatusFilter] = useState<'all' | VerificationStatus>('pending');
+    const [statusFilter, setStatusFilter] = useState<'all' | VerificationStatus>('all');
     const [notes, setNotes] = useState<Record<string, string>>({});
     const [toast, setToast] = useState<string | null>(null);
     const [busyId, setBusyId] = useState<string | null>(null);
@@ -58,11 +87,11 @@ const DealerVerificationManagement: React.FC = () => {
             if (userIds.length > 0) {
                 const { data: profiles, error: profilesError } = await getSupabase()
                     .from('profiles')
-                    .select('id, full_name, email, phone, role, metadata')
+                    .select('id, full_name, email, phone, address, role, created_at, metadata, suspended, failed_login_attempts, suspended_at, suspension_reason')
                     .in('id', userIds);
 
                 if (profilesError) throw profilesError;
-                setProfilesById(Object.fromEntries((profiles || []).map((profile: any) => [profile.id, profile])));
+                setProfilesById(Object.fromEntries((profiles || []).map((profile: VerificationProfile) => [profile.id, profile])));
             } else {
                 setProfilesById({});
             }
@@ -155,6 +184,49 @@ const DealerVerificationManagement: React.FC = () => {
         }
     };
 
+    const updateDealerSuspension = async (request: VerificationRequest, suspend: boolean) => {
+        const profile = profilesById[request.user_id];
+        if (!profile) {
+            setToast('Could not find this dealer profile.');
+            return;
+        }
+
+        const actionLabel = suspend ? 'suspend' : 'unsuspend';
+        if (!window.confirm(`${suspend ? 'Suspend' : 'Unsuspend'} ${profile.full_name || request.business_name}?`)) return;
+
+        setBusyId(request.id);
+        try {
+            const { error } = await getSupabase()
+                .from('profiles')
+                .update({
+                    suspended: suspend,
+                    suspended_at: suspend ? new Date().toISOString() : null,
+                    suspension_reason: suspend ? 'Suspended by admin from dealer verification dashboard' : null,
+                    failed_login_attempts: suspend ? profile.failed_login_attempts || 0 : 0,
+                })
+                .eq('id', request.user_id);
+
+            if (error) throw error;
+
+            setProfilesById(prev => ({
+                ...prev,
+                [request.user_id]: {
+                    ...profile,
+                    suspended: suspend,
+                    suspended_at: suspend ? new Date().toISOString() : null,
+                    suspension_reason: suspend ? 'Suspended by admin from dealer verification dashboard' : null,
+                    failed_login_attempts: suspend ? profile.failed_login_attempts || 0 : 0,
+                },
+            }));
+            setToast(`Dealer ${actionLabel}ed successfully.`);
+        } catch (err: any) {
+            console.error('Dealer suspension update failed:', err);
+            setToast(err?.message || `Could not ${actionLabel} dealer.`);
+        } finally {
+            setBusyId(null);
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in">
             {toast && <Toast message={toast} onClose={() => setToast(null)} />}
@@ -182,7 +254,17 @@ const DealerVerificationManagement: React.FC = () => {
                 ) : filteredRequests.length === 0 ? (
                     <div className="p-8 text-center text-gray-500 bg-white dark:bg-white/5 rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c]">No verification requests found.</div>
                 ) : filteredRequests.map(request => {
-                    const profile = profilesById[request.user_id] || {};
+                    const profile: VerificationProfile = profilesById[request.user_id] || { id: request.user_id };
+                    const solarDetails = profile.metadata?.solar_details;
+                    const solarSummary = solarDetails
+                        ? [
+                            profile.metadata?.systemName,
+                            solarDetails.size,
+                            solarDetails.inverter,
+                            solarDetails.battery,
+                        ].filter(Boolean).join(' | ')
+                        : profile.metadata?.systemName;
+
                     return (
                         <div key={request.id} className="bg-white dark:bg-[#152a17] rounded-xl border border-[#cfe7d1] dark:border-[#2a3d2c] p-5 shadow-sm">
                             <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
@@ -193,6 +275,9 @@ const DealerVerificationManagement: React.FC = () => {
                                         <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${request.status === 'pending' ? 'bg-amber-100 text-amber-700' : request.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                             {request.status}
                                         </span>
+                                        {profile.suspended && (
+                                            <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-red-100 text-red-700">Suspended</span>
+                                        )}
                                     </div>
                                     <p className="text-sm text-gray-500">{request.business_address}</p>
                                     <div className="text-xs text-gray-500">
@@ -216,6 +301,25 @@ const DealerVerificationManagement: React.FC = () => {
                                     })}
                                 </div>
                             </div>
+
+                            <dl className="mt-5 grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+                                <DetailItem label="Applicant Name" value={profile.full_name} />
+                                <DetailItem label="Email" value={profile.email} />
+                                <DetailItem label="Phone" value={profile.phone} />
+                                <DetailItem label="Contact Address" value={profile.address} wide />
+                                <DetailItem label="Business Name" value={request.business_name} />
+                                <DetailItem label="Business Address" value={request.business_address} wide />
+                                <DetailItem label="Requested Role" value={request.role_requested} />
+                                <DetailItem label="Current Account Role" value={profile.role || 'user'} />
+                                <DetailItem label="Verification Status" value={request.status} />
+                                <DetailItem label="Account Status" value={profile.suspended ? 'Suspended' : 'Active'} />
+                                {profile.suspended && <DetailItem label="Suspension Reason" value={profile.suspension_reason} wide />}
+                                {profile.suspended_at && <DetailItem label="Suspended At" value={formatDateTime(profile.suspended_at)} />}
+                                <DetailItem label="User ID" value={request.user_id} wide />
+                                <DetailItem label="Account Created" value={formatDateTime(profile.created_at)} />
+                                <DetailItem label="Submitted" value={formatDateTime(request.created_at)} />
+                                {solarSummary && <DetailItem label="Solar Details" value={solarSummary} wide />}
+                            </dl>
 
                             <div className="mt-4 grid gap-3">
                                 <textarea
@@ -243,6 +347,29 @@ const DealerVerificationManagement: React.FC = () => {
                                         >
                                             Approve
                                         </button>
+                                    </div>
+                                )}
+                                {request.status === 'approved' && (
+                                    <div className="flex flex-wrap justify-end gap-3">
+                                        {profile.suspended ? (
+                                            <button
+                                                type="button"
+                                                disabled={busyId === request.id}
+                                                onClick={() => updateDealerSuspension(request, false)}
+                                                className="px-4 py-2 rounded-lg bg-green-50 text-green-700 font-bold text-sm hover:bg-green-100 disabled:opacity-60"
+                                            >
+                                                Unsuspend Dealer
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                disabled={busyId === request.id}
+                                                onClick={() => updateDealerSuspension(request, true)}
+                                                className="px-4 py-2 rounded-lg bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 disabled:opacity-60"
+                                            >
+                                                Suspend Dealer
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>

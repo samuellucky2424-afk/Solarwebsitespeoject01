@@ -262,6 +262,17 @@ const UserLogin: React.FC = () => {
         return;
       }
 
+      if (loginError.details?.dealer_verification_status === 'pending') {
+        alert(loginError.message || "Your dealer account is under pending review. Please wait for admin approval before signing in.");
+        return;
+      }
+
+      if (loginError.details?.dealer_verification_status === 'rejected') {
+        const adminNote = loginError.details.admin_note ? `\n\nAdmin note: ${loginError.details.admin_note}` : '';
+        alert(`${loginError.message || "Your dealer application was rejected. Please contact the admin for support."}${adminNote}`);
+        return;
+      }
+
       if (loginError.details?.failed_login_attempts) {
         alert(`Invalid credentials. Failed attempt ${loginError.details.failed_login_attempts} of 5. ${loginError.details.attempts_remaining || 0} attempt(s) remaining.`);
         return;

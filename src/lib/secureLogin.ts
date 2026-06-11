@@ -16,6 +16,9 @@ export type SecureLoginError = Error & {
     failed_login_attempts?: number;
     attempts_remaining?: number;
     suspended?: boolean;
+    dealer_verification_status?: 'pending' | 'rejected';
+    role_requested?: 'installer' | 'retailer';
+    admin_note?: string | null;
     error?: string;
   };
 };
