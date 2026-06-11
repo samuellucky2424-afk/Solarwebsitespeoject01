@@ -3,8 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { getSupabase, uploadPrivateFile } from '../../config/supabaseClient';
+import { getSupabase } from '../../config/supabaseClient';
 import { clearAuthPreference, persistAuthPreference, useAuth } from '../../context/AuthContext';
+import { submitDealerVerificationSignup } from '../../src/lib/dealerVerificationSignup';
 import { applySecureLoginSession, securePasswordLogin, type SecureLoginError } from '../../src/lib/secureLogin';
 import TurnstileWidget from '../../src/lib/TurnstileWidget';
 
@@ -154,86 +155,51 @@ const UserLogin: React.FC = () => {
         }
 
         if (authData.user) {
-          // The trigger auto-creates a minimal row in 'profiles' (id, email, role, created_at).
-          // Now update that row with additional signup details using snake_case column names.
-          const { error: profileError } = await getSupabase().from('profiles').upsert({
-            id: authData.user.id,
-            full_name: signUpData.fullName,
-            email: signUpData.email,
-            phone: signUpData.phone,
-            address: signUpData.address,
-            metadata: {
-              plan: 'Standard Plan',
-              role_requested: signUpData.roleRequested,
-              verification_status: isDealerRequest ? 'pending' : null,
-              systemName: signUpData.hasSolar ? `${signUpData.systemSize} System` : 'No System',
-              solar_details: signUpData.hasSolar ? {
-                inverter: signUpData.inverterType,
-                battery: signUpData.batteryType,
-                size: signUpData.systemSize,
-                installDate: signUpData.installDate,
-                installTime: signUpData.installTime
-              } : null
-            }
-          });
-
-          if (profileError) {
-            console.error("Profile upsert error:", profileError);
-          }
+          const profileMetadata = {
+            plan: 'Standard Plan',
+            role_requested: signUpData.roleRequested,
+            verification_status: isDealerRequest ? 'pending' : null,
+            systemName: signUpData.hasSolar ? `${signUpData.systemSize} System` : 'No System',
+            solar_details: signUpData.hasSolar ? {
+              inverter: signUpData.inverterType,
+              battery: signUpData.batteryType,
+              size: signUpData.systemSize,
+              installDate: signUpData.installDate,
+              installTime: signUpData.installTime
+            } : null
+          };
 
           if (isDealerRequest) {
-            if (!authData.session) {
-              alert("Account created. Please verify your email, then sign in to submit your dealer verification documents.");
-              return;
+            await submitDealerVerificationSignup({
+              userId: authData.user.id,
+              roleRequested: signUpData.roleRequested as 'installer' | 'retailer',
+              fullName: signUpData.fullName,
+              email: signUpData.email,
+              phone: signUpData.phone,
+              address: signUpData.address,
+              businessName: signUpData.businessName.trim(),
+              businessAddress: signUpData.businessAddress.trim(),
+              metadata: profileMetadata,
+              files: verificationFiles,
+            });
+          } else if (authData.session) {
+            // When email confirmation is off, we have a session and can update the profile directly.
+            const { error: profileError } = await getSupabase().from('profiles').upsert({
+              id: authData.user.id,
+              full_name: signUpData.fullName,
+              email: signUpData.email,
+              phone: signUpData.phone,
+              address: signUpData.address,
+              metadata: profileMetadata
+            });
+
+            if (profileError) {
+              console.error("Profile upsert error:", profileError);
             }
-
-            const folder = `${authData.user.id}/dealer-verifications`;
-            const uploadRequiredFile = async (file: File | null, label: string) => {
-              if (!file) return null;
-              const result = await uploadPrivateFile(file, 'greenlife-verifications', folder);
-              if (!result.path) {
-                throw new Error(result.error || `Could not upload ${label}.`);
-              }
-              return result.path;
-            };
-
-            const [
-              cacDocumentUrl,
-              idDocumentUrl,
-              storePhotoUrl,
-              storeVideoUrl,
-              workPhotoUrl,
-              workVideoUrl,
-            ] = await Promise.all([
-              uploadRequiredFile(isInstallerRequest ? verificationFiles.cacDocument : null, 'CAC document'),
-              uploadRequiredFile(isRetailerRequest ? verificationFiles.idDocument : null, 'ID document'),
-              uploadRequiredFile(isRetailerRequest ? verificationFiles.storePhoto : null, 'store photo'),
-              uploadRequiredFile(isRetailerRequest ? verificationFiles.storeVideo : null, 'store video'),
-              uploadRequiredFile(isInstallerRequest ? verificationFiles.workPhoto : null, 'working photo'),
-              uploadRequiredFile(isInstallerRequest ? verificationFiles.workVideo : null, 'working video'),
-            ]);
-
-            const { error: verificationError } = await getSupabase()
-              .from('role_verification_requests')
-              .insert({
-                user_id: authData.user.id,
-                role_requested: signUpData.roleRequested,
-                business_name: signUpData.businessName.trim(),
-                business_address: signUpData.businessAddress.trim(),
-                cac_document_url: cacDocumentUrl,
-                id_document_url: idDocumentUrl,
-                store_photo_url: storePhotoUrl,
-                store_video_url: storeVideoUrl,
-                work_photo_url: workPhotoUrl,
-                work_video_url: workVideoUrl,
-                status: 'pending',
-              });
-
-            if (verificationError) throw verificationError;
           }
 
           alert(isDealerRequest
-            ? "Account created and verification submitted for admin review."
+            ? "Account created and verification submitted for admin review. Please verify your email before signing in."
             : "Account created! Please check your email for verification.");
         }
 
