@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getSupabase } from '../../config/supabaseClient';
+import { adminListDealerVerifications } from '../../src/lib/supabaseFunctions';
 import { Toast } from '../SharedComponents';
 
 type VerificationStatus = 'pending' | 'approved' | 'rejected';
@@ -25,6 +26,7 @@ interface VerificationRequest {
     admin_note?: string | null;
     reviewed_at?: string | null;
     created_at: string;
+    profile?: VerificationProfile | null;
 }
 
 interface VerificationProfile {
@@ -114,29 +116,14 @@ const DealerVerificationManagement: React.FC = () => {
     const loadRequests = async () => {
         setLoading(true);
         try {
-            const { data, error } = await getSupabase()
-                .from('role_verification_requests')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            const rows = (data || []) as VerificationRequest[];
+            const rows = (await adminListDealerVerifications()) as VerificationRequest[];
             setRequests(rows);
             setNotes(Object.fromEntries(rows.map(row => [row.id, row.admin_note || ''])));
 
-            const userIds = Array.from(new Set(rows.map(row => row.user_id)));
-            if (userIds.length > 0) {
-                const { data: profiles, error: profilesError } = await getSupabase()
-                    .from('profiles')
-                    .select('id, full_name, email, phone, address, role, created_at, metadata, suspended, failed_login_attempts, suspended_at, suspension_reason')
-                    .in('id', userIds);
-
-                if (profilesError) throw profilesError;
-                setProfilesById(Object.fromEntries((profiles || []).map((profile: VerificationProfile) => [profile.id, profile])));
-            } else {
-                setProfilesById({});
-            }
+            setProfilesById(Object.fromEntries(rows
+                .filter(row => row.profile?.id)
+                .map(row => [row.profile!.id, row.profile as VerificationProfile])
+            ));
         } catch (err: any) {
             console.error('Failed to load verification requests:', err);
             setToast(err?.message || 'Failed to load verification requests.');

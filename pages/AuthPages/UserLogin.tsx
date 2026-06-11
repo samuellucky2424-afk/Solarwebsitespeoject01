@@ -22,6 +22,12 @@ const UserLogin: React.FC = () => {
   const [captchaToken, setCaptchaToken] = useState('');
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const [signupNotice, setSignupNotice] = useState<{
+    title: string;
+    message: string;
+    roleLabel: string;
+    dealer: boolean;
+  } | null>(null);
 
   const resetCaptchaChallenge = () => {
     setCaptchaToken('');
@@ -198,9 +204,23 @@ const UserLogin: React.FC = () => {
             }
           }
 
-          alert(isDealerRequest
-            ? "Account created and verification submitted for admin review. Please verify your email before signing in."
-            : "Account created! Please check your email for verification.");
+          const roleLabel = signUpData.roleRequested === 'installer'
+            ? 'installer'
+            : signUpData.roleRequested === 'retailer'
+              ? 'retailer'
+              : 'consumer';
+
+          setSignupNotice(isDealerRequest ? {
+            title: 'Thank you for registering with Greenlife Solar Solution',
+            message: `Thank you for registering with Greenlife Solar Solution as a ${roleLabel}. Your application is under review. Please confirm your email and wait for your application to be reviewed. You will be notified immediately once a decision has been made.`,
+            roleLabel,
+            dealer: true,
+          } : {
+            title: 'Thank you for registering with Greenlife Solar Solution',
+            message: 'Your consumer account has been created. Please confirm your email, then sign in to access your dashboard.',
+            roleLabel,
+            dealer: false,
+          });
         }
 
       } else {
@@ -306,6 +326,61 @@ const UserLogin: React.FC = () => {
 
   return (
     <div ref={containerRef} className="flex min-h-screen bg-background-light dark:bg-background-dark text-forest dark:text-white overflow-x-hidden">
+      {signupNotice && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-[520px] overflow-hidden rounded-xl border border-[#cfe7d1] bg-white shadow-2xl dark:border-white/10 dark:bg-[#142719]">
+            <div className="bg-[#0f2417] px-6 py-5 text-white">
+              <div className="flex items-center gap-3">
+                <div className="flex size-12 items-center justify-center rounded-full bg-primary text-forest">
+                  <span className="material-symbols-outlined text-3xl">check</span>
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">
+                    Registration submitted
+                  </p>
+                  <h3 className="mt-1 text-xl font-black leading-tight">{signupNotice.title}</h3>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5 px-6 py-6">
+              <div className="rounded-lg border border-[#dbe8df] bg-[#f7fbf8] p-4 dark:border-white/10 dark:bg-black/15">
+                <p className="text-sm leading-6 text-[#203628] dark:text-white/82">{signupNotice.message}</p>
+              </div>
+
+              {signupNotice.dealer && (
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg bg-[#edf7f0] p-3 text-center dark:bg-white/5">
+                    <span className="material-symbols-outlined text-primary">mark_email_read</span>
+                    <p className="mt-1 text-[11px] font-black uppercase text-[#315c3b] dark:text-white/70">Confirm Email</p>
+                  </div>
+                  <div className="rounded-lg bg-[#edf7f0] p-3 text-center dark:bg-white/5">
+                    <span className="material-symbols-outlined text-primary">manage_search</span>
+                    <p className="mt-1 text-[11px] font-black uppercase text-[#315c3b] dark:text-white/70">Admin Review</p>
+                  </div>
+                  <div className="rounded-lg bg-[#edf7f0] p-3 text-center dark:bg-white/5">
+                    <span className="material-symbols-outlined text-primary">verified_user</span>
+                    <p className="mt-1 text-[11px] font-black uppercase text-[#315c3b] dark:text-white/70">Approval Access</p>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSignupNotice(null);
+                  handleAuthModeChange('signin');
+                }}
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-black text-forest shadow-lg shadow-primary/20 transition-transform active:scale-95"
+              >
+                Continue to Sign In
+                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Visual Panel (Left) */}
       <div className="visual-panel hidden lg:flex lg:w-1/2 relative overflow-hidden bg-background-dark fixed inset-y-0 left-0">
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-background-dark/80 via-background-dark/20 to-transparent"></div>

@@ -105,6 +105,16 @@ export async function adminUserDetails(userId: string) {
   return data as any;
 }
 
+export async function adminListDealerVerifications() {
+  const { supabase, accessToken } = await getAdminClientAndToken();
+  const { data, error } = await supabase.functions.invoke('admin-list-dealer-verifications', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (error) await throwFunctionError('admin-list-dealer-verifications', error);
+  return (data as any)?.requests || [];
+}
+
 export async function adminListOrders(): Promise<AdminOrderRecord[]> {
   const { supabase, accessToken } = await getAdminClientAndToken();
   const { data, error } = await supabase.functions.invoke('admin-list-orders', {

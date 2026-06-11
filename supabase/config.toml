@@ -21,6 +21,9 @@ verify_jwt = true
 [functions.admin-user-details]
 verify_jwt = true
 
+[functions.admin-list-dealer-verifications]
+verify_jwt = true
+
 [functions.admin-list-orders]
 verify_jwt = true
 
