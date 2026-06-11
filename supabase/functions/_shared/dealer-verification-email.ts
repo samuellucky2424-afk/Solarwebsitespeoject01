@@ -23,6 +23,18 @@ function normalizeEmail(value: unknown) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : "";
 }
 
+function isValidSender(value: string) {
+  const sender = value.trim();
+  if (!sender) return false;
+
+  const mailboxMatch = sender.match(/<([^<>]+)>$/);
+  if (sender.includes("<") || sender.includes(">")) {
+    return Boolean(mailboxMatch && normalizeEmail(mailboxMatch[1]));
+  }
+
+  return Boolean(normalizeEmail(sender));
+}
+
 function roleLabel(roleRequested: string) {
   return roleRequested === "installer" ? "installer" : "retailer";
 }
@@ -181,6 +193,11 @@ export async function sendDealerVerificationEmail(input: DealerVerificationEmail
   if (!resendApiKey || !from) {
     console.warn("Dealer verification email skipped: RESEND_API_KEY or RESEND_FROM_EMAIL is not configured.");
     return { sent: false, skipped: true, reason: "email_not_configured" };
+  }
+
+  if (!isValidSender(from)) {
+    console.warn("Dealer verification email skipped: RESEND_FROM_EMAIL is invalid.");
+    return { sent: false, skipped: true, reason: "invalid_from_email" };
   }
 
   const { subject, html } = buildDealerVerificationEmail(input);

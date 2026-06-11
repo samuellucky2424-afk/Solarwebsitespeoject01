@@ -113,6 +113,14 @@ const DealerVerificationManagement: React.FC = () => {
     const [toast, setToast] = useState<string | null>(null);
     const [busyId, setBusyId] = useState<string | null>(null);
 
+    const describeEmailResult = (email: any) => {
+        if (email?.sent) return ' Email sent.';
+        if (email?.reason === 'email_not_configured') return ' Email not sent: Resend secrets are not configured.';
+        if (email?.reason === 'missing_recipient') return ' Email not sent: applicant email is missing.';
+        if (email?.reason) return ` Email not sent: ${email.reason}.`;
+        return ' Email not sent. Check Resend sender/domain settings.';
+    };
+
     const loadRequests = async () => {
         setLoading(true);
         try {
@@ -170,16 +178,32 @@ const DealerVerificationManagement: React.FC = () => {
         try {
             const note = notes[request.id]?.trim() || null;
             const result = await adminReviewDealerVerification(request.id, nextStatus, note);
-            const emailSent = result?.email?.sent;
 
             setToast(nextStatus === 'approved'
-                ? `Dealer role approved.${emailSent ? ' Email sent.' : ''}`
-                : `Verification rejected.${emailSent ? ' Email sent.' : ''}`
+                ? `Dealer role approved.${describeEmailResult(result?.email)}`
+                : `Verification rejected.${describeEmailResult(result?.email)}`
             );
             await loadRequests();
         } catch (err: any) {
             console.error('Verification review failed:', err);
             setToast(err?.message || 'Could not update verification request.');
+        } finally {
+            setBusyId(null);
+        }
+    };
+
+    const resendStatusEmail = async (request: VerificationRequest) => {
+        if (request.status !== 'approved' && request.status !== 'rejected') return;
+
+        setBusyId(request.id);
+        try {
+            const note = notes[request.id]?.trim() || request.admin_note || null;
+            const result = await adminReviewDealerVerification(request.id, request.status, note);
+            setToast(`Status email retry completed.${describeEmailResult(result?.email)}`);
+            await loadRequests();
+        } catch (err: any) {
+            console.error('Status email retry failed:', err);
+            setToast(err?.message || 'Could not resend status email.');
         } finally {
             setBusyId(null);
         }
@@ -364,6 +388,14 @@ const DealerVerificationManagement: React.FC = () => {
                                 )}
                                 {request.status === 'approved' && (
                                     <div className="flex flex-wrap justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            disabled={busyId === request.id}
+                                            onClick={() => resendStatusEmail(request)}
+                                            className="px-4 py-2 rounded-lg bg-slate-50 text-slate-700 font-bold text-sm hover:bg-slate-100 disabled:opacity-60"
+                                        >
+                                            Resend Status Email
+                                        </button>
                                         {profile.suspended ? (
                                             <button
                                                 type="button"
@@ -383,6 +415,18 @@ const DealerVerificationManagement: React.FC = () => {
                                                 Suspend Dealer
                                             </button>
                                         )}
+                                    </div>
+                                )}
+                                {request.status === 'rejected' && (
+                                    <div className="flex flex-wrap justify-end gap-3">
+                                        <button
+                                            type="button"
+                                            disabled={busyId === request.id}
+                                            onClick={() => resendStatusEmail(request)}
+                                            className="px-4 py-2 rounded-lg bg-slate-50 text-slate-700 font-bold text-sm hover:bg-slate-100 disabled:opacity-60"
+                                        >
+                                            Resend Status Email
+                                        </button>
                                     </div>
                                 )}
                             </div>
