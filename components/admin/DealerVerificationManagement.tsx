@@ -60,6 +60,43 @@ const DetailItem: React.FC<{ label: string; value?: string | null; wide?: boolea
     </div>
 );
 
+const isSensitiveMetadataKey = (key: string) => {
+    const normalized = key.toLowerCase();
+    return normalized.includes('password') ||
+        normalized.includes('token') ||
+        normalized.includes('secret') ||
+        normalized.includes('captcha');
+};
+
+const stringifyDetail = (value: unknown): string => {
+    if (value === null || value === undefined || value === '') return 'Not provided';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (Array.isArray(value)) return value.map(stringifyDetail).join(', ');
+    return JSON.stringify(value, null, 2);
+};
+
+const MetadataDetails: React.FC<{ metadata?: Record<string, any> | null }> = ({ metadata }) => {
+    const entries = Object.entries(metadata || {}).filter(([key]) => !isSensitiveMetadataKey(key));
+    if (entries.length === 0) return null;
+
+    return (
+        <section className="mt-4 rounded-lg border border-[#dbe8df] bg-[#f8faf7] p-4 dark:border-white/10 dark:bg-black/15">
+            <h4 className="text-sm font-black text-forest dark:text-white">Additional Submitted Details</h4>
+            <dl className="mt-3 grid gap-3 md:grid-cols-2">
+                {entries.map(([key, value]) => (
+                    <div key={key} className="min-w-0 rounded-lg bg-white p-3 dark:bg-white/5">
+                        <dt className="text-[10px] font-black uppercase tracking-wider text-gray-400">{key.replace(/_/g, ' ')}</dt>
+                        <dd className="mt-1 whitespace-pre-wrap break-words text-xs font-semibold text-forest dark:text-white">
+                            {stringifyDetail(value)}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    );
+};
+
 const DealerVerificationManagement: React.FC = () => {
     const [requests, setRequests] = useState<VerificationRequest[]>([]);
     const [profilesById, setProfilesById] = useState<Record<string, VerificationProfile>>({});
@@ -302,24 +339,29 @@ const DealerVerificationManagement: React.FC = () => {
                                 </div>
                             </div>
 
-                            <dl className="mt-5 grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
-                                <DetailItem label="Applicant Name" value={profile.full_name} />
-                                <DetailItem label="Email" value={profile.email} />
-                                <DetailItem label="Phone" value={profile.phone} />
-                                <DetailItem label="Contact Address" value={profile.address} wide />
-                                <DetailItem label="Business Name" value={request.business_name} />
-                                <DetailItem label="Business Address" value={request.business_address} wide />
-                                <DetailItem label="Requested Role" value={request.role_requested} />
-                                <DetailItem label="Current Account Role" value={profile.role || 'user'} />
-                                <DetailItem label="Verification Status" value={request.status} />
-                                <DetailItem label="Account Status" value={profile.suspended ? 'Suspended' : 'Active'} />
-                                {profile.suspended && <DetailItem label="Suspension Reason" value={profile.suspension_reason} wide />}
-                                {profile.suspended_at && <DetailItem label="Suspended At" value={formatDateTime(profile.suspended_at)} />}
-                                <DetailItem label="User ID" value={request.user_id} wide />
-                                <DetailItem label="Account Created" value={formatDateTime(profile.created_at)} />
-                                <DetailItem label="Submitted" value={formatDateTime(request.created_at)} />
-                                {solarSummary && <DetailItem label="Solar Details" value={solarSummary} wide />}
-                            </dl>
+                            <section className="mt-5 rounded-lg border border-[#dbe8df] bg-white p-4 dark:border-white/10 dark:bg-black/10">
+                                <h4 className="text-sm font-black text-forest dark:text-white">Applicant Identity And Business Details</h4>
+                                <dl className="mt-4 grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-3">
+                                    <DetailItem label="Full Name" value={profile.full_name || profile.metadata?.full_name} />
+                                    <DetailItem label="Email Address" value={profile.email || profile.metadata?.email} />
+                                    <DetailItem label="Phone Number" value={profile.phone || profile.metadata?.phone} />
+                                    <DetailItem label="Full Address" value={profile.address || profile.metadata?.address} wide />
+                                    <DetailItem label="Business Name" value={request.business_name} />
+                                    <DetailItem label="Business Address" value={request.business_address} wide />
+                                    <DetailItem label="Requested Role" value={request.role_requested} />
+                                    <DetailItem label="Current Account Role" value={profile.role || 'user'} />
+                                    <DetailItem label="Verification Status" value={request.status} />
+                                    <DetailItem label="Account Status" value={profile.suspended ? 'Suspended' : 'Active'} />
+                                    {profile.suspended && <DetailItem label="Suspension Reason" value={profile.suspension_reason} wide />}
+                                    {profile.suspended_at && <DetailItem label="Suspended At" value={formatDateTime(profile.suspended_at)} />}
+                                    <DetailItem label="User ID" value={request.user_id} wide />
+                                    <DetailItem label="Account Created" value={formatDateTime(profile.created_at)} />
+                                    <DetailItem label="Submitted" value={formatDateTime(request.created_at)} />
+                                    {solarSummary && <DetailItem label="Solar Details" value={solarSummary} wide />}
+                                </dl>
+                            </section>
+
+                            <MetadataDetails metadata={profile.metadata} />
 
                             <div className="mt-4 grid gap-3">
                                 <textarea

@@ -6,6 +6,7 @@ import { AdminProvider } from './context/AdminContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
 import LiveChatWidget from './components/LiveChatWidget';
+import UserDashboard from './pages/UserPages/UserDashboard';
 
 // Lazy load components
 const LandingPage = lazy(() => import('./pages/PublicPages/LandingPage'));
@@ -21,7 +22,6 @@ const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const ForgotPassword = lazy(() => import('./pages/AuthPages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/AuthPages/ResetPassword'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
-const UserDashboard = lazy(() => import('./pages/UserPages/UserDashboard'));
 const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestForm'));
 const OrderDetailPage = lazy(() => import('./pages/UserPages/OrderDetailPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));

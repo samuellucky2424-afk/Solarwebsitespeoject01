@@ -126,6 +126,35 @@ function shouldInvalidateRecoveredSession(session: Session) {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const dealerRoles = new Set(['installer', 'retailer']);
+const approvedRoles = new Set(['admin', 'installer', 'retailer']);
+
+function normalizeDealerRole(value: unknown) {
+  const role = String(value || '').toLowerCase();
+  return dealerRoles.has(role) ? role : null;
+}
+
+async function getApprovedVerificationRole(client: ReturnType<typeof getSupabase>, userId: string) {
+  const { data, error } = await client
+    .from('role_verification_requests')
+    .select('role_requested, status')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    const msg = String((error as any)?.message || '');
+    const code = String((error as any)?.code || '');
+    if (code !== 'PGRST205' && !msg.includes('Could not find the table')) {
+      console.warn('Approved dealer role lookup failed:', error);
+    }
+    return null;
+  }
+
+  return data?.status === 'approved' ? normalizeDealerRole(data.role_requested) : null;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -149,7 +178,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const client = getSupabase();
       let { data, error } = await client
         .from('profiles')
-        .select('role, suspended')
+        .select('role, suspended, metadata')
         .eq('id', userId)
         .maybeSingle();
 
@@ -184,7 +213,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      setRole(typeof data?.role === 'string' ? data.role : null);
+      let resolvedRole = typeof data?.role === 'string' ? data.role : null;
+
+      if (!approvedRoles.has(String(resolvedRole || '').toLowerCase())) {
+        const metadata = (data as any)?.metadata || {};
+        const metadataDealerRole = normalizeDealerRole(metadata.role_requested);
+        if (metadataDealerRole && metadata.verification_status === 'approved') {
+          resolvedRole = metadataDealerRole;
+        } else {
+          const approvedDealerRole = await getApprovedVerificationRole(client, userId);
+          if (approvedDealerRole) resolvedRole = approvedDealerRole;
+        }
+      }
+
+      setRole(resolvedRole);
       setRoleResolved(true);
     } catch (err) {
       console.warn('Role lookup exception:', err);

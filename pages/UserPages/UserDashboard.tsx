@@ -41,7 +41,7 @@ const UserDashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { productId } = useParams<{ productId: string }>();
-  const { signOut, user: authUser, role } = useAuth();
+  const { signOut, user: authUser, role, roleResolved } = useAuth();
   const { activeUser, notifications, markNotificationRead } = useAdmin();
 
   // Redirect if not logged in or profile not loaded
@@ -107,7 +107,7 @@ const UserDashboard: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   // Loading state — early return AFTER all hooks
-  if (!activeUser) {
+  if (!activeUser || !roleResolved) {
     return (
       <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-6 p-8 rounded-3xl bg-white dark:bg-white/5 shadow-xl animate-in fade-in zoom-in duration-300">

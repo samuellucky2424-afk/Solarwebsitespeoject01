@@ -159,6 +159,43 @@ async function getDealerLoginBlock(profile: LoginProfile) {
   return null;
 }
 
+async function syncApprovedDealerRole(profile: LoginProfile) {
+  const latestRequest = await getLatestDealerRequest(profile.id);
+  if (
+    !latestRequest ||
+    latestRequest.status !== "approved" ||
+    !DEALER_ROLES.has(latestRequest.role_requested)
+  ) {
+    return;
+  }
+
+  const currentRole = String(profile.role || "").toLowerCase();
+  const nextMetadata = {
+    ...(profile.metadata || {}),
+    role_requested: latestRequest.role_requested,
+    verification_status: "approved",
+    dealer_verification_request_id: latestRequest.id,
+  };
+
+  if (currentRole === latestRequest.role_requested) {
+    const metadataStatus = String(profile.metadata?.verification_status || "").toLowerCase();
+    if (metadataStatus === "approved") return;
+  }
+
+  const { error } = await supabaseAdmin
+    .from("profiles")
+    .update({
+      role: latestRequest.role_requested,
+      metadata: nextMetadata,
+    })
+    .eq("id", profile.id);
+
+  if (error) {
+    console.error("Approved dealer role sync failed during login", error);
+    throw new Error("dealer_role_sync_failed");
+  }
+}
+
 async function recordFailedAttempt(profile: { id: string; failed_login_attempts?: number | null }) {
   const failedAttempts = Number(profile.failed_login_attempts || 0) + 1;
   const suspended = failedAttempts >= MAX_FAILED_ATTEMPTS;
@@ -309,6 +346,7 @@ serve(async (req: Request) => {
       if (dealerBlock) {
         return jsonResponse(dealerBlock.body, dealerBlock.status);
       }
+      await syncApprovedDealerRole(latestProfile.data as LoginProfile);
     }
 
     await resetFailedAttempts(user.id);
