@@ -12,7 +12,7 @@ import TurnstileWidget from '../../src/lib/TurnstileWidget';
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin, roleResolved } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Auth Mode: 'signin' or 'signup'
@@ -44,12 +44,17 @@ const UserLogin: React.FC = () => {
 
   // Automatically redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
-      console.log('✅ User authenticated, redirecting to dashboard...');
-      const from = location.state?.from || '/dashboard';
-      navigate(from, { replace: true });
+    if (isAuthenticated && roleResolved) {
+      if (isAdmin) {
+        console.log('✅ Admin authenticated, redirecting to admin dashboard...');
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        console.log('✅ User authenticated, redirecting to dashboard...');
+        const from = location.state?.from || '/dashboard';
+        navigate(from, { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate, location.state]);
+  }, [isAuthenticated, isAdmin, roleResolved, navigate, location.state]);
 
   // Sign Up Form State
   const [signUpData, setSignUpData] = useState({

@@ -77,6 +77,9 @@ interface TurnstileWidgetProps {
   onError?: (errorCode: string) => void;
 }
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 3000;
+
 const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
   action,
   className = '',
@@ -89,12 +92,14 @@ const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+  const retryCountRef = useRef(0);
   const callbacksRef = useRef({ onVerify, onExpire, onError });
 
   callbacksRef.current = { onVerify, onExpire, onError };
 
   useEffect(() => {
     let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
     const siteKey = getTurnstileSiteKey();
 
     if (!siteKey) {
@@ -102,34 +107,54 @@ const TurnstileWidget: React.FC<TurnstileWidgetProps> = ({
       return;
     }
 
-    loadTurnstileScript()
-      .then(() => {
-        if (cancelled || !containerRef.current || !window.turnstile) return;
+    const renderWidget = () => {
+      loadTurnstileScript()
+        .then(() => {
+          if (cancelled || !containerRef.current || !window.turnstile) return;
 
-        if (widgetIdRef.current) {
-          window.turnstile.remove(widgetIdRef.current);
-          widgetIdRef.current = null;
-        }
+          if (widgetIdRef.current) {
+            window.turnstile.remove(widgetIdRef.current);
+            widgetIdRef.current = null;
+          }
 
-        widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: siteKey,
-          action,
-          size,
-          theme,
-          callback: (token: string) => callbacksRef.current.onVerify(token),
-          'expired-callback': () => callbacksRef.current.onExpire?.(),
-          'timeout-callback': () => callbacksRef.current.onExpire?.(),
-          'error-callback': (errorCode: string) => callbacksRef.current.onError?.(String(errorCode)),
+          widgetIdRef.current = window.turnstile.render(containerRef.current, {
+            sitekey: siteKey,
+            action,
+            size,
+            theme,
+            callback: (token: string) => {
+              retryCountRef.current = 0;
+              callbacksRef.current.onVerify(token);
+            },
+            'expired-callback': () => callbacksRef.current.onExpire?.(),
+            'timeout-callback': () => callbacksRef.current.onExpire?.(),
+            'error-callback': (errorCode: string) => {
+              if (!cancelled && retryCountRef.current < MAX_RETRIES) {
+                retryCountRef.current += 1;
+                retryTimer = setTimeout(renderWidget, RETRY_DELAY_MS);
+              } else {
+                callbacksRef.current.onError?.(String(errorCode));
+              }
+            },
+          });
+        })
+        .catch((error) => {
+          if (!cancelled) {
+            if (retryCountRef.current < MAX_RETRIES) {
+              retryCountRef.current += 1;
+              retryTimer = setTimeout(renderWidget, RETRY_DELAY_MS);
+            } else {
+              callbacksRef.current.onError?.(error?.message || 'turnstile-load-failed');
+            }
+          }
         });
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          callbacksRef.current.onError?.(error?.message || 'turnstile-load-failed');
-        }
-      });
+    };
+
+    renderWidget();
 
     return () => {
       cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
 
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current);

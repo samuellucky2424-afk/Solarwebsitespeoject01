@@ -1,18 +1,26 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getSupabase } from '../../config/supabaseClient';
 import { applySecureLoginSession, securePasswordLogin, type SecureLoginError } from '../../src/lib/secureLogin';
+import { useAuth } from '../../context/AuthContext';
 import TurnstileWidget from '../../src/lib/TurnstileWidget';
 
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, roleResolved } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState('');
   const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated && roleResolved && isAdmin) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, roleResolved, isAdmin, navigate]);
 
   const resetCaptchaChallenge = () => {
     setCaptchaToken('');

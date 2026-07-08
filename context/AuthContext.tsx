@@ -106,8 +106,17 @@ function shouldInvalidateRecoveredSession(session: Session) {
 
   const persistence = readAuthPersistence();
 
-  // Legacy sessions created before remember-me tracking default to a short session.
+  // When persistence data can't be read (e.g. Tracking Prevention blocks storage),
+  // trust Supabase's built-in token management instead of applying our custom timeout.
+  // Supabase handles access/refresh token expiry internally.
   if (!persistence) {
+    const claims = decodeJwtPayload(session.access_token);
+    if (claims?.exp && typeof claims.exp === 'number') {
+      const accessTokenExpiresAt = claims.exp * 1000;
+      if (accessTokenExpiresAt > Date.now()) {
+        return false;
+      }
+    }
     const signedInAt = session.user.last_sign_in_at
       ? new Date(session.user.last_sign_in_at).getTime()
       : Date.now();
