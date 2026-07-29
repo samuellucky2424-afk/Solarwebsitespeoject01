@@ -4,6 +4,7 @@ import { CartProvider } from './context/CartContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AdminProvider } from './context/AdminContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AffiliateProvider } from './context/AffiliateContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
 import LiveChatWidget from './components/LiveChatWidget';
 import UserDashboard from './pages/UserPages/UserDashboard';
@@ -137,9 +138,10 @@ const App: React.FC = () => {
       <AuthProvider>
         <AdminProvider>
           <GalleryProvider>
-            <CartProvider>
-              <ScrollToTop />
-              <AuthRedirectBridge />
+            <AffiliateProvider>
+              <CartProvider>
+                <ScrollToTop />
+                <AuthRedirectBridge />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public Routes */}
@@ -195,6 +197,7 @@ const App: React.FC = () => {
               <FloatingCartButton />
               <LiveChatWidget />
             </CartProvider>
+            </AffiliateProvider>
           </GalleryProvider>
         </AdminProvider>
       </AuthProvider>

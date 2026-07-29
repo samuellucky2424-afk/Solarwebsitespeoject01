@@ -4,6 +4,7 @@ import { PublicHeader, PublicFooter, Toast } from '../../components/SharedCompon
 import { Product } from '../../data/products';
 import { useAdmin } from '../../context/AdminContext';
 import { useCart } from '../../context/CartContext';
+import ShareAndEarn from '../../components/ShareAndEarn';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
@@ -194,6 +195,8 @@ const ProductDetail: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            <ShareAndEarn productId={String(product.id)} productName={product.name} />
           </div>
         </div>
 

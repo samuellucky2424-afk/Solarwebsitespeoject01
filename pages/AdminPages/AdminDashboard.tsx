@@ -12,9 +12,10 @@ import UserManagement from '../../components/admin/UserManagement';
 import AdminLiveChat from '../../components/admin/AdminLiveChat';
 import OrderManagement from '../../components/admin/OrderManagement';
 import DealerVerificationManagement from '../../components/admin/DealerVerificationManagement';
+import AdminAffiliates from '../../components/admin/AdminAffiliates';
 
 // Define View Type (matching AdminSidebar)
-type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
+type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates';
 
 const AdminDashboard: React.FC = () => {
    const [activeView, setActiveView] = useState<AdminView>('overview');
@@ -83,6 +84,7 @@ const AdminDashboard: React.FC = () => {
                {activeView === 'users' && <UserManagement />}
                {activeView === 'dealer-verifications' && <DealerVerificationManagement />}
                {activeView === 'orders' && <OrderManagement />}
+               {activeView === 'affiliates' && <AdminAffiliates />}
                {activeView === 'products' && <ProductManagement />}
                {activeView === 'packages' && (
                   <PackageManagement

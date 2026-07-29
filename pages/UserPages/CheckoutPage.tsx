@@ -206,7 +206,9 @@ const CheckoutPage: React.FC<{ isEmbedded?: boolean }> = ({ isEmbedded = false }
                     item_id: null,
                     item_snapshot: {
                         customer: formData,
-                        items: cartItems
+                        items: cartItems,
+                        affiliate_ref: localStorage.getItem('affiliate_ref') || null,
+                        affiliate_click_id: localStorage.getItem('affiliate_click_id') || null
                     }
                 }
             });

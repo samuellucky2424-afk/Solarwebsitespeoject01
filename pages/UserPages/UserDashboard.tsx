@@ -14,13 +14,17 @@ import UpgradeRequest from '../../components/dashboard/UpgradeRequest';
 import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
 import DashboardPackages from '../../components/dashboard/DashboardPackages';
+<<<<<<< HEAD
 import DashboardSupport from '../../components/dashboard/DashboardSupport';
+=======
+import AffiliateDashboard from '../../components/dashboard/AffiliateDashboard';
+>>>>>>> f477b00 (feat: implement refer, sell and earn affiliate system)
 import ConsultationForm from '../PublicPages/ConsultationForm';
 import ServiceRequestForm from './ServiceRequestForm';
 import CheckoutPage from './CheckoutPage';
 
 // --- Types (Local) ---
-type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'shop-product' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout' | 'support';
+type DashboardView = 'overview' | 'systems' | 'orders' | 'profile' | 'requests' | 'shop' | 'shop-product' | 'upgrade' | 'service' | 'gallery' | 'packages' | 'consultation' | 'maintenance' | 'survey' | 'checkout' | 'support' | 'affiliate';
 
 const SidebarLink: React.FC<{
   active: boolean,
@@ -75,7 +79,7 @@ const UserDashboard: React.FC = () => {
     } else {
       const params = new URLSearchParams(location.search);
       const viewParam = params.get('view');
-      if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout', 'support'].includes(viewParam)) {
+      if (viewParam && ['overview', 'systems', 'orders', 'profile', 'requests', 'shop', 'upgrade', 'gallery', 'packages', 'checkout', 'support', 'affiliate'].includes(viewParam)) {
         setCurrentView(viewParam as DashboardView);
       }
     }
@@ -318,6 +322,12 @@ const UserDashboard: React.FC = () => {
                 icon="support_agent"
                 label="Support Center"
               />
+              <SidebarLink
+                active={currentView === 'affiliate'}
+                onClick={() => { handleViewChange('affiliate'); setIsMobileMenuOpen(false); }}
+                icon="volunteer_activism"
+                label="Refer & Earn"
+              />
 
               <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
               <p className="px-4 text-[10px] font-bold uppercase text-gray-400 tracking-wider mb-1">Store</p>
@@ -418,6 +428,12 @@ const UserDashboard: React.FC = () => {
                 onClick={() => handleViewChange('support')}
                 icon="support_agent"
                 label="Support Center"
+              />
+              <SidebarLink
+                active={currentView === 'affiliate'}
+                onClick={() => handleViewChange('affiliate')}
+                icon="volunteer_activism"
+                label="Refer & Earn"
               />
 
               <div className="h-px bg-gray-100 dark:bg-white/5 my-2 mx-4"></div>
@@ -571,6 +587,7 @@ const UserDashboard: React.FC = () => {
             {currentView === 'upgrade' && <UpgradeRequest onSuccess={() => handleViewChange('requests')} />}
             {currentView === 'profile' && <ProfileSettings />}
             {currentView === 'checkout' && <CheckoutPage isEmbedded={true} />}
+            {currentView === 'affiliate' && <AffiliateDashboard />}
 
             {/* Existing Views */}
             {currentView === 'systems' && <MySystems />}

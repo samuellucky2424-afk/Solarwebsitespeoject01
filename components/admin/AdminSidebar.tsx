@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat';
+type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates';
 
 interface AdminSidebarProps {
     activeView: AdminView;
@@ -64,6 +64,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                 >
                     <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">local_shipping</span>
                     <span className="text-xs sm:text-sm">Orders</span>
+                </button>
+
+                <button
+                    onClick={() => setActiveView('affiliates')}
+                    className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg font-medium transition-colors ${activeView === 'affiliates' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                >
+                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">volunteer_activism</span>
+                    <span className="text-xs md:text-sm">Affiliates</span>
                 </button>
 
                 {/* Catalog Group */}

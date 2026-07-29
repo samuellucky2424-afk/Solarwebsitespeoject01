@@ -246,7 +246,7 @@ serve(async (req) => {
 
     const { data: order, error: orderErr } = await supabase
       .from("orders")
-      .select("id, user_id, amount, currency, status")
+      .select("id, user_id, amount, currency, status, item_snapshot")
       .eq("tx_ref", tx_ref)
       .maybeSingle();
 
@@ -314,6 +314,78 @@ serve(async (req) => {
       currency: paidCurrency,
       raw: data,
     });
+
+    // --- Affiliate Attribution Logic ---
+    try {
+      const itemSnapshot = order.item_snapshot;
+      if (itemSnapshot && itemSnapshot.affiliate_ref) {
+        const affiliateRef = itemSnapshot.affiliate_ref;
+        const affiliateClickId = itemSnapshot.affiliate_click_id;
+        
+        // 1. Get affiliate profile
+        const { data: affiliate } = await supabase
+          .from("affiliate_profiles")
+          .select("id, status")
+          .eq("affiliate_code", affiliateRef)
+          .single();
+          
+        if (affiliate && affiliate.status === "Active") {
+          // 2. Create Conversion
+          const { data: conversion } = await supabase
+            .from("affiliate_conversions")
+            .insert({
+              affiliate_id: affiliate.id,
+              click_id: affiliateClickId || null,
+              customer_id: order.user_id,
+              order_id: order.id,
+              payment_id: String(data.id),
+              currency: paidCurrency,
+              eligible_order_amount: amountPaid,
+              conversion_status: "Approved",
+              payment_verified_at: new Date().toISOString()
+            })
+            .select("id")
+            .single();
+            
+          if (conversion) {
+             // 3. Find active reward rule
+             const { data: rules } = await supabase
+               .from("affiliate_reward_rules")
+               .select("*")
+               .eq("active", true)
+               .order("priority", { ascending: false });
+               
+             const rule = rules && rules.length > 0 ? rules[0] : null;
+             
+             if (rule) {
+                let rewardAmount = 0;
+                if (rule.reward_type === 'cash') {
+                    if (rule.fixed_amount > 0) rewardAmount = rule.fixed_amount;
+                    else if (rule.percentage_rate > 0) rewardAmount = (amountPaid * rule.percentage_rate) / 100;
+                } else if (rule.reward_type === 'store_credit') {
+                    if (rule.fixed_amount > 0) rewardAmount = rule.fixed_amount;
+                }
+                
+                if (rewardAmount > 0 || ['coupon', 'salon'].includes(rule.reward_type)) {
+                    await supabase.from("affiliate_rewards").insert({
+                      affiliate_id: affiliate.id,
+                      conversion_id: conversion.id,
+                      reward_rule_id: rule.id,
+                      reward_type: rule.reward_type,
+                      monetary_amount: rewardAmount,
+                      currency: paidCurrency,
+                      status: "Pending", 
+                      available_at: new Date(Date.now() + (rule.holding_period_days || 30) * 24 * 60 * 60 * 1000).toISOString()
+                    });
+                }
+             }
+          }
+        }
+      }
+    } catch (affError) {
+      console.error("Affiliate processing error:", affError);
+    }
+    // --- End Affiliate Logic ---
 
     return jsonResponse({
       status: "success",
