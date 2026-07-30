@@ -144,8 +144,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ targetId, targetType })
 
         if (error) throw error;
         setSuccess('Review posted. Thank you!');
-      }
-
+      
       setComment('');
       setRating(0);
       await fetchReviews();
