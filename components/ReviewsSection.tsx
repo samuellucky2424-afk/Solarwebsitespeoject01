@@ -269,15 +269,6 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ targetId, targetType })
                     </div>
                   </div>
                 </div>
-                {user && r.userId === user.id && (
-                  <button
-                    onClick={() => handleDelete(r.id)}
-                    className="text-xs text-red-500 hover:text-red-700 px-2 py-1"
-                    title="Delete your review"
-                  >
-                    <span className="material-symbols-outlined text-base">delete</span>
-                  </button>
-                )}
               </div>
               <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-line">{r.comment}</p>
             </div>
