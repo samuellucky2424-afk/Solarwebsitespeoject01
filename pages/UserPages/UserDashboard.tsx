@@ -14,11 +14,8 @@ import UpgradeRequest from '../../components/dashboard/UpgradeRequest';
 import ProfileSettings from '../../components/dashboard/ProfileSettings';
 import DashboardGallery from '../../components/dashboard/DashboardGallery';
 import DashboardPackages from '../../components/dashboard/DashboardPackages';
-<<<<<<< HEAD
 import DashboardSupport from '../../components/dashboard/DashboardSupport';
-=======
 import AffiliateDashboard from '../../components/dashboard/AffiliateDashboard';
->>>>>>> f477b00 (feat: implement refer, sell and earn affiliate system)
 import ConsultationForm from '../PublicPages/ConsultationForm';
 import ServiceRequestForm from './ServiceRequestForm';
 import CheckoutPage from './CheckoutPage';
