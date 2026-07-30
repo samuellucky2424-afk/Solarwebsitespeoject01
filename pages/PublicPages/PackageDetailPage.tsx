@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PublicHeader, PublicFooter, Toast } from '../../components/SharedComponents';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
+import ShareAndEarn from '../../components/ShareAndEarn';
 
 const PackageDetailPage: React.FC = () => {
   const { packageId } = useParams<{ packageId: string }>();
@@ -137,6 +138,10 @@ const PackageDetailPage: React.FC = () => {
                     </span>
                     {isRequesting ? 'Submitting...' : 'Request Package'}
                   </button>
+                </div>
+
+                <div className="mt-4">
+                  <ShareAndEarn productId={String(packageDetails.id)} productName={packageDetails.name} />
                 </div>
               </div>
             </div>

@@ -21,15 +21,14 @@ const ShareAndEarn: React.FC<ShareAndEarnProps> = ({ productId, productName }) =
         .select('*')
         .eq('active', true)
         .order('priority', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
         
       if (error) {
         console.error("Error fetching reward rule:", error);
       }
         
-      if (data) {
-        setRewardRule(data);
+      if (data && data.length > 0) {
+        setRewardRule(data[0]);
       }
     };
     fetchRule();
