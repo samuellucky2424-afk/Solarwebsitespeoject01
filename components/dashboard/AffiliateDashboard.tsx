@@ -29,6 +29,8 @@ const AffiliateDashboard: React.FC = () => {
   }, [affiliateProfile]);
 
   const fetchDashboardData = async () => {
+    if (!affiliateProfile) return;
+
     // Get clicks
     const { count: clicksCount } = await supabase
       .from('affiliate_clicks')
