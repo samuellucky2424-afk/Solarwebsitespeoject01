@@ -120,27 +120,13 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ targetId, targetType })
       const customerName = activeUser?.fullName || user.user_metadata?.full_name || user.email || 'Customer';
       const avatar = activeUser?.avatar || user.user_metadata?.avatar_url || '';
 
-      // If user already has a review, update it; otherwise insert.
       if (userReview) {
-        const { error } = await supabase
-          .from('greenlife_hub')
-          .update({
-            description: comment.trim(),
-            metadata: {
-              target_id: targetId,
-              target_type: targetType,
-              rating,
-              customer_name: customerName,
-              avatar,
-            },
-          })
-          .eq('id', userReview.id)
-          .eq('user_id', user.id);
+        setError('You have already submitted a review.');
+        setSubmitting(false);
+        return;
+      }
 
-        if (error) throw error;
-        setSuccess('Review updated.');
-      } else {
-        const { error } = await supabase
+      const { error } = await supabase
           .from('greenlife_hub')
           .insert([{
             type: 'review',
@@ -217,36 +203,41 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ targetId, targetType })
 
       {/* Submit form */}
       {user ? (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
-          <p className="text-sm font-bold mb-2 text-forest dark:text-white">
-            {userReview ? 'Update your review' : 'Leave a review'}
-          </p>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-gray-500">Your rating:</span>
-            <StarRow value={rating} onChange={setRating} />
+        userReview ? (
+          <div className="mb-6 p-4 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-center">
+            <p className="text-sm font-bold text-forest dark:text-white">You have already submitted a review.</p>
+            <p className="text-xs text-gray-500 mt-1">Thank you for your feedback!</p>
           </div>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            rows={3}
-            placeholder="Share your experience..."
-            maxLength={1000}
-            className="w-full p-3 rounded-lg bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 text-sm text-forest dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <div className="flex items-center justify-between mt-3 gap-2 flex-wrap">
-            <div className="text-xs">
-              {error && <span className="text-red-500">{error}</span>}
-              {success && <span className="text-green-600">{success}</span>}
+        ) : (
+          <form onSubmit={handleSubmit} className="mb-6 p-4 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
+            <p className="text-sm font-bold mb-2 text-forest dark:text-white">Leave a review</p>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs text-gray-500">Your rating:</span>
+              <StarRow value={rating} onChange={setRating} />
             </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="bg-primary text-forest px-5 py-2 rounded-lg font-bold text-sm hover:brightness-105 transition disabled:opacity-60"
-            >
-              {submitting ? 'Saving...' : userReview ? 'Update Review' : 'Post Review'}
-            </button>
-          </div>
-        </form>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              placeholder="Share your experience..."
+              maxLength={1000}
+              className="w-full p-3 rounded-lg bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 text-sm text-forest dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <div className="flex items-center justify-between mt-3 gap-2 flex-wrap">
+              <div className="text-xs">
+                {error && <span className="text-red-500">{error}</span>}
+                {success && <span className="text-green-600">{success}</span>}
+              </div>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-primary text-forest px-5 py-2 rounded-lg font-bold text-sm hover:brightness-105 transition disabled:opacity-60"
+              >
+                {submitting ? 'Saving...' : 'Post Review'}
+              </button>
+            </div>
+          </form>
+        )
       ) : (
         <div className="mb-6 p-4 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">Please log in to leave a review.</p>

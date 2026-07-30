@@ -16,13 +16,17 @@ const ShareAndEarn: React.FC<ShareAndEarnProps> = ({ productId, productName }) =
   useEffect(() => {
     const fetchRule = async () => {
       // Find the highest priority active rule for cash or coupon
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('affiliate_reward_rules')
         .select('*')
         .eq('active', true)
         .order('priority', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
+        
+      if (error) {
+        console.error("Error fetching reward rule:", error);
+      }
         
       if (data) {
         setRewardRule(data);
