@@ -47,7 +47,9 @@ const ShareAndEarn: React.FC<ShareAndEarnProps> = ({ productId, productName }) =
     setActivating(false);
   };
 
-  if (!rewardRule) return null; // Only show if there's an active reward program
+  if (!rewardRule) {
+    return <div className="text-red-500 text-xs p-2">Debug: No active reward rule found in database.</div>;
+  }
 
   const rewardText = rewardRule.reward_type === 'cash' 
     ? (rewardRule.fixed_amount > 0 ? `₦${rewardRule.fixed_amount.toLocaleString()}` : `${rewardRule.percentage_rate}%`)
