@@ -4,6 +4,7 @@ import { useAdmin } from '../../context/AdminContext';
 import { useCart } from '../../context/CartContext';
 import { Toast } from '../../components/SharedComponents';
 import ReviewsSection from '../ReviewsSection';
+import ShareAndEarn from '../../components/ShareAndEarn';
 
 const DashboardProductDetail: React.FC = () => {
     const { productId } = useParams<{ productId: string }>();
@@ -135,6 +136,10 @@ const DashboardProductDetail: React.FC = () => {
                             >
                                 Buy Now
                             </button>
+                        </div>
+                        
+                        <div className="mt-6">
+                            <ShareAndEarn productId={String(product.id)} productName={product.name} />
                         </div>
                     </div>
                 </div>
