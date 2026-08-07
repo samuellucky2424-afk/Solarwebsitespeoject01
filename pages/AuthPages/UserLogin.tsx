@@ -72,8 +72,16 @@ const UserLogin: React.FC = () => {
     batteryType: '',
     systemSize: '1kW',
     installDate: '',
-    installTime: ''
+    installTime: '',
+    referralCode: ''
   });
+
+  useEffect(() => {
+    const savedRef = localStorage.getItem('referralCode') || localStorage.getItem('affiliate_ref');
+    if (savedRef) {
+      setSignUpData(prev => ({ ...prev, referralCode: savedRef }));
+    }
+  }, []);
 
   const [verificationFiles, setVerificationFiles] = useState<{
     cacDocument: File | null;
@@ -154,7 +162,8 @@ const UserLogin: React.FC = () => {
               full_name: signUpData.fullName,
               phone: signUpData.phone,
               address: signUpData.address,
-              role_requested: signUpData.roleRequested
+              role_requested: signUpData.roleRequested,
+              referred_by: signUpData.referralCode || null
             }
           }
         });
@@ -177,7 +186,8 @@ const UserLogin: React.FC = () => {
               size: signUpData.systemSize,
               installDate: signUpData.installDate,
               installTime: signUpData.installTime
-            } : null
+            } : null,
+            referred_by: signUpData.referralCode || null
           };
 
           if (isDealerRequest) {
@@ -499,6 +509,10 @@ const UserLogin: React.FC = () => {
                   <div>
                     <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Address</label>
                     <input required name="address" value={signUpData.address} onChange={handleInputChange} className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="123 Solar Street, Lagos" type="text" />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Referral Code (Optional)</label>
+                    <input name="referralCode" value={signUpData.referralCode} onChange={handleInputChange} className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="AFF-XXXXXX" type="text" />
                   </div>
                   <div>
                     <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Account Type</label>

@@ -61,6 +61,22 @@ const AuthRedirectBridge = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Capture referral code from URL search parameters or Hash params
+    const params = new URLSearchParams(window.location.search);
+    const searchRef = params.get('ref');
+    if (searchRef) {
+      localStorage.setItem('referralCode', searchRef);
+    }
+
+    const hashMatch = window.location.hash.match(/\?([^#]*)/);
+    if (hashMatch) {
+      const hashParams = new URLSearchParams(hashMatch[1]);
+      const hashRef = hashParams.get('ref');
+      if (hashRef) {
+        localStorage.setItem('referralCode', hashRef);
+      }
+    }
+
     const normalizedPath = window.location.pathname.replace(/\/+$/, '');
     const directHashRoutes = new Set(['/forgot-password', '/reset-password']);
 

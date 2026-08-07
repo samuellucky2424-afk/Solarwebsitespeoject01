@@ -172,7 +172,7 @@ export const PublicHeader: React.FC = () => {
           </nav>
 
           <div className="flex items-center gap-4 relative z-50">
-            <Link to="/login" className="text-sm font-bold hover:text-primary hidden sm:block">Sign In</Link>
+            <Link to="/login" state={{ from: location.pathname + location.search }} className="text-sm font-bold hover:text-primary hidden sm:block">Sign In</Link>
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative p-2 text-forest dark:text-white hover:text-primary transition-colors hidden sm:block"
@@ -259,6 +259,7 @@ export const PublicHeader: React.FC = () => {
             <Link
               onClick={() => setIsMobileMenuOpen(false)}
               to="/login"
+              state={{ from: location.pathname + location.search }}
               className="flex items-center gap-4 p-4 rounded-xl text-forest/70 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
             >
               <span className="material-symbols-outlined">login</span>

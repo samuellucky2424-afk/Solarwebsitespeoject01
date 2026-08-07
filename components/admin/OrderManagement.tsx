@@ -325,6 +325,9 @@ const OrderManagement: React.FC = () => {
                                     <div className="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-300">
                                         <p><span className="font-bold">Order ID:</span> {selectedOrder.id}</p>
                                         <p><span className="font-bold">Transaction Ref:</span> {selectedOrder.tx_ref}</p>
+                                        {selectedOrder.item_snapshot?.affiliate_ref && (
+                                            <p><span className="font-bold text-primary">Affiliate Referral:</span> {selectedOrder.item_snapshot.affiliate_ref}</p>
+                                        )}
                                         <p><span className="font-bold">Created:</span> {formatDateTime(selectedOrder.created_at)}</p>
                                         <p><span className="font-bold">Last Tracking Update:</span> {formatDateTime(selectedOrder.fulfillment_updated_at)}</p>
                                         <p><span className="font-bold">Total:</span> {formatMoney(selectedOrder.amount, selectedOrder.currency)}</p>
