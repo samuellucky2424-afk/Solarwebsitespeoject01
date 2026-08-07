@@ -17,6 +17,7 @@ export interface Product {
   stockStatus?: string;
   stock?: number | null;
   reviews?: number;
+  rating?: number;
   images?: string[];
 }
 

@@ -454,7 +454,7 @@ const UserLogin: React.FC = () => {
                 <>
                   <div>
                     <label className="block mb-2 text-sm font-bold">Email Address</label>
-                    <input ref={emailRef} required className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 placeholder:text-gray-400 focus:ring-primary focus:border-primary transition-all" placeholder="name@company.com" type="email" />
+                    <input ref={emailRef} required autoComplete="username" className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 placeholder:text-gray-400 focus:ring-primary focus:border-primary transition-all" placeholder="name@company.com" type="email" />
                   </div>
                   <div>
                     <div className="flex items-center justify-between mb-2">
@@ -462,7 +462,7 @@ const UserLogin: React.FC = () => {
                       <Link className="text-xs font-bold text-primary hover:underline" to="/forgot-password">Forgot password?</Link>
                     </div>
                     <div className="relative">
-                      <input ref={passwordRef} required className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 placeholder:text-gray-400 focus:ring-primary focus:border-primary transition-all" placeholder="••••••••" type="password" />
+                      <input ref={passwordRef} required autoComplete="current-password" className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 placeholder:text-gray-400 focus:ring-primary focus:border-primary transition-all" placeholder="••••••••" type="password" />
                       <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" type="button">
                         <span className="material-symbols-outlined text-xl">visibility</span>
                       </button>
@@ -493,7 +493,7 @@ const UserLogin: React.FC = () => {
                     </div>
                     <div>
                       <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Email</label>
-                      <input required name="email" value={signUpData.email} onChange={handleInputChange} className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="john@example.com" type="email" />
+                      <input required name="email" value={signUpData.email} onChange={handleInputChange} autoComplete="email" className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="john@example.com" type="email" />
                     </div>
                   </div>
                   <div>
@@ -563,11 +563,11 @@ const UserLogin: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Password</label>
-                      <input required name="password" value={signUpData.password} onChange={handleInputChange} className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password" />
+                      <input required name="password" value={signUpData.password} onChange={handleInputChange} autoComplete="new-password" className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password" />
                     </div>
                     <div>
                       <label className="block mb-1 text-xs font-bold uppercase text-gray-500">Confirm Password</label>
-                      <input required name="confirmPassword" value={signUpData.confirmPassword} onChange={handleInputChange} className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password" />
+                      <input required name="confirmPassword" value={signUpData.confirmPassword} onChange={handleInputChange} autoComplete="new-password" className="form-input block w-full rounded-xl border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 h-12 px-4 focus:ring-primary focus:border-primary" placeholder="••••••••" type="password" />
                     </div>
                   </div>
 

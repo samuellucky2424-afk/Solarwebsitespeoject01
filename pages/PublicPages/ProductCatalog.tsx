@@ -12,6 +12,7 @@ import { useGSAP } from '@gsap/react';
 const ProductCatalog: React.FC = () => {
   const [searchParams] = useSearchParams();
   const filterParam = searchParams.get('filter');
+  const categoryParam = searchParams.get('category');
 
   // --- State Management ---
   const { inventory } = useAdmin(); // Get dynamic inventory
@@ -34,7 +35,20 @@ const ProductCatalog: React.FC = () => {
     if (filterParam === 'best-seller') {
       setFeaturedOnly(true);
     }
-  }, [filterParam]);
+
+    if (categoryParam) {
+      let mappedCategory = "";
+      if (categoryParam === "inverters") mappedCategory = "Inverters";
+      else if (categoryParam === "batteries") mappedCategory = "Batteries";
+      else if (categoryParam === "panels") mappedCategory = "Solar Panels";
+      else if (categoryParam === "generators") mappedCategory = "Solar Kits"; // Often grouped as Kits or Generators depending on inventory
+      else mappedCategory = categoryParam;
+      
+      if (mappedCategory) {
+        setSelectedCategories([mappedCategory]);
+      }
+    }
+  }, [filterParam, categoryParam]);
 
   // --- Handlers ---
   const toggleCategory = (cat: string) => {
@@ -298,7 +312,7 @@ const ProductCatalog: React.FC = () => {
             {paginatedProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 lg:gap-5">
                 {paginatedProducts.map((product) => (
-                  <div key={product.id} className="product-item group bg-white dark:bg-white/5 rounded-xl overflow-hidden border border-slate-100 dark:border-white/10 hover:border-primary-dark/50 transition-all hover:shadow-xl flex flex-col">
+                  <div key={product.id} className="product-item group bg-white dark:bg-white/5 rounded-2xl overflow-hidden border border-slate-100 dark:border-white/5 hover:border-primary-dark/30 transition-all duration-500 hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgb(0,0,0,0.3)] hover:-translate-y-2 flex flex-col">
                     <div className="relative aspect-square bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
                       <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" src={product.img} alt={product.name} />
                       {product.tag && (

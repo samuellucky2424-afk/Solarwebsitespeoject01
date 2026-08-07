@@ -117,9 +117,15 @@ const ProductDetail: React.FC = () => {
               <h1 className="text-2xl md:text-3xl font-black leading-tight tracking-tight mb-2">{product.name}</h1>
               <div className="flex items-center gap-2">
                 <div className="flex text-primary">
-                  {[1, 2, 3, 4, 5].map(i => <span key={i} className="material-symbols-outlined filled-icon text-base">star</span>)}
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <span key={i} className={`material-symbols-outlined filled-icon text-base ${i <= (product.rating || 5.0) ? '' : 'opacity-30'}`}>
+                      star
+                    </span>
+                  ))}
                 </div>
-                <span className="text-xs font-medium opacity-70">5.0 (24 Reviews)</span>
+                <span className="text-xs font-medium opacity-70">
+                  {(product.rating || 5.0).toFixed(1)} ({product.reviews || 0} Reviews)
+                </span>
               </div>
             </div>
 

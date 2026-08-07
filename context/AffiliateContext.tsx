@@ -34,7 +34,11 @@ export const AffiliateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // 1. Check & Track Referral Clicks
   useEffect(() => {
     const trackClick = async () => {
-      const searchParams = new URLSearchParams(window.location.search);
+      let searchStr = window.location.search;
+      if (!searchStr && window.location.hash.includes('?')) {
+        searchStr = window.location.hash.substring(window.location.hash.indexOf('?'));
+      }
+      const searchParams = new URLSearchParams(searchStr);
       const ref = searchParams.get('ref') || searchParams.get('ref_code');
       
       if (ref) {

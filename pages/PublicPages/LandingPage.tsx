@@ -284,7 +284,7 @@ const LandingPage: React.FC = () => {
         <section className="relative w-full px-0 py-2 md:py-4 max-w-none mx-0">
           <div className="relative overflow-hidden min-h-[58vh] sm:min-h-[58vh] md:min-h-[60vh] flex items-center">
             <div className="absolute inset-0 z-0">
-              <div className="absolute inset-0 bg-gradient-to-r from-forest/90 via-forest/40 to-transparent z-10"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-forest/95 via-forest/60 to-black/30 z-10"></div>
               {/* Dynamic Hero Image */}
               <div className="w-full h-full bg-cover bg-center transition-all duration-1000"
                 style={{ backgroundImage: `url('${heroImages[currentSlide]?.url || heroImages[0].url}')` }}></div>
@@ -303,9 +303,31 @@ const LandingPage: React.FC = () => {
                 <button onClick={() => navigate('/consultation')} className="w-full sm:w-auto justify-center bg-primary hover:bg-primary/90 text-forest px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl text-sm sm:text-base md:text-lg font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95">
                   Get a Free Quote <span className="material-symbols-outlined text-xl">arrow_forward</span>
                 </button>
-                <button onClick={() => navigate('/gallery')} className="w-full sm:w-auto inline-flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl text-sm sm:text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95">
+                <button onClick={() => navigate('/gallery')} className="w-full sm:w-auto inline-flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/20 px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl text-sm sm:text-base md:text-lg font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)]">
                   View Our Work
                 </button>
+              </div>
+            </div>
+
+            {/* Floating Trust Badges (Desktop) */}
+            <div className="hidden lg:flex absolute top-1/2 -translate-y-1/2 right-12 flex-col gap-5 z-20">
+              <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:scale-105 hover:bg-white/15 transition-all duration-300 cursor-default group">
+                <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                  <span className="material-symbols-outlined text-primary text-2xl">verified_user</span>
+                </div>
+                <div>
+                  <p className="text-white text-base font-bold leading-tight">25-Year</p>
+                  <p className="text-white/70 text-[10px] font-medium uppercase tracking-[0.2em] mt-1">Warranty</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:scale-105 hover:bg-white/15 transition-all duration-300 cursor-default group">
+                <div className="size-12 rounded-full bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                  <span className="material-symbols-outlined text-primary text-2xl">solar_power</span>
+                </div>
+                <div>
+                  <p className="text-white text-base font-bold leading-tight">Tier-1</p>
+                  <p className="text-white/70 text-[10px] font-medium uppercase tracking-[0.2em] mt-1">Solar Panels</p>
+                </div>
               </div>
             </div>
 
@@ -338,17 +360,44 @@ const LandingPage: React.FC = () => {
 
         {/* Stats Bar */}
         <section className="stats-section max-w-[1600px] mx-auto px-6 lg:px-8 -mt-12 relative z-30 mb-16">
-          <div className="bg-white dark:bg-forest border border-forest/10 dark:border-white/10 rounded-2xl p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 shadow-xl shadow-forest/5 backdrop-blur-lg">
+          <div className="bg-white dark:bg-forest border border-forest/10 dark:border-white/10 rounded-2xl p-6 md:p-8 grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] backdrop-blur-xl">
             {[
               { label: "Installations", value: "2K+" },
               { label: "Energy Produced", value: "20MW" },
               { label: "Warranty", value: "3yrs" },
               { label: "Saved by Clients", value: "NGN 23M" }
             ].map((stat, idx) => (
-              <div key={idx} className="stats-item text-center">
-                <p className="text-primary text-2xl md:text-3xl font-bold">{stat.value}</p>
-                <p className="text-forest/60 dark:text-white/60 text-xs md:text-sm font-medium">{stat.label}</p>
+              <div key={idx} className="stats-item text-center group">
+                <p className="text-primary text-2xl md:text-4xl font-black mb-1 group-hover:scale-110 transition-transform duration-300 inline-block">{stat.value}</p>
+                <p className="text-forest/60 dark:text-white/60 text-xs md:text-sm font-bold uppercase tracking-widest">{stat.label}</p>
               </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Visual Category Grid */}
+        <section className="category-section max-w-[1600px] mx-auto px-6 lg:px-8 py-8 mb-8" id="categories">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-primary font-bold tracking-widest uppercase text-[10px] md:text-xs mb-2">Shop By Category</h2>
+            <h3 className="text-2xl md:text-4xl font-bold text-forest dark:text-white">Professional Solar Equipment</h3>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            {[
+              { title: "Inverters", img: "/images/inverter.png", link: "/products?category=inverters" },
+              { title: "Batteries", img: "/images/battery.png", link: "/products?category=batteries" },
+              { title: "Solar Panels", img: "/images/solar_panels.png", link: "/products?category=panels" },
+              { title: "Solar Generators", img: "/images/generator.png", link: "/products?category=generators" }
+            ].map((cat, idx) => (
+              <Link key={idx} to={cat.link} className="category-card group bg-white dark:bg-forest/40 border border-slate-100 dark:border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center gap-4 text-center hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgb(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-2">
+                <div className="size-16 md:size-20 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-forest text-forest dark:text-white transition-colors duration-500 overflow-hidden">
+                  {cat.img ? (
+                    <img src={cat.img} alt={cat.title} className="w-full h-full object-contain p-2" />
+                  ) : (
+                    <span className="material-symbols-outlined text-3xl md:text-4xl">{cat.icon}</span>
+                  )}
+                </div>
+                <h4 className="text-forest dark:text-white font-bold text-base md:text-lg">{cat.title}</h4>
+              </Link>
             ))}
           </div>
         </section>
@@ -366,14 +415,14 @@ const LandingPage: React.FC = () => {
                 key={idx}
                 data-service-card
                 onClick={service.onClick}
-                className="service-card group relative min-w-[85vw] sm:min-w-[340px] md:min-w-0 p-6 md:p-8 rounded-3xl border border-forest/10 dark:border-white/10 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 cursor-pointer transition-all duration-300 snap-center"
+                className="service-card group relative min-w-[85vw] sm:min-w-[340px] md:min-w-0 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-white/5 bg-white dark:bg-forest/50 overflow-hidden hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgb(0,0,0,0.3)] cursor-pointer transition-all duration-500 snap-center"
               >
                 {/* ... (Card decoration logic) ... */}
                 <div className="relative z-10">
-                  <div className={`size-12 md:size-14 rounded-xl md:rounded-2xl ${service.bg} ${service.textCol} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`size-12 md:size-14 rounded-xl md:rounded-2xl ${service.bg} ${service.textCol} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
                     <span className="material-symbols-outlined text-3xl">{service.icon}</span>
                   </div>
-                  <h4 className="text-xl md:text-2xl font-bold mb-2 md:mb-3">{service.title}</h4>
+                  <h4 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 group-hover:text-primary transition-colors">{service.title}</h4>
                   <p className="text-forest/60 dark:text-white/60 leading-relaxed text-sm md:text-base">{service.text}</p>
                 </div>
               </div>
@@ -391,11 +440,11 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        <section className="packages-section max-w-[1600px] mx-auto px-6 lg:px-8 py-12" id="packages">
+        <section className="packages-section max-w-[1600px] mx-auto px-6 lg:px-8 py-20" id="packages">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
             <div className="max-w-2xl">
               <h2 className="text-primary font-bold tracking-widest uppercase text-[10px] md:text-xs mb-2 md:mb-3">Package Plans</h2>
-              <h3 className="text-2xl md:text-4xl font-bold text-forest dark:text-white leading-tight">Supabase-powered solar packages, straight from the dashboard</h3>
+              <h3 className="text-2xl md:text-4xl font-bold text-forest dark:text-white leading-tight">High-performance solar packages, straight from the dashboard</h3>
               <p className="text-forest/60 dark:text-white/60 mt-3 text-sm md:text-base">
                 The landing page is now reading the same package records as the user dashboard, including package images, power capacity, pricing, and appliance coverage.
               </p>
@@ -465,9 +514,10 @@ const LandingPage: React.FC = () => {
 
                     <p className="text-sm text-white/70 line-clamp-3 min-h-[60px]">{pkg.description}</p>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3 mt-2">
                       {pkg.appliances.slice(0, 4).map((appliance, idx) => (
-                        <div key={idx} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80">
+                        <div key={idx} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/80 group-hover:border-white/20 transition-colors">
+                          <span className="material-symbols-outlined text-[14px] text-primary">check_circle</span>
                           {appliance}
                         </div>
                       ))}
@@ -490,7 +540,7 @@ const LandingPage: React.FC = () => {
         </section>
 
         {/* Enhanced Gallery Section (Dynamic) */}
-        <section className="gallery-section w-full py-16 bg-gradient-to-b from-transparent to-forest/5 dark:to-white/5 overflow-hidden" id="gallery">
+        <section className="gallery-section w-full py-24 bg-gradient-to-b from-transparent to-forest/5 dark:to-white/5 overflow-hidden" id="gallery">
           <div className="max-w-[1600px] mx-auto px-6 lg:px-8 mb-8 flex flex-col md:flex-row items-end justify-between gap-6">
             <div className="max-w-2xl">
               <h2 className="text-primary font-bold tracking-widest uppercase text-[10px] md:text-xs mb-2 md:mb-3">Our Projects</h2>
@@ -531,7 +581,7 @@ const LandingPage: React.FC = () => {
             <SectionHeader sub="Product Showcase" title="Advanced Solar Technology" dark={true} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
               {featuredProducts.map((prod) => (
-                <div key={prod.id} className="product-card flex flex-col gap-3 bg-white/5 p-4 md:p-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group">
+                <div key={prod.id} className="product-card flex flex-col gap-3 bg-white/5 p-4 md:p-5 rounded-3xl border border-white/10 hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:shadow-[0_20px_40px_rgb(0,0,0,0.3)] hover:-translate-y-2 group">
                   <div className="w-full aspect-square bg-cover bg-center rounded-xl overflow-hidden" style={{ backgroundImage: `url('${prod.img}')` }}></div>
                   <div className="flex-1 flex flex-col">
                     <p className="text-primary text-[10px] font-bold uppercase tracking-widest mb-1">{prod.category}</p>
@@ -554,10 +604,10 @@ const LandingPage: React.FC = () => {
         {/* CTA Section */}
         <section className="cta-section max-w-[1600px] mx-auto px-6 lg:px-8 py-8 mb-16">
           {/* ... (Keeping existing CTA) ... */}
-          <div className="cta-container bg-primary rounded-[2.5rem] p-8 md:p-16 text-center flex flex-col items-center gap-6 relative overflow-hidden shadow-2xl shadow-primary/20">
+          <div className="cta-container bg-primary rounded-[3rem] p-10 md:p-20 text-center flex flex-col items-center gap-6 relative overflow-hidden shadow-[0_30px_60px_rgb(0,0,0,0.12)] dark:shadow-[0_30px_60px_rgb(0,0,0,0.4)]">
             {/* ... */}
             <h2 className="text-3xl md:text-5xl font-bold text-forest max-w-3xl leading-tight relative z-10">Ready to switch?</h2>
-            <button onClick={() => navigate('/consultation')} className="bg-forest text-white px-8 py-4 rounded-xl text-lg font-bold hover:scale-105 transition-transform shadow-2xl">Claim Quote</button>
+            <button onClick={() => navigate('/consultation')} className="bg-forest text-white px-10 py-5 rounded-2xl text-lg font-bold hover:scale-105 transition-all duration-300 shadow-2xl shadow-forest/50 hover:shadow-[0_0_25px_rgba(20,50,30,0.4)]">Claim Quote</button>
           </div>
         </section>
       </main>

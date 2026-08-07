@@ -57,16 +57,16 @@ export function persistAuthPreference(rememberMe: boolean) {
   window.localStorage.setItem(AUTH_PERSISTENCE_KEY, JSON.stringify(payload));
 
   if (rememberMe) {
-    window.sessionStorage.removeItem(TEMP_SESSION_KEY);
+    document.cookie = "greenlife_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   } else {
-    window.sessionStorage.setItem(TEMP_SESSION_KEY, 'active');
+    document.cookie = "greenlife_session=active; path=/; SameSite=Lax";
   }
 }
 
 export function clearAuthPreference() {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(AUTH_PERSISTENCE_KEY);
-  window.sessionStorage.removeItem(TEMP_SESSION_KEY);
+  document.cookie = "greenlife_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 function decodeJwtPayload(token: string | undefined): any | null {
@@ -129,7 +129,7 @@ function shouldInvalidateRecoveredSession(session: Session) {
     return age > REMEMBERED_SESSION_MS;
   }
 
-  const browserSessionEnded = !window.sessionStorage.getItem(TEMP_SESSION_KEY);
+  const browserSessionEnded = !document.cookie.includes('greenlife_session=active');
   return browserSessionEnded || age > NON_REMEMBERED_SESSION_MS;
 }
 

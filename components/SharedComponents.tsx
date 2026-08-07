@@ -149,7 +149,7 @@ export const PublicHeader: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-forest/10 dark:border-white/10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-100 dark:border-white/5 bg-white/80 dark:bg-[#0b1c11]/80 backdrop-blur-xl shadow-[0_4px_30px_rgb(0,0,0,0.03)] dark:shadow-[0_4px_30px_rgb(0,0,0,0.2)]">
         {/* Full width header */}
         <div className="w-full flex items-center justify-between px-6 lg:px-12 py-4">
           <Link to="/" className="flex items-center gap-3 relative z-50">
@@ -179,12 +179,12 @@ export const PublicHeader: React.FC = () => {
             >
               <span className="material-symbols-outlined">shopping_cart</span>
               {totalItems > 0 && (
-                <span className="absolute top-0 right-0 size-4 bg-primary text-[10px] font-bold rounded-full flex items-center justify-center text-forest">
+                <span className="absolute top-0 right-0 size-4 bg-primary text-[10px] font-bold rounded-full flex items-center justify-center text-forest shadow-[0_0_10px_rgba(34,197,94,0.5)]">
                   {totalItems}
                 </span>
               )}
             </button>
-            <Link to="/consultation" className="bg-primary hover:bg-primary/90 text-forest px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-primary/20 hidden sm:block">
+            <Link to="/consultation" className="bg-primary hover:bg-primary/90 text-forest px-6 py-2.5 rounded-lg text-sm font-bold transition-all shadow-lg shadow-primary/20 hover:shadow-[0_0_20px_rgba(34,197,94,0.4)] hidden sm:block">
               Get a Free Quote
             </Link>
 

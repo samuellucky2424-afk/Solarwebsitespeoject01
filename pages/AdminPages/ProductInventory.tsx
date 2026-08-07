@@ -24,7 +24,9 @@ const ProductInventory: React.FC = () => {
       spec: '',
       eff: '',
       img: '',
-      badge: 'In Stock' // Hijacking 'badge' for Stock status in this simplified Admin view
+      badge: '',
+      stockStatus: 'In Stock',
+      description: ''
    });
 
    // Derived Data
@@ -45,7 +47,7 @@ const ProductInventory: React.FC = () => {
       } else {
          setEditingProduct(null);
          setFormData({
-            name: '', series: '', price: 0, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: 'In Stock'
+            name: '', series: '', price: 0, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: '', stockStatus: 'In Stock', description: ''
          });
       }
       setIsModalOpen(true);
@@ -226,8 +228,8 @@ const ProductInventory: React.FC = () => {
                                     <td className="px-6 py-4"><span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold rounded whitespace-nowrap">{item.category}</span></td>
                                     <td className="px-6 py-4"><p className="text-sm font-bold">₦{item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></td>
                                     <td className="px-6 py-4">
-                                       <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold ${item.badge === 'Low Stock' ? 'bg-amber-100 text-amber-700' : 'bg-primary/20 text-primary'}`}>
-                                          <span className={`w-1.5 h-1.5 rounded-full ${item.badge === 'Low Stock' ? 'bg-amber-500' : 'bg-primary'}`}></span> {item.badge || 'In Stock'}
+                                       <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold ${item.stockStatus === 'Low Stock' ? 'bg-amber-100 text-amber-700' : 'bg-primary/20 text-primary'}`}>
+                                          <span className={`w-1.5 h-1.5 rounded-full ${item.stockStatus === 'Low Stock' ? 'bg-amber-500' : 'bg-primary'}`}></span> {item.stockStatus || 'In Stock'}
                                        </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -290,13 +292,33 @@ const ProductInventory: React.FC = () => {
                            <input type="url" value={formData.img} onChange={e => setFormData({ ...formData, img: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="https://..." />
                         </div>
                         <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Power (Badge)</label>
+                           <input type="text" value={formData.badge} onChange={e => setFormData({ ...formData, badge: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 450W, 5kW" />
+                        </div>
+                        <div className="space-y-2">
                            <label className="text-xs font-bold uppercase text-slate-500">Stock Status</label>
-                           <select value={formData.badge} onChange={e => setFormData({ ...formData, badge: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary appearance-none">
+                           <select value={formData.stockStatus} onChange={e => setFormData({ ...formData, stockStatus: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary appearance-none">
                               <option>In Stock</option>
                               <option>Low Stock</option>
                               <option>Out of Stock</option>
                            </select>
                         </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Efficiency</label>
+                           <input type="text" value={formData.eff} onChange={e => setFormData({ ...formData, eff: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 22.8%, N/A" />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Specification</label>
+                           <input type="text" value={formData.spec} onChange={e => setFormData({ ...formData, spec: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. 25 Years, IP65" />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Brand</label>
+                           <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. EcoVolt" />
+                        </div>
+                     </div>
+                     <div className="space-y-2 mb-6">
+                        <label className="text-xs font-bold uppercase text-slate-500">Description</label>
+                        <textarea value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={3} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="Product description..."></textarea>
                      </div>
 
                      <div className="flex justify-end gap-4 border-t border-slate-100 dark:border-slate-800 pt-6">

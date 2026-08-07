@@ -561,13 +561,15 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       category: product.category,
       image_url: product.img,
       description: product.description || product.spec || '',
-      status: product.stockStatus || product.badge || 'In Stock',
+      status: product.stockStatus || 'In Stock',
       metadata: {
         brand: product.brand,
         series: product.series,
         efficiency: product.eff,
         spec: product.spec,
+        badge: product.badge,
         reviews: product.reviews || 0,
+        rating: product.rating || 5.0,
         stock: product.stock ?? null,
         images: product.images && product.images.length ? product.images : (product.img ? [product.img] : [])
       }
@@ -601,13 +603,15 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       category: nextProduct.category,
       image_url: nextProduct.img,
       description: nextProduct.description ?? nextProduct.spec ?? '',
-      status: nextProduct.stockStatus || nextProduct.badge || 'In Stock',
+      status: nextProduct.stockStatus || 'In Stock',
       metadata: {
         brand: nextProduct.brand,
         series: nextProduct.series,
         efficiency: nextProduct.eff,
         spec: nextProduct.spec,
+        badge: nextProduct.badge,
         reviews: nextProduct.reviews || 0,
+        rating: nextProduct.rating || 5.0,
         stock: nextProduct.stock ?? null,
         images: nextProduct.images && nextProduct.images.length ? nextProduct.images : (nextProduct.img ? [nextProduct.img] : [])
       }
@@ -1026,14 +1030,16 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       img: item.image_url,
       category: item.category,
       brand: item.metadata?.brand || '',
+      brand: item.metadata?.brand || '',
       series: item.metadata?.series || '',
-      badge: item.status || 'In Stock',
+      badge: item.metadata?.badge || '',
       stockStatus: item.status || 'In Stock',
       eff: item.metadata?.efficiency || '',
       spec: item.metadata?.spec || item.metadata?.specification || item.description || 'Standard',
       description: item.description || item.metadata?.description || '',
       stock: typeof item.metadata?.stock === 'number' ? item.metadata.stock : null,
       reviews: item.metadata?.reviews || 0,
+      rating: item.metadata?.rating !== undefined ? item.metadata?.rating : 5.0,
       images: Array.isArray(item.metadata?.images) ? item.metadata.images : (item.image_url ? [item.image_url] : [])
     };
   };
