@@ -206,7 +206,7 @@ export const PublicHeader: React.FC = () => {
       />
 
       <div
-        className={`fixed inset-y-0 right-0 z-[60] w-[85%] max-w-[320px] bg-white dark:bg-[#0f2015] shadow-2xl transform transition-transform duration-700 cubic-bezier(0.33, 1, 0.68, 1) lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed inset-y-0 right-0 z-[60] w-[70%] max-w-[260px] bg-white dark:bg-[#0f2015] shadow-2xl transform transition-transform duration-700 cubic-bezier(0.33, 1, 0.68, 1) lg:hidden ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/5">
@@ -234,7 +234,7 @@ export const PublicHeader: React.FC = () => {
                 <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-forest transition-colors">
                   <span className="material-symbols-outlined">{link.icon}</span>
                 </div>
-                <span className="text-lg font-bold">{link.label}</span>
+                <span className="text-base font-bold">{link.label}</span>
                 <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-primary">chevron_right</span>
               </Link>
             ))}
@@ -250,7 +250,7 @@ export const PublicHeader: React.FC = () => {
               <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-forest transition-colors">
                 <span className="material-symbols-outlined">support_agent</span>
               </div>
-              <span className="text-lg font-bold">Support</span>
+              <span className="text-base font-bold">Support</span>
               <span className="material-symbols-outlined ml-auto text-gray-300 group-hover:text-primary">chevron_right</span>
             </button>
 
@@ -262,7 +262,7 @@ export const PublicHeader: React.FC = () => {
               className="flex items-center gap-4 p-4 rounded-xl text-forest/70 dark:text-white/70 hover:bg-gray-50 dark:hover:bg-white/5 transition-all"
             >
               <span className="material-symbols-outlined">login</span>
-              <span className="font-bold">Sign In</span>
+              <span className="text-base font-bold">Sign In</span>
             </Link>
           </nav>
 
@@ -270,7 +270,7 @@ export const PublicHeader: React.FC = () => {
             <Link
               onClick={() => setIsMobileMenuOpen(false)}
               to="/consultation"
-              className="flex w-full items-center justify-center gap-2 bg-primary text-forest py-4 rounded-xl text-lg font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
+              className="flex w-full items-center justify-center gap-2 bg-primary text-forest py-4 rounded-xl text-base font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
             >
               Get a Free Quote
             </Link>
@@ -355,3 +355,45 @@ export const SectionHeader: React.FC<{ sub: string, title: string, dark?: boolea
     <h3 className={`text-3xl md:text-5xl font-bold leading-tight ${dark ? 'text-white' : 'text-forest dark:text-white'}`}>{title}</h3>
   </div>
 );
+
+// --- Custom Modal ---
+export const ConfirmModal: React.FC<{
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
+}> = ({ isOpen, title, message, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel}></div>
+      <div className="relative bg-white dark:bg-[#152a17] rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="text-center mb-8">
+          <div className="mx-auto size-14 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center mb-4">
+            <span className="material-symbols-outlined text-3xl">logout</span>
+          </div>
+          <h2 className="text-2xl font-black text-forest dark:text-white mb-2">{title}</h2>
+          <p className="text-forest/70 dark:text-gray-300">{message}</p>
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-3 px-4 font-bold rounded-xl text-forest dark:text-white bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 transition-colors"
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 px-4 font-bold rounded-xl text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors"
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

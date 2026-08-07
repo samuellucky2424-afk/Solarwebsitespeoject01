@@ -1030,7 +1030,6 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       img: item.image_url,
       category: item.category,
       brand: item.metadata?.brand || '',
-      brand: item.metadata?.brand || '',
       series: item.metadata?.series || '',
       badge: item.metadata?.badge || '',
       stockStatus: item.status || 'In Stock',

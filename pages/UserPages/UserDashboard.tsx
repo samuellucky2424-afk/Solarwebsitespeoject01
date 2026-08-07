@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
-import { Toast } from '../../components/SharedComponents';
+import { Toast, ConfirmModal } from '../../components/SharedComponents';
 import { useAuth } from '../../context/AuthContext';
 import { useAdmin } from '../../context/AdminContext';
 import DashboardOverview from '../../components/dashboard/DashboardOverview';
@@ -58,6 +58,7 @@ const UserDashboard: React.FC = () => {
 
   // --- State ---
   const [currentView, setCurrentView] = useState<DashboardView>('overview');
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
@@ -147,7 +148,11 @@ const UserDashboard: React.FC = () => {
   };
 
   const handleLogout = async () => {
-    if (!window.confirm("Are you sure you want to log out?")) return;
+    setIsLogoutModalOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    setIsLogoutModalOpen(false);
 
     // Close menu immediately for instant feedback
     setIsMobileMenuOpen(false);
@@ -269,7 +274,7 @@ const UserDashboard: React.FC = () => {
         />
 
         {/* Sidebar Content */}
-        <div className={`absolute top-0 left-0 bottom-0 w-[80%] max-w-[260px] bg-white dark:bg-[#1a2e21] shadow-2xl transition-transform duration-300 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`absolute top-0 left-0 bottom-0 w-[70%] max-w-[260px] bg-white dark:bg-[#1a2e21] shadow-2xl transition-transform duration-300 flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-3 mb-10 px-2 justify-between">
               <div className="flex items-center gap-3">
@@ -593,6 +598,15 @@ const UserDashboard: React.FC = () => {
           </div>
         </main>
       </div>
+
+      <ConfirmModal
+        isOpen={isLogoutModalOpen}
+        title="Log Out"
+        message="Are you sure you want to log out of your account?"
+        confirmText="Log Out"
+        onConfirm={confirmLogout}
+        onCancel={() => setIsLogoutModalOpen(false)}
+      />
     </div>
   );
 };

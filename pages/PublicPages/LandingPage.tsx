@@ -387,7 +387,7 @@ const LandingPage: React.FC = () => {
               { title: "Batteries", img: "/images/battery.png", link: "/products?category=batteries" },
               { title: "Solar Panels", img: "/images/solar_panels.png", link: "/products?category=panels" },
               { title: "Solar Generators", img: "/images/generator.png", link: "/products?category=generators" }
-            ].map((cat, idx) => (
+            ].map((cat: any, idx) => (
               <Link key={idx} to={cat.link} className="category-card group bg-white dark:bg-forest/40 border border-slate-100 dark:border-white/5 rounded-[2rem] p-6 md:p-8 flex flex-col items-center justify-center gap-4 text-center hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgb(0,0,0,0.3)] transition-all duration-500 hover:-translate-y-2">
                 <div className="size-16 md:size-20 rounded-full bg-forest/5 dark:bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-forest text-forest dark:text-white transition-colors duration-500 overflow-hidden">
                   {cat.img ? (
