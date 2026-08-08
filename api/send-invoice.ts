@@ -68,74 +68,86 @@ export default async function handler(req: any, res: any) {
         <meta charset="utf-8">
         <title>Invoice ${meta?.invoiceId || 'Invoice'}</title>
     </head>
-    <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; background-color: #f9fafb; padding: 20px;">
+    <body style="font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #374151; background-color: #f9fafb; padding: 20px; line-height: 1.5; font-size: 14px;">
         <div style="max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #059669; padding-bottom: 20px;">
                 <div>
-                    <img src="https://greenlifesolarsolution.com/logo.png" alt="Greenlife Solar Solutions" style="width: 150px; height: auto;">
+                    <img src="https://greenlifesolarsolution.com/logo.png" alt="Greenlife Solar Solutions" style="width: 140px; height: auto;">
                 </div>
-                <div style="text-align: right; font-size: 14px; color: #6b7280;">
-                    <div style="font-size: 24px; font-weight: bold; color: #059669; margin-bottom: 5px;">${sender?.companyName || 'Greenlife Solar Solutions'}</div>
-                    <div>${sender?.companyAddress || 'Nigeria'}</div>
+                <div style="text-align: right; font-size: 13px; color: #6b7280;">
+                    <div style="font-size: 18px; font-weight: 600; color: #059669; margin-bottom: 5px;">${sender?.companyName || 'Greenlife Solar Solutions'}</div>
+                    <div>${sender?.companyAddress?.replace(/\n/g, '<br>') || 'Nigeria'}</div>
                     <div>${sender?.companyEmail || 'info@greenlifesolarsolution.com'}</div>
                     <div>${sender?.companyPhone || ''}</div>
                 </div>
             </div>
             
-            <div style="margin-bottom: 40px; overflow: hidden;">
-                <div style="float: left; width: 45%;">
-                    <h3 style="color: #059669; text-transform: uppercase; font-size: 16px; margin-bottom: 10px;">Bill To</h3>
-                    <p style="margin: 5px 0;"><strong>${receiver?.customerName || ''}</strong></p>
-                    <p style="margin: 5px 0;">${receiver?.customerAddress || ''}</p>
-                    <p style="margin: 5px 0;">${receiver?.customerEmail || ''}</p>
-                    <p style="margin: 5px 0;">${receiver?.customerPhone || ''}</p>
-                </div>
-                <div style="float: right; width: 45%; text-align: right;">
-                    <div style="font-size: 32px; font-weight: 300; letter-spacing: 2px; margin-bottom: 10px;">INVOICE</div>
-                    <table style="display: inline-block; text-align: right; border-collapse: collapse;">
-                        <tr><th style="padding: 5px 15px; color: #6b7280; font-weight: normal;">Invoice #</th><td style="padding: 5px 15px; font-weight: 600;">${meta?.invoiceId || ''}</td></tr>
-                        <tr><th style="padding: 5px 15px; color: #6b7280; font-weight: normal;">Date</th><td style="padding: 5px 15px; font-weight: 600;">${meta?.issueDate || ''}</td></tr>
-                        <tr><th style="padding: 5px 15px; color: #6b7280; font-weight: normal;">Due Date</th><td style="padding: 5px 15px; font-weight: 600;">${meta?.dueDate || ''}</td></tr>
-                    </table>
-                </div>
-            </div>
-            <div style="clear: both;"></div>
+            <table style="width: 100%; margin-bottom: 40px;" border="0" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td style="width: 50%; vertical-align: top;">
+                        <h3 style="color: #059669; text-transform: uppercase; font-size: 12px; font-weight: 600; margin-bottom: 10px; letter-spacing: 0.5px;">Bill To</h3>
+                        <p style="margin: 3px 0; font-weight: 600; color: #111827;">${receiver?.customerName || ''}</p>
+                        <p style="margin: 3px 0; color: #4b5563;">${receiver?.customerAddress?.replace(/\n/g, '<br>') || ''}</p>
+                        <p style="margin: 3px 0; color: #4b5563;">${receiver?.customerEmail || ''}</p>
+                        <p style="margin: 3px 0; color: #4b5563;">${receiver?.customerPhone || ''}</p>
+                    </td>
+                    <td style="width: 50%; vertical-align: top; text-align: right;">
+                        <div style="font-size: 24px; font-weight: 500; letter-spacing: 1px; margin-bottom: 15px; color: #111827;">INVOICE</div>
+                        <table style="display: inline-block; text-align: right; border-collapse: collapse; font-size: 13px;">
+                            <tr><th style="padding: 4px 15px; color: #6b7280; font-weight: normal; text-align: right;">Invoice #</th><td style="padding: 4px 15px; font-weight: 500; color: #111827;">${meta?.invoiceId || ''}</td></tr>
+                            <tr><th style="padding: 4px 15px; color: #6b7280; font-weight: normal; text-align: right;">Date</th><td style="padding: 4px 15px; font-weight: 500; color: #111827;">${meta?.issueDate || ''}</td></tr>
+                            <tr><th style="padding: 4px 15px; color: #6b7280; font-weight: normal; text-align: right;">Due Date</th><td style="padding: 4px 15px; font-weight: 500; color: #111827;">${meta?.dueDate || ''}</td></tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
             
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 13px;">
                 <thead>
                     <tr>
-                        <th style="background-color: #059669; color: white; padding: 12px 15px; text-align: left; text-transform: uppercase; font-size: 14px;">Item Description</th>
-                        <th style="background-color: #059669; color: white; padding: 12px 15px; text-align: center; text-transform: uppercase; font-size: 14px;">Qty</th>
-                        <th style="background-color: #059669; color: white; padding: 12px 15px; text-align: right; text-transform: uppercase; font-size: 14px;">Price</th>
-                        <th style="background-color: #059669; color: white; padding: 12px 15px; text-align: right; text-transform: uppercase; font-size: 14px;">Total</th>
+                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Item Description</th>
+                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: center; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Qty</th>
+                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: right; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Price</th>
+                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: right; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${items?.map((item: any) => `
                     <tr>
-                        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb;">
-                            <strong>${item.name}</strong><br>
-                            <span style="color: #6b7280; font-size: 12px;">${item.description || ''}</span>
+                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb;">
+                            <div style="font-weight: 500; color: #111827;">${item.name}</div>
+                            ${item.description ? `<div style="color: #6b7280; font-size: 12px; margin-top: 4px;">${item.description}</div>` : ''}
                         </td>
-                        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
-                        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb; text-align: right;">₦${item.price?.toLocaleString()}</td>
-                        <td style="padding: 15px; border-bottom: 1px solid #e5e7eb; text-align: right;">₦${item.total?.toLocaleString()}</td>
+                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #4b5563;">${item.quantity}</td>
+                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #4b5563;">₦${item.price?.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500; color: #111827;">₦${item.total?.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                     </tr>
                     `).join('') || ''}
                 </tbody>
             </table>
             
-            <div style="text-align: right;">
-                <table style="width: 300px; display: inline-block;">
-                    <tr>
-                        <td style="padding: 10px 15px; text-align: right; font-size: 24px; font-weight: bold; color: #059669; border-top: 2px solid #e5e7eb;">Amount Due:</td>
-                        <td style="padding: 10px 15px; text-align: right; font-size: 24px; font-weight: bold; color: #059669; border-top: 2px solid #e5e7eb;">₦${totalAmount?.toLocaleString() || 0}</td>
-                    </tr>
-                </table>
-            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                <tr>
+                    <td style="width: 50%; vertical-align: top; padding-right: 20px;">
+                        ${terms ? `
+                        <div style="color: #6b7280; font-size: 12px;">
+                            <strong style="color: #059669; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Terms & Conditions</strong><br>
+                            <div style="margin-top: 6px; line-height: 1.6;">${terms.replace(/\n/g, '<br>')}</div>
+                        </div>
+                        ` : ''}
+                    </td>
+                    <td style="width: 50%; vertical-align: top; text-align: right;">
+                        <table style="display: inline-block; width: 250px; text-align: right; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 12px 15px; text-align: left; font-size: 16px; font-weight: 600; color: #111827; border-top: 2px solid #e5e7eb;">Amount Due:</td>
+                                <td style="padding: 12px 15px; text-align: right; font-size: 18px; font-weight: 600; color: #059669; border-top: 2px solid #e5e7eb;">₦${totalAmount?.toLocaleString(undefined, {minimumFractionDigits: 2}) || 0}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
             
-            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 14px; text-align: center;">
-                ${terms ? `<p><strong>Terms and Conditions:</strong> ${terms}</p>` : ''}
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px; text-align: center;">
                 <p>Thank you for choosing Greenlife Solar Solutions!</p>
             </div>
         </div>

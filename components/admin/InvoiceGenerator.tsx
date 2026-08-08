@@ -120,16 +120,16 @@ const InvoiceGenerator: React.FC = () => {
                         {/* Header Section */}
                         <div className="p-12 pb-8 flex justify-between items-start">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-emerald-600 flex items-center justify-center rounded text-white text-2xl font-black rounded-tl-xl rounded-br-xl">
-                                    <span className="material-symbols-outlined">solar_power</span>
+                                <div className="w-10 h-10 bg-emerald-600 flex items-center justify-center rounded text-white text-xl font-bold rounded-tl-xl rounded-br-xl">
+                                    <span className="material-symbols-outlined text-[20px]">solar_power</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-2xl font-black uppercase text-gray-900 leading-tight">{companyName}</h1>
+                                    <h1 className="text-xl font-bold uppercase text-gray-900 leading-tight tracking-wide">{companyName}</h1>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <h2 className="text-4xl font-black uppercase tracking-widest text-gray-900">INVOICE</h2>
-                                <div className="w-full h-1 bg-emerald-600 mt-2"></div>
+                                <h2 className="text-2xl font-semibold uppercase tracking-widest text-gray-900">INVOICE</h2>
+                                <div className="w-full h-0.5 bg-emerald-600 mt-2"></div>
                             </div>
                         </div>
 
@@ -137,12 +137,12 @@ const InvoiceGenerator: React.FC = () => {
                         <div className="px-12 py-6 flex justify-between items-start gap-12">
                             {/* Invoice To */}
                             <div className="flex-1">
-                                <div className="bg-emerald-600 text-white text-xs font-bold uppercase py-1 px-3 inline-block mb-3">INVOICE TO:</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">{customerName || 'Customer Name'}</h3>
+                                <div className="bg-emerald-600 text-white text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">{customerName || 'Customer Name'}</h3>
                                 <div className="text-sm text-gray-600 space-y-1">
-                                    <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-bold text-gray-400">A</span> {customerAddress || 'Customer Address'}</p>
-                                    <p className="flex items-start gap-2"><span className="w-4 font-bold text-gray-400">W</span> {customerEmail || 'customer@email.com'}</p>
-                                    <p className="flex items-start gap-2"><span className="w-4 font-bold text-gray-400">P</span> {customerPhone || 'Customer Phone'}</p>
+                                    <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-gray-400">A</span> {customerAddress || 'Customer Address'}</p>
+                                    <p className="flex items-start gap-2"><span className="w-4 font-medium text-gray-400">W</span> {customerEmail || 'customer@email.com'}</p>
+                                    <p className="flex items-start gap-2"><span className="w-4 font-medium text-gray-400">P</span> {customerPhone || 'Customer Phone'}</p>
                                 </div>
                             </div>
 
@@ -163,7 +163,7 @@ const InvoiceGenerator: React.FC = () => {
                         <div className="px-12 py-6">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="bg-emerald-600 text-white text-left font-bold text-xs uppercase">
+                                    <tr className="bg-emerald-600 text-white text-left font-semibold text-[11px] uppercase tracking-wider">
                                         <th className="p-3 w-12 text-center">SL</th>
                                         <th className="p-3">Description</th>
                                         <th className="p-3 text-center">Unit</th>
@@ -175,15 +175,15 @@ const InvoiceGenerator: React.FC = () => {
                                 <tbody>
                                     {items.map((item, idx) => (
                                         <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-100' : 'bg-gray-50'}>
-                                            <td className="p-4 text-center text-gray-500 font-medium">{(idx + 1).toString().padStart(2, '0')}</td>
-                                            <td className="p-4">
-                                                <div className="font-bold text-emerald-600">{item.name || 'Item Name'}</div>
+                                            <td className="p-3 text-center text-gray-500 font-medium">{(idx + 1).toString().padStart(2, '0')}</td>
+                                            <td className="p-3">
+                                                <div className="font-semibold text-gray-900">{item.name || 'Item Name'}</div>
                                                 <div className="text-xs text-gray-500 mt-1 leading-relaxed">{item.description || 'Item description...'}</div>
                                             </td>
-                                            <td className="p-4 text-center text-gray-600">{item.unit || 'Pcs'}</td>
-                                            <td className="p-4 text-center text-gray-600">{item.quantity}</td>
-                                            <td className="p-4 text-right text-gray-600">₦{Number(item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                            <td className="p-4 text-right font-medium text-gray-900">₦{(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                            <td className="p-3 text-center text-gray-600">{item.unit || 'Pcs'}</td>
+                                            <td className="p-3 text-center text-gray-600">{item.quantity}</td>
+                                            <td className="p-3 text-right text-gray-600">₦{Number(item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                            <td className="p-3 text-right font-medium text-gray-900">₦{(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -195,19 +195,19 @@ const InvoiceGenerator: React.FC = () => {
                             {/* Notes */}
                             <div className="flex-1 pr-12">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="material-symbols-outlined text-gray-900 text-lg">asterisk</span>
-                                    <h4 className="font-bold text-emerald-600 text-sm">Terms & Conditions/Notes:</h4>
+                                    <span className="material-symbols-outlined text-gray-900 text-base">asterisk</span>
+                                    <h4 className="font-semibold text-emerald-600 text-sm">Terms & Conditions/Notes:</h4>
                                 </div>
-                                <div className="text-xs text-gray-500 leading-relaxed whitespace-pre-line ml-7">
+                                <div className="text-xs text-gray-500 leading-relaxed whitespace-pre-line ml-6">
                                     {terms}
                                 </div>
                             </div>
                             
                             {/* Totals & Signature */}
                             <div className="w-64">
-                                <div className="bg-emerald-600 text-white flex justify-between items-center p-3 font-bold mb-12">
+                                <div className="bg-emerald-600 text-white flex justify-between items-center p-3 font-semibold mb-12 rounded">
                                     <span>Total:</span>
-                                    <span className="text-lg">₦{totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                                    <span className="text-lg tracking-wide">₦{totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                                 </div>
                                 
                                 <div className="text-center mt-16 pt-2 border-t border-gray-900">
@@ -254,10 +254,10 @@ const InvoiceGenerator: React.FC = () => {
         <div className="bg-white dark:bg-[#152a17] rounded-2xl border border-[#cfe7d1] dark:border-[#2a3d2c] shadow-sm p-6 md:p-8 mt-8">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white">Invoice Editor</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Invoice Editor</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in the details accurately to match the professional template.</p>
                 </div>
-                <button onClick={() => setShowPreview(true)} className="px-4 py-2 bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 font-bold rounded-lg hover:bg-emerald-600/20 transition-all flex items-center gap-2">
+                <button onClick={() => setShowPreview(true)} className="px-4 py-2 bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg hover:bg-emerald-600/20 transition-all flex items-center gap-2">
                     <span className="material-symbols-outlined">visibility</span> Preview Invoice
                 </button>
             </div>
@@ -274,7 +274,7 @@ const InvoiceGenerator: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Sender Details */}
                     <div className="p-6 rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20 space-y-4">
-                        <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-3">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-3">
                             <span className="material-symbols-outlined text-emerald-600">store</span> From (Sender)
                         </h4>
                         <div>
@@ -299,7 +299,7 @@ const InvoiceGenerator: React.FC = () => {
 
                     {/* Receiver Details */}
                     <div className="p-6 rounded-xl border border-gray-100 dark:border-white/5 bg-emerald-50/50 dark:bg-emerald-900/10 space-y-4">
-                        <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-emerald-100 dark:border-emerald-900/30 pb-3">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 border-b border-emerald-100 dark:border-emerald-900/30 pb-3">
                             <span className="material-symbols-outlined text-emerald-600">person</span> Invoice To (Receiver)
                         </h4>
                         <div>
@@ -355,10 +355,10 @@ const InvoiceGenerator: React.FC = () => {
                 {/* ITEMS */}
                 <div>
                     <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                             <span className="material-symbols-outlined text-gray-500">list_alt</span> Invoice Items
                         </h4>
-                        <button type="button" onClick={handleAddItem} className="px-3 py-1.5 bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white font-bold rounded-lg text-xs hover:bg-gray-200 transition-colors flex items-center gap-1">
+                        <button type="button" onClick={handleAddItem} className="px-3 py-1.5 bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white font-semibold rounded-lg text-xs hover:bg-gray-200 transition-colors flex items-center gap-1">
                             <span className="material-symbols-outlined text-[16px]">add</span> Add Row
                         </button>
                     </div>
@@ -454,10 +454,10 @@ const InvoiceGenerator: React.FC = () => {
                     </div>
                     <div className="bg-gray-50 dark:bg-black/20 p-6 rounded-xl border border-gray-200 dark:border-white/10">
                         <div className="flex justify-between items-center mb-6">
-                            <span className="text-gray-500 font-bold uppercase tracking-wider text-sm">Total Amount</span>
-                            <span className="font-black text-3xl text-emerald-600">₦{totalAmount.toLocaleString()}</span>
+                            <span className="text-gray-500 font-semibold uppercase tracking-wider text-sm">Total Amount</span>
+                            <span className="font-bold text-3xl text-emerald-600">₦{totalAmount.toLocaleString()}</span>
                         </div>
-                        <button type="submit" disabled={loading} className="w-full py-4 bg-primary text-white font-black rounded-xl hover:scale-[1.02] transition-all flex justify-center items-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-50 disabled:hover:scale-100">
+                        <button type="submit" disabled={loading} className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:scale-[1.02] transition-all flex justify-center items-center gap-2 shadow-lg shadow-primary/30 disabled:opacity-50 disabled:hover:scale-100">
                             {loading ? <span className="material-symbols-outlined animate-spin">refresh</span> : <span className="material-symbols-outlined">send</span>}
                             {loading ? 'Sending Invoice...' : 'Send Invoice Email'}
                         </button>
