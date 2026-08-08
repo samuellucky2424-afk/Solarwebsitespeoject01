@@ -137,8 +137,8 @@ const InvoiceGenerator: React.FC = () => {
                         <div style={{ transform: 'scale(1)', transformOrigin: 'top left', width: '794px' }}>
                             <InvoiceLayout 
                                 companyName={companyName} companyAddress={companyAddress} companyEmail={companyEmail} companyPhone={companyPhone}
-                                customerName={customerName} customerAddress={customerAddress} customerEmail={customerEmail} customerPhone={customerPhone}
-                                invoiceId={invoiceId} accountNo={accountNo} taxId={taxId} issueDate={issueDate} dueDate={dueDate}
+                                customerName={customerName} customerAddress={customerAddress} customerEmail={customerEmail} customerPhone={customerPhone} deliveryAddress={deliveryAddress}
+                                invoiceId={invoiceId} issueDate={issueDate} dueDate={dueDate}
                                 items={items} terms={terms} totalAmount={totalAmount}
                             />
                         </div>
@@ -276,34 +276,6 @@ const InvoiceGenerator: React.FC = () => {
                     </div>
                 </div>
 
-                {/* META INFO */}
-                <div className="p-6 rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20">
-                    <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-3 mb-4">
-                        <span className="material-symbols-outlined text-gray-500">info</span> Invoice Details
-                    </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold mb-1 text-gray-500">Invoice #</label>
-                            <input required type="text" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm font-mono" />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold mb-1 text-gray-500">Account #</label>
-                            <input type="text" value={accountNo} onChange={e => setAccountNo(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" placeholder="Optional" />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold mb-1 text-gray-500">Tax ID</label>
-                            <input type="text" value={taxId} onChange={e => setTaxId(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" placeholder="Optional" />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold mb-1 text-gray-500">Date</label>
-                            <input required type="date" value={issueDate} onChange={e => setIssueDate(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold mb-1 text-gray-500">Due Date</label>
-                            <input required type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" />
-                        </div>
-                    </div>
-                </div>
 
                 {/* ITEMS */}
                 <div>

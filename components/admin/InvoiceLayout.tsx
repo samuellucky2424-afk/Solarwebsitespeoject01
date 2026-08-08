@@ -7,12 +7,12 @@ export const InvoiceLayout = ({
     items, terms, totalAmount
 }: any) => {
     return (
-        <div className="bg-[#ffffff] overflow-hidden text-[#1f2937] relative select-text w-[794px] h-[1123px] box-border">
+        <div style={{ fontFamily: "'Times New Roman', Times, serif" }} className="bg-[#ffffff] overflow-hidden text-[#1f2937] relative select-text w-[794px] h-[1123px] box-border">
             {/* Header Section */}
             <div className="p-12 pb-8 flex justify-between items-start">
                 <div className="flex items-center gap-3">
                     <div className="w-16 h-16 flex items-center justify-center">
-                        <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain mix-blend-multiply" />
+                        <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
                     </div>
                     <div>
                         <h1 className="text-xl font-bold uppercase text-[#111827] leading-tight tracking-wide">{companyName}</h1>
