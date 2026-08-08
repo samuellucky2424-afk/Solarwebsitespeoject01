@@ -96,7 +96,7 @@ export default async function handler(req: any, res: any) {
 
     // 2. Insert Record into Invoices Table
     try {
-        await supabase
+        const { error: insertError } = await supabase
             .from('invoices')
             .insert({
                 invoice_number: meta?.invoiceId || '',
@@ -109,6 +109,11 @@ export default async function handler(req: any, res: any) {
                 meta: meta,
                 items: items
             });
+            
+        if (insertError) {
+            console.error('Insert error details:', insertError);
+            throw new Error(insertError.message);
+        }
     } catch (err) {
         console.warn('Failed to insert invoice record:', err);
     }

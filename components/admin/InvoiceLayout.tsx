@@ -11,8 +11,8 @@ export const InvoiceLayout = ({
             {/* Header Section */}
             <div className="p-12 pb-8 flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#059669] flex items-center justify-center rounded text-[#ffffff] text-xl font-bold rounded-tl-xl rounded-br-xl">
-                        <span className="material-symbols-outlined text-[20px]">solar_power</span>
+                    <div className="w-14 h-14 bg-white flex items-center justify-center rounded">
+                        <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
                     </div>
                     <div>
                         <h1 className="text-xl font-bold uppercase text-[#111827] leading-tight tracking-wide">{companyName}</h1>
