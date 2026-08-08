@@ -55,7 +55,11 @@ export const InvoiceLayout = ({
                         <span>Date</span><span className="text-[#111827]">: {new Date(issueDate).toLocaleDateString()}</span>
                         <span>Due Date</span><span className="text-[#111827]">: {new Date(dueDate).toLocaleDateString()}</span>
                         <div className="col-span-2 h-4"></div>
-                        <span>From</span><span className="text-[#111827] font-bold">{companyName}</span>
+                        <span>From</span>
+                        <div className="text-[#111827]">
+                            <div className="font-bold">{companyName}</div>
+                            <div className="whitespace-pre-line mt-1 text-xs text-[#4b5563]">{companyAddress}</div>
+                        </div>
                     </div>
                 </div>
             </div>
