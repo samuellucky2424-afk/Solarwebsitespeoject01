@@ -63,56 +63,64 @@ const AdminOverview: React.FC = () => {
         <div className="space-y-6 md:space-y-8 lg:space-y-10 animate-in fade-in">
             {/* Quick Stats */}
             <section>
-                <div className="flex items-center justify-between mb-4 sm:mb-5 md:mb-6 px-1">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
                     <div>
-                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#0d1b0f] dark:text-white">System Overview</h2>
-                        <p className="text-xs sm:text-sm text-[#4c9a66] dark:text-gray-400 mt-1">Real-time dashboard metrics</p>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">System Overview</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time dashboard metrics</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-                    <div className="bg-white dark:bg-[#152a17] p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg sm:rounded-xl md:rounded-2xl border border-[#d0e5d5] dark:border-[#2a3d2c] shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                        <div className="flex justify-between items-start mb-3 sm:mb-4 md:mb-6">
-                            <div className="p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-lg md:rounded-xl bg-gradient-to-br from-green-100 to-green-50 dark:from-green-900/30 dark:to-green-900/10 text-green-600 shadow-md">
-                                <span className="material-symbols-outlined text-2xl sm:text-3xl md:text-4xl font-light">package_2</span>
+                <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+                    <div className="bg-white dark:bg-gray-950 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 rounded-lg bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400">
+                                <span className="material-symbols-outlined text-xl">package_2</span>
                             </div>
-                            <span className="text-[9px] sm:text-xs md:text-sm font-bold uppercase text-gray-400 tracking-wider">Packages</span>
+                            <span className="text-[10px] md:text-xs font-bold uppercase text-gray-400 tracking-widest">Packages</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-5xl font-black text-[#0d1b0f] dark:text-white mb-1.5 sm:mb-2">{packages.length}</p>
-                        <p className="text-[9px] sm:text-xs md:text-sm text-[#4c9a52] font-bold uppercase tracking-wider">Total Packages</p>
+                        <div>
+                            <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-1">{packages.length}</p>
+                            <p className="text-xs text-gray-500 font-medium">Total Packages</p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-[#152a17] p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg sm:rounded-xl md:rounded-2xl border border-[#d0e5d5] dark:border-[#2a3d2c] shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                        <div className="flex justify-between items-start mb-3 sm:mb-4 md:mb-6">
-                            <div className="p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-lg md:rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-900/10 text-blue-600 shadow-md">
-                                <span className="material-symbols-outlined text-2xl sm:text-3xl md:text-4xl font-light">pending_actions</span>
+                    <div className="bg-white dark:bg-gray-950 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400">
+                                <span className="material-symbols-outlined text-xl">pending_actions</span>
                             </div>
-                            <span className="text-[9px] sm:text-xs md:text-sm font-bold uppercase text-gray-400 tracking-wider">Action Items</span>
+                            <span className="text-[10px] md:text-xs font-bold uppercase text-gray-400 tracking-widest">Action Items</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-5xl font-black text-[#0d1b0f] dark:text-white mb-1.5 sm:mb-2">{requests.filter(r => normalizeStatus(r.status) !== 'Completed').length}</p>
-                        <p className="text-[9px] sm:text-xs md:text-sm text-[#4c9a52] font-bold uppercase tracking-wider">Pending Requests</p>
+                        <div>
+                            <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-1">{requests.filter(r => normalizeStatus(r.status) !== 'Completed').length}</p>
+                            <p className="text-xs text-gray-500 font-medium">Pending Requests</p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-[#152a17] p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg sm:rounded-xl md:rounded-2xl border border-[#d0e5d5] dark:border-[#2a3d2c] shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                        <div className="flex justify-between items-start mb-3 sm:mb-4 md:mb-6">
-                            <div className="p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-lg md:rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10 text-emerald-600 shadow-md">
-                                <span className="material-symbols-outlined text-2xl sm:text-3xl md:text-4xl font-light">task_alt</span>
+                    <div className="bg-white dark:bg-gray-950 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+                                <span className="material-symbols-outlined text-xl">task_alt</span>
                             </div>
-                            <span className="text-[9px] sm:text-xs md:text-sm font-bold uppercase text-gray-400 tracking-wider">Completed</span>
+                            <span className="text-[10px] md:text-xs font-bold uppercase text-gray-400 tracking-widest">Completed</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-5xl font-black text-[#0d1b0f] dark:text-white mb-1.5 sm:mb-2">
-                            {requests.filter(r => (r.type === 'Installation' || r.type === 'Package Request') && normalizeStatus(r.status) === 'Completed').length}
-                        </p>
-                        <p className="text-[9px] sm:text-xs md:text-sm text-[#4c9a52] font-bold uppercase tracking-wider">Installations</p>
+                        <div>
+                            <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-1">
+                                {requests.filter(r => (r.type === 'Installation' || r.type === 'Package Request') && normalizeStatus(r.status) === 'Completed').length}
+                            </p>
+                            <p className="text-xs text-gray-500 font-medium">Installations</p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-[#152a17] p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg sm:rounded-xl md:rounded-2xl border border-[#d0e5d5] dark:border-[#2a3d2c] shadow-lg hover:shadow-xl hover:scale-105 transition-all">
-                        <div className="flex justify-between items-start mb-3 sm:mb-4 md:mb-6">
-                            <div className="p-2 sm:p-2.5 md:p-3 rounded-lg sm:rounded-lg md:rounded-xl bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-amber-900/10 text-amber-600 shadow-md">
-                                <span className="material-symbols-outlined text-2xl sm:text-3xl md:text-4xl font-light">build</span>
+                    <div className="bg-white dark:bg-gray-950 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="p-2 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400">
+                                <span className="material-symbols-outlined text-xl">build</span>
                             </div>
-                            <span className="text-[9px] sm:text-xs md:text-sm font-bold uppercase text-gray-400 tracking-wider">Maintenance</span>
+                            <span className="text-[10px] md:text-xs font-bold uppercase text-gray-400 tracking-widest">Maintenance</span>
                         </div>
-                        <p className="text-2xl sm:text-3xl md:text-5xl font-black text-[#0d1b0f] dark:text-white mb-1.5 sm:mb-2">
-                            {requests.filter(r => (r.type === 'Maintenance' || r.type === 'Maintenance Request') && normalizeStatus(r.status) !== 'Completed').length}
-                        </p>
-                        <p className="text-[9px] sm:text-xs md:text-sm text-[#4c9a52] font-bold uppercase tracking-wider">Open Tickets</p>
+                        <div>
+                            <p className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-1">
+                                {requests.filter(r => (r.type === 'Maintenance' || r.type === 'Maintenance Request') && normalizeStatus(r.status) !== 'Completed').length}
+                            </p>
+                            <p className="text-xs text-gray-500 font-medium">Open Tickets</p>
+                        </div>
                     </div>
                 </div>
             </section>

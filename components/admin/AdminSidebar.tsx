@@ -19,148 +19,120 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
         }
     };
 
+    const navItemClass = (view: AdminView) => {
+        const isActive = activeView === view;
+        return `w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            isActive 
+                ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500' 
+                : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'
+        }`;
+    };
+
     return (
-        <aside className="w-56 md:w-60 lg:w-64 border-r border-[#d0e5d5] dark:border-[#2a3d2c] bg-white dark:bg-[#152a17] flex flex-col shrink-0 h-full shadow-sm">
-            <div className="p-4 sm:p-5 md:p-6 lg:p-8 border-b border-[#d0e5d5] dark:border-[#2a3d2c]">
-                <Link to="/" className="flex items-center gap-2 sm:gap-3">
-                    <div className="size-8 sm:size-9 md:size-10 lg:size-12 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 rounded-full overflow-hidden">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
+        <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col shrink-0 h-full">
+            {/* Logo Area */}
+            <div className="p-6 border-b border-slate-800">
+                <Link to="/" className="flex items-center gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center bg-blue-600 rounded text-white font-bold">
+                        <span className="material-symbols-outlined text-lg">solar_power</span>
                     </div>
                     <div className="flex flex-col">
-                        <h1 className="text-[#0d1b0f] dark:text-white text-xs sm:text-sm md:text-base lg:text-lg font-black leading-tight">Greenlife Solar</h1>
-                        <p className="text-[#4c9a52] text-[8px] sm:text-[9px] md:text-xs lg:text-xs font-semibold mt-0.5 uppercase tracking-wider">Admin Portal</p>
+                        <h1 className="text-white text-base font-bold leading-tight tracking-wide">GREENLIFE</h1>
+                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mt-0.5">Admin Portal</p>
                     </div>
                 </Link>
             </div>
 
-            <nav className="flex-1 px-3 sm:px-4 md:px-5 lg:px-6 py-4 sm:py-5 md:py-6 space-y-1 overflow-y-auto">
-                <button
-                    onClick={() => setActiveView('overview')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">dashboard</span>
-                    <span className="text-xs sm:text-sm">Overview</span>
+            {/* Navigation */}
+            <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+                <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Main Menu</div>
+                
+                <button onClick={() => setActiveView('overview')} className={navItemClass('overview')}>
+                    <span className="material-symbols-outlined text-xl">dashboard</span>
+                    <span>Overview</span>
                 </button>
 
                 {isSuperAdmin && (
-                    <button
-                        onClick={() => setActiveView('users')}
-                        className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                    >
-                        <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">group</span>
-                        <span className="text-xs sm:text-sm">Users</span>
+                    <button onClick={() => setActiveView('users')} className={navItemClass('users')}>
+                        <span className="material-symbols-outlined text-xl">group</span>
+                        <span>Users</span>
                     </button>
                 )}
 
-                <button
-                    onClick={() => setActiveView('dealer-verifications')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'dealer-verifications' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">verified_user</span>
-                    <span className="text-xs sm:text-sm">Dealer Reviews</span>
+                <button onClick={() => setActiveView('dealer-verifications')} className={navItemClass('dealer-verifications')}>
+                    <span className="material-symbols-outlined text-xl">verified_user</span>
+                    <span>Dealer Reviews</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('orders')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'orders' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">local_shipping</span>
-                    <span className="text-xs sm:text-sm">Orders</span>
+                <button onClick={() => setActiveView('orders')} className={navItemClass('orders')}>
+                    <span className="material-symbols-outlined text-xl">local_shipping</span>
+                    <span>Orders</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('invoices')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'invoices' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">receipt_long</span>
-                    <span className="text-xs sm:text-sm">Invoices</span>
+                <button onClick={() => setActiveView('invoices')} className={navItemClass('invoices')}>
+                    <span className="material-symbols-outlined text-xl">receipt_long</span>
+                    <span>Invoices</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('affiliates')}
-                    className={`w-full flex items-center gap-2 md:gap-3 px-3 py-2 md:py-2.5 rounded-lg font-medium transition-colors ${activeView === 'affiliates' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-[20px] md:text-[24px]">volunteer_activism</span>
-                    <span className="text-xs md:text-sm">Affiliates</span>
+                <button onClick={() => setActiveView('affiliates')} className={navItemClass('affiliates')}>
+                    <span className="material-symbols-outlined text-xl">volunteer_activism</span>
+                    <span>Affiliates</span>
                 </button>
 
-                {/* Catalog Group */}
-                <div className="pt-3 sm:pt-4 md:pt-5 lg:pt-6">
-                    <button
-                        onClick={() => setIsCatalogOpen(!isCatalogOpen)}
-                        className="w-full flex items-center justify-between px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 text-[9px] sm:text-xs md:text-xs font-bold uppercase text-gray-500 hover:text-primary transition-colors mb-1.5 sm:mb-2"
-                    >
-                        <span className="tracking-wider">Catalog & Assets</span>
-                        <span className={`material-symbols-outlined text-xs sm:text-sm md:text-base transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`}>expand_more</span>
-                    </button>
-
-                    {isCatalogOpen && (
-                        <div className="space-y-0.5 sm:space-y-1 pl-2 sm:pl-2.5 md:pl-3 border-l-2 border-[#d0e5d5] dark:border-[#2a3d2c] ml-3 sm:ml-3.5 md:ml-4">
-                            <button
-                                onClick={() => setActiveView('products')}
-                                className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-r-lg sm:rounded-r-lg md:rounded-r-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'products' ? 'bg-primary/10 text-primary' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                            >
-                                <span className="material-symbols-outlined text-sm sm:text-lg md:text-xl font-light">inventory_2</span>
-                                <span className="text-xs sm:text-sm">Products</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveView('packages')}
-                                className={`w-full flex items-center gap-1.5 sm:gap-2 md:gap-3 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-r-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'packages' ? 'bg-primary/10 text-primary' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                            >
-                                <span className="material-symbols-outlined text-sm md:text-lg">package_2</span>
-                                <span className="text-xs sm:text-sm">Packages</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveView('gallery')}
-                                className={`w-full flex items-center gap-1.5 sm:gap-2 md:gap-3 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-r-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'gallery' ? 'bg-primary/10 text-primary' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                            >
-                                <span className="material-symbols-outlined text-sm md:text-lg">photo_library</span>
-                                <span className="text-xs sm:text-sm">Gallery</span>
-                            </button>
-                        </div>
-                    )}
+                <div className="mt-6 mb-2 px-3 pt-4 border-t border-slate-800 flex justify-between items-center cursor-pointer group" onClick={() => setIsCatalogOpen(!isCatalogOpen)}>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-300 transition-colors">Catalog & Assets</div>
+                    <span className={`material-symbols-outlined text-slate-500 text-sm transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`}>expand_more</span>
                 </div>
 
-                <button
-                    onClick={() => setActiveView('requests')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'requests' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-lg md:text-xl">assignment</span>
-                    <span className="text-xs sm:text-sm">Requests</span>
+                {isCatalogOpen && (
+                    <div className="space-y-1">
+                        <button onClick={() => setActiveView('products')} className={navItemClass('products')}>
+                            <span className="material-symbols-outlined text-xl">inventory_2</span>
+                            <span>Products</span>
+                        </button>
+                        <button onClick={() => setActiveView('packages')} className={navItemClass('packages')}>
+                            <span className="material-symbols-outlined text-xl">package_2</span>
+                            <span>Packages</span>
+                        </button>
+                        <button onClick={() => setActiveView('gallery')} className={navItemClass('gallery')}>
+                            <span className="material-symbols-outlined text-xl">photo_library</span>
+                            <span>Gallery</span>
+                        </button>
+                    </div>
+                )}
+
+                <div className="mt-6 mb-2 px-3 pt-4 border-t border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-500">Support & Settings</div>
+
+                <button onClick={() => setActiveView('requests')} className={navItemClass('requests')}>
+                    <span className="material-symbols-outlined text-xl">assignment</span>
+                    <span>Requests</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('live-chat')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'live-chat' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-lg md:text-xl">chat</span>
-                    <span className="text-xs sm:text-sm">Live Chat</span>
+                <button onClick={() => setActiveView('live-chat')} className={navItemClass('live-chat')}>
+                    <span className="material-symbols-outlined text-xl">chat</span>
+                    <span>Live Chat</span>
                 </button>
 
                 {isSuperAdmin && (
-                    <button
-                        onClick={() => setActiveView('analytics')}
-                        className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'analytics' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                    >
-                        <span className="material-symbols-outlined text-lg md:text-xl">insights</span>
-                        <span className="text-xs sm:text-sm">Analytics</span>
+                    <button onClick={() => setActiveView('analytics')} className={navItemClass('analytics')}>
+                        <span className="material-symbols-outlined text-xl">insights</span>
+                        <span>Analytics</span>
                     </button>
                 )}
 
                 {isSuperAdmin && (
-                    <button
-                        onClick={() => setActiveView('settings')}
-                        className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'settings' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                    >
-                        <span className="material-symbols-outlined text-lg md:text-xl">settings</span>
-                        <span className="text-xs sm:text-sm">Settings</span>
+                    <button onClick={() => setActiveView('settings')} className={navItemClass('settings')}>
+                        <span className="material-symbols-outlined text-xl">settings</span>
+                        <span>Settings</span>
                     </button>
                 )}
             </nav>
 
-            <div className="p-2.5 sm:p-3 md:p-4 border-t border-[#e7f3e8] dark:border-[#2a3d2c]">
-                <button onClick={handleLogout} className="w-full flex items-center justify-center gap-1.5 sm:gap-2 py-1 sm:py-1.5 md:py-2 text-xs sm:text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                    <span className="material-symbols-outlined text-lg md:text-xl">logout</span> Sign Out
+            {/* Logout */}
+            <div className="p-4 border-t border-slate-800">
+                <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors border border-transparent hover:border-red-500/20">
+                    <span className="material-symbols-outlined text-xl">logout</span>
+                    <span>Sign Out</span>
                 </button>
             </div>
         </aside>
