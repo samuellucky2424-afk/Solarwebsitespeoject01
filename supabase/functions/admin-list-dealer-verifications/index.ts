@@ -45,7 +45,7 @@ async function requireAdmin(authHeader: string | null) {
     .eq("id", authData.user.id)
     .maybeSingle();
 
-  if (!profile || profile.role !== "admin" || profile.suspended) {
+  if (!profile || (profile.role !== "admin" && profile.role !== "super_admin") || profile.suspended) {
     throw new Error("forbidden");
   }
 }

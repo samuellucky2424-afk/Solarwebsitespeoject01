@@ -23,7 +23,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
         const isActive = activeView === view;
         return `w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
             isActive 
-                ? 'bg-blue-600/10 text-blue-400 border-l-2 border-blue-500' 
+                ? 'bg-emerald-500/10 text-emerald-400 border-l-2 border-emerald-500' 
                 : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent'
         }`;
     };
@@ -33,8 +33,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
             {/* Logo Area */}
             <div className="p-6 border-b border-slate-800">
                 <Link to="/" className="flex items-center gap-3">
-                    <div className="w-8 h-8 flex items-center justify-center bg-blue-600 rounded text-white font-bold">
-                        <span className="material-symbols-outlined text-lg">solar_power</span>
+                    <div className="flex items-center justify-center">
+                        <img src="/logo.png" alt="Greenlife Logo" className="h-10 w-10 object-contain" />
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-white text-base font-bold leading-tight tracking-wide">GREENLIFE</h1>
