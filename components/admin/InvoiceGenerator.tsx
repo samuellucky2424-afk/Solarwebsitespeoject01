@@ -21,8 +21,7 @@ const InvoiceGenerator: React.FC = () => {
 
     // Invoice Meta
     const [invoiceId, setInvoiceId] = useState(() => `INV-${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`);
-    const [accountNo, setAccountNo] = useState('');
-    const [taxId, setTaxId] = useState('');
+    const [deliveryAddress, setDeliveryAddress] = useState('');
     
     const [issueDate, setIssueDate] = useState(() => new Date().toISOString().split('T')[0]);
     const nextWeek = new Date();
@@ -87,7 +86,7 @@ const InvoiceGenerator: React.FC = () => {
             const payload = {
                 sender: { companyName, companyAddress, companyEmail, companyPhone },
                 receiver: { customerName, customerAddress, customerEmail, customerPhone },
-                meta: { invoiceId, accountNo, taxId, issueDate, dueDate },
+                meta: { invoiceId, deliveryAddress, issueDate, dueDate },
                 items,
                 terms,
                 totalAmount,
@@ -199,6 +198,27 @@ const InvoiceGenerator: React.FC = () => {
             )}
 
             <form onSubmit={handleSendInvoice} className="space-y-10">
+                {/* Meta Fields */}
+                <div className="p-6 rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20 space-y-4 lg:col-span-2">
+                    <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 border-b border-gray-200 dark:border-white/10 pb-3">
+                        <span className="material-symbols-outlined text-emerald-600">info</span> Invoice Details
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label className="block text-xs font-bold mb-1 text-gray-500">Invoice Number</label>
+                            <input required type="text" value={invoiceId} onChange={e => setInvoiceId(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold mb-1 text-gray-500">Issue Date</label>
+                            <input required type="date" value={issueDate} onChange={e => setIssueDate(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold mb-1 text-gray-500">Due Date</label>
+                            <input required type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" />
+                        </div>
+                    </div>
+                </div>
+
                 {/* SENDER & RECEIVER */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Sender Details */}
@@ -236,8 +256,12 @@ const InvoiceGenerator: React.FC = () => {
                             <input required type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" placeholder="Client Name" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold mb-1 text-gray-500">Address</label>
+                            <label className="block text-xs font-bold mb-1 text-gray-500">Address (Billing)</label>
                             <textarea required value={customerAddress} onChange={e => setCustomerAddress(e.target.value)} rows={2} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" placeholder="123 Client St..." />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold mb-1 text-gray-500">Delivery Address (Shipping)</label>
+                            <textarea value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)} rows={2} className="w-full p-2.5 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-black/40 text-sm" placeholder="Same as billing if left empty" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
@@ -399,8 +423,8 @@ const InvoiceGenerator: React.FC = () => {
                 <div ref={captureRef} style={{ width: '794px' }}>
                     <InvoiceLayout 
                         companyName={companyName} companyAddress={companyAddress} companyEmail={companyEmail} companyPhone={companyPhone}
-                        customerName={customerName} customerAddress={customerAddress} customerEmail={customerEmail} customerPhone={customerPhone}
-                        invoiceId={invoiceId} accountNo={accountNo} taxId={taxId} issueDate={issueDate} dueDate={dueDate}
+                        customerName={customerName} customerAddress={customerAddress} customerEmail={customerEmail} customerPhone={customerPhone} deliveryAddress={deliveryAddress}
+                        invoiceId={invoiceId} issueDate={issueDate} dueDate={dueDate}
                         items={items} terms={terms} totalAmount={totalAmount}
                     />
                 </div>

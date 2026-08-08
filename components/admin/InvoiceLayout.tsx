@@ -2,8 +2,8 @@ import React from 'react';
 
 export const InvoiceLayout = ({
     companyName, companyAddress, companyEmail, companyPhone,
-    customerName, customerAddress, customerEmail, customerPhone,
-    invoiceId, accountNo, taxId, issueDate, dueDate,
+    customerName, customerAddress, customerEmail, customerPhone, deliveryAddress,
+    invoiceId, issueDate, dueDate,
     items, terms, totalAmount
 }: any) => {
     return (
@@ -11,8 +11,8 @@ export const InvoiceLayout = ({
             {/* Header Section */}
             <div className="p-12 pb-8 flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                    <div className="w-14 h-14 bg-white flex items-center justify-center rounded">
-                        <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain" />
+                    <div className="w-16 h-16 flex items-center justify-center">
+                        <img src="/logo.png" alt="Greenlife Solar" className="w-full h-full object-contain mix-blend-multiply" />
                     </div>
                     <div>
                         <h1 className="text-xl font-bold uppercase text-[#111827] leading-tight tracking-wide">{companyName}</h1>
@@ -25,27 +25,37 @@ export const InvoiceLayout = ({
             </div>
 
             {/* Middle Section (Addresses & Meta) */}
-            <div className="px-12 py-6 flex justify-between items-start gap-12">
-                {/* Invoice To */}
-                <div className="flex-1">
-                    <div className="bg-[#059669] text-[#ffffff] text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
-                    <h3 className="text-lg font-semibold text-[#111827] mb-2">{customerName || 'Customer Name'}</h3>
-                    <div className="text-sm text-[#4b5563] space-y-1">
-                        <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-[#9ca3af]">A</span> {customerAddress || 'Customer Address'}</p>
-                        <p className="flex items-start gap-2"><span className="w-4 font-medium text-[#9ca3af]">W</span> {customerEmail || 'customer@email.com'}</p>
-                        <p className="flex items-start gap-2"><span className="w-4 font-medium text-[#9ca3af]">P</span> {customerPhone || 'Customer Phone'}</p>
+            <div className="px-12 py-6 flex justify-between items-start gap-8">
+                {/* Invoice & Delivery To */}
+                <div className="flex-1 flex gap-8">
+                    <div className="flex-1">
+                        <div className="bg-[#059669] text-[#ffffff] text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
+                        <h3 className="text-lg font-semibold text-[#111827] mb-2">{customerName || 'Customer Name'}</h3>
+                        <div className="text-sm text-[#4b5563] space-y-1">
+                            <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-[#9ca3af]">A</span> {customerAddress || 'Customer Address'}</p>
+                            <p className="flex items-start gap-2"><span className="w-4 font-medium text-[#9ca3af]">W</span> {customerEmail || 'customer@email.com'}</p>
+                            <p className="flex items-start gap-2"><span className="w-4 font-medium text-[#9ca3af]">P</span> {customerPhone || 'Customer Phone'}</p>
+                        </div>
                     </div>
+                    {deliveryAddress && (
+                        <div className="flex-1">
+                            <div className="bg-[#1f2937] text-[#ffffff] text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">DELIVER TO:</div>
+                            <h3 className="text-lg font-semibold text-[#111827] mb-2">Shipping Address</h3>
+                            <div className="text-sm text-[#4b5563] space-y-1">
+                                <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-[#9ca3af]">A</span> {deliveryAddress}</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Meta Info */}
                 <div className="w-64 text-sm">
                     <div className="grid grid-cols-2 gap-y-1 text-[#4b5563]">
                         <span>Invoice</span><span className="text-[#111827]"># {invoiceId}</span>
-                        <span>Account</span><span className="text-[#111827]"># {accountNo || 'N/A'}</span>
-                        <span>Tax ID</span><span className="text-[#111827]"># {taxId || 'N/A'}</span>
-                        <div className="col-span-2 h-4"></div>
                         <span>Date</span><span className="text-[#111827]">: {new Date(issueDate).toLocaleDateString()}</span>
                         <span>Due Date</span><span className="text-[#111827]">: {new Date(dueDate).toLocaleDateString()}</span>
+                        <div className="col-span-2 h-4"></div>
+                        <span>From</span><span className="text-[#111827] font-bold">{companyName}</span>
                     </div>
                 </div>
             </div>
