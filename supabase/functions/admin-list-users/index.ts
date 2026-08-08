@@ -51,7 +51,7 @@ serve(async (req: Request) => {
       .eq("id", authData.user.id)
       .single();
 
-    if (!profile || profile.role !== "admin") {
+    if (!profile || (profile.role !== "admin" && profile.role !== "super_admin")) {
       console.error("User forbidden. Found role:", profile?.role, "for auth ID:", authData.user.id);
       throw new Error("forbidden");
     }
