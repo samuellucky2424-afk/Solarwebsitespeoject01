@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { supabase } from '../../config/supabaseClient';
 import { productsData } from '../../data/products';
 
 const InvoiceGenerator: React.FC = () => {
@@ -75,9 +76,12 @@ const InvoiceGenerator: React.FC = () => {
                 totalAmount
             };
 
-            const res = await fetch('http://localhost:3001/api/send-invoice', {
+            const res = await fetch('/api/send-invoice', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                },
                 body: JSON.stringify(payload)
             });
 
