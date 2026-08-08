@@ -10,7 +10,7 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }) => {
-    const { signOut } = useAuth();
+    const { signOut, isSuperAdmin } = useAuth();
     const [isCatalogOpen, setIsCatalogOpen] = useState(true);
 
     const handleLogout = async () => {
@@ -42,13 +42,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     <span className="text-xs sm:text-sm">Overview</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('users')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">group</span>
-                    <span className="text-xs sm:text-sm">Users</span>
-                </button>
+                {isSuperAdmin && (
+                    <button
+                        onClick={() => setActiveView('users')}
+                        className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 lg:py-3.5 rounded-lg sm:rounded-lg md:rounded-xl font-semibold transition-all text-xs sm:text-sm ${activeView === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'text-[#4c9a52] hover:bg-[#f0f7f2] dark:hover:bg-[#1d351f]'}`}
+                    >
+                        <span className="material-symbols-outlined text-base sm:text-xl md:text-2xl font-light">group</span>
+                        <span className="text-xs sm:text-sm">Users</span>
+                    </button>
+                )}
 
                 <button
                     onClick={() => setActiveView('dealer-verifications')}
@@ -127,21 +129,25 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     <span className="text-xs sm:text-sm">Live Chat</span>
                 </button>
 
-                <button
-                    onClick={() => setActiveView('analytics')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'analytics' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-lg md:text-xl">insights</span>
-                    <span className="text-xs sm:text-sm">Analytics</span>
-                </button>
+                {isSuperAdmin && (
+                    <button
+                        onClick={() => setActiveView('analytics')}
+                        className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'analytics' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                    >
+                        <span className="material-symbols-outlined text-lg md:text-xl">insights</span>
+                        <span className="text-xs sm:text-sm">Analytics</span>
+                    </button>
+                )}
 
-                <button
-                    onClick={() => setActiveView('settings')}
-                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'settings' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
-                >
-                    <span className="material-symbols-outlined text-lg md:text-xl">settings</span>
-                    <span className="text-xs sm:text-sm">Settings</span>
-                </button>
+                {isSuperAdmin && (
+                    <button
+                        onClick={() => setActiveView('settings')}
+                        className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm ${activeView === 'settings' ? 'bg-primary text-white' : 'text-[#4c9a52] hover:bg-[#e7f3e8] dark:hover:bg-[#1d351f]'}`}
+                    >
+                        <span className="material-symbols-outlined text-lg md:text-xl">settings</span>
+                        <span className="text-xs sm:text-sm">Settings</span>
+                    </button>
+                )}
             </nav>
 
             <div className="p-2.5 sm:p-3 md:p-4 border-t border-[#e7f3e8] dark:border-[#2a3d2c]">

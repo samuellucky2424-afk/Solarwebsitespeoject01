@@ -13,11 +13,16 @@ import AdminLiveChat from '../../components/admin/AdminLiveChat';
 import OrderManagement from '../../components/admin/OrderManagement';
 import DealerVerificationManagement from '../../components/admin/DealerVerificationManagement';
 import AdminAffiliates from '../../components/admin/AdminAffiliates';
+import SuperAdminDashboard from '../../components/admin/SuperAdminDashboard';
+import SuperAdminSettings from '../../components/admin/SuperAdminSettings';
+import InvoiceGenerator from '../../components/admin/InvoiceGenerator';
+import { useAuth } from '../../context/AuthContext';
 
 // Define View Type (matching AdminSidebar)
-type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates';
+type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates' | 'invoices';
 
 const AdminDashboard: React.FC = () => {
+   const { isSuperAdmin } = useAuth();
    const [activeView, setActiveView] = useState<AdminView>('overview');
    const [toastMsg, setToastMsg] = useState<string | null>(null);
    const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -80,7 +85,7 @@ const AdminDashboard: React.FC = () => {
             </header>
 
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
-               {activeView === 'overview' && <AdminOverview />}
+               {activeView === 'overview' && (isSuperAdmin ? <SuperAdminDashboard /> : <AdminOverview />)}
                {activeView === 'users' && <UserManagement />}
                {activeView === 'dealer-verifications' && <DealerVerificationManagement />}
                {activeView === 'orders' && <OrderManagement />}
@@ -101,8 +106,9 @@ const AdminDashboard: React.FC = () => {
                      }}
                   />
                )}
+               {activeView === 'invoices' && <InvoiceGenerator />}
                {activeView === 'analytics' && <AnalyticsInsights />}
-               {activeView === 'settings' && <SettingsPanel />}
+               {activeView === 'settings' && (isSuperAdmin ? <SuperAdminSettings /> : <SettingsPanel />)}
                {activeView === 'live-chat' && <AdminLiveChat />}
             </main>
          </div>

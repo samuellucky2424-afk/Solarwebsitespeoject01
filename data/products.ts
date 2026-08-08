@@ -19,6 +19,11 @@ export interface Product {
   reviews?: number;
   rating?: number;
   images?: string[];
+  properties?: string[];
+  datasheetUrl?: string;
+  videoLink?: string;
+  discountPrice?: number;
+  discountEndDate?: string;
 }
 
 export const productsData: Product[] = [

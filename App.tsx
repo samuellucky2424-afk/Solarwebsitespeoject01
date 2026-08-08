@@ -23,6 +23,7 @@ const UserLogin = lazy(() => import('./pages/AuthPages/UserLogin'));
 const ForgotPassword = lazy(() => import('./pages/AuthPages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/AuthPages/ResetPassword'));
 const AdminLogin = lazy(() => import('./pages/AuthPages/AdminLogin'));
+const SuperAdminLogin = lazy(() => import('./pages/AuthPages/SuperAdminLogin'));
 const ServiceRequestForm = lazy(() => import('./pages/UserPages/ServiceRequestForm'));
 const OrderDetailPage = lazy(() => import('./pages/UserPages/OrderDetailPage'));
 const AdminDashboard = lazy(() => import('./pages/AdminPages/AdminDashboard'));
@@ -178,6 +179,7 @@ const App: React.FC = () => {
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/php/greenlife/privatelog" element={<AdminLogin />} />
+                  <Route path="/php/greenlife/privatelog/super" element={<SuperAdminLogin />} />
 
                   {/* User Protected Routes */}
                   <Route path="/dashboard" element={<UserDashboard />} />

@@ -8,6 +8,12 @@ export interface GreenlifeMetadata {
   category?: string;
   image_url?: string;
   stock_status?: string;
+  brand?: string;
+  properties?: string[];
+  datasheet_url?: string;
+  video_link?: string;
+  discount_price?: number;
+  discount_end_date?: string;
 
   // Gallery specific
   project_name?: string;

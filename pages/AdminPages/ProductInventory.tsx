@@ -26,7 +26,12 @@ const ProductInventory: React.FC = () => {
       img: '',
       badge: '',
       stockStatus: 'In Stock',
-      description: ''
+      description: '',
+      datasheetUrl: '',
+      videoLink: '',
+      discountPrice: 0,
+      discountEndDate: '',
+      properties: []
    });
 
    // Derived Data
@@ -47,7 +52,7 @@ const ProductInventory: React.FC = () => {
       } else {
          setEditingProduct(null);
          setFormData({
-            name: '', series: '', price: 0, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: '', stockStatus: 'In Stock', description: ''
+            name: '', series: '', price: 0, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: '', stockStatus: 'In Stock', description: '', datasheetUrl: '', videoLink: '', discountPrice: 0, discountEndDate: '', properties: []
          });
       }
       setIsModalOpen(true);
@@ -313,8 +318,28 @@ const ProductInventory: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                            <label className="text-xs font-bold uppercase text-slate-500">Brand</label>
-                           <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. EcoVolt" />
+                           <input type="text" value={formData.brand} onChange={e => setFormData({ ...formData, brand: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. EcoVolt (Type to add new)" />
                         </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Datasheet URL</label>
+                           <input type="url" value={formData.datasheetUrl || ''} onChange={e => setFormData({ ...formData, datasheetUrl: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="Link to PDF manual/datasheet" />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Video Link</label>
+                           <input type="url" value={formData.videoLink || ''} onChange={e => setFormData({ ...formData, videoLink: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="YouTube, TikTok, FB Video" />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Discount Price (₦)</label>
+                           <input type="number" step="0.01" value={formData.discountPrice || ''} onChange={e => setFormData({ ...formData, discountPrice: parseFloat(e.target.value) || undefined })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="0.00" />
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase text-slate-500">Discount End Date</label>
+                           <input type="date" value={formData.discountEndDate || ''} onChange={e => setFormData({ ...formData, discountEndDate: e.target.value })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                     </div>
+                     <div className="space-y-2 mb-6">
+                        <label className="text-xs font-bold uppercase text-slate-500">Properties/Features (Comma separated)</label>
+                        <input type="text" value={(formData.properties || []).join(', ')} onChange={e => setFormData({ ...formData, properties: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })} className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary" placeholder="e.g. Waterproof, 25yr Warranty, WiFi Monitoring" />
                      </div>
                      <div className="space-y-2 mb-6">
                         <label className="text-xs font-bold uppercase text-slate-500">Description</label>

@@ -1,0 +1,261 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { getSupabase } from '../../config/supabaseClient';
+import { applySecureLoginSession, securePasswordLogin, type SecureLoginError } from '../../src/lib/secureLogin';
+import { useAuth } from '../../context/AuthContext';
+import TurnstileWidget from '../../src/lib/TurnstileWidget';
+
+const SuperAdminLogin: React.FC = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, isSuperAdmin, roleResolved } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+
+  // Hardcoded Super Admin Email requirement
+  const SUPER_ADMIN_EMAIL = 'greenlifesolasolutionslimited@gmail.com';
+
+  useEffect(() => {
+    if (isAuthenticated && roleResolved && isSuperAdmin) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, roleResolved, isSuperAdmin, navigate]);
+
+  const resetCaptchaChallenge = () => {
+    setCaptchaToken('');
+    setCaptchaError(null);
+    setCaptchaResetSignal(signal => signal + 1);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (email.toLowerCase() !== SUPER_ADMIN_EMAIL) {
+      alert("Unauthorized: This portal is strictly restricted to the Super Admin.");
+      return;
+    }
+
+    setLoading(true);
+
+    if (!captchaToken) {
+      alert("Please complete the security check.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const loginData = await securePasswordLogin(email, password, captchaToken);
+      const data = await applySecureLoginSession(loginData);
+
+      if (!data.session?.user) {
+        throw new Error("Login successful but no session returned. Check Supabase config.");
+      }
+
+      if (data.session.user.email?.toLowerCase() !== SUPER_ADMIN_EMAIL) {
+        await getSupabase().auth.signOut();
+        throw new Error('forbidden');
+      }
+
+      const { data: profile, error: profileError } = await getSupabase()
+        .from('profiles')
+        .select('role, suspended')
+        .eq('id', data.session.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        await getSupabase().auth.signOut();
+        throw new Error('Could not verify super admin privileges.');
+      }
+
+      if (!profile || profile.role !== 'super_admin' || profile.suspended) {
+        await getSupabase().auth.signOut();
+        throw new Error('forbidden');
+      }
+
+      // Explicitly wait for session to be stored
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Try to verify session was stored, but don't fail if aborted
+      try {
+        await getSupabase().auth.getSession();
+      } catch (verifyError: any) {
+        // Ignore AbortError during session verification
+        if (verifyError.name === 'AbortError' || verifyError.message?.includes('aborted')) {
+          // Ignore transient HMR-related aborts in development.
+        } else {
+          throw verifyError;
+        }
+      }
+
+      navigate('/admin/dashboard');
+    } catch (err: any) {
+      // Ignore AbortError - it's just HMR
+      if (err.name === 'AbortError' || err.message?.includes('aborted')) {
+        return;
+      }
+
+      // specific check for the user credential mismatch
+      const loginError = err as SecureLoginError;
+      if (loginError.details?.suspended) {
+        alert(loginError.message || "This account is suspended. Use Supabase to unsuspend it or contact the site owner.");
+      } else if (loginError.details?.failed_login_attempts) {
+        alert(`Invalid credentials. Failed attempt ${loginError.details.failed_login_attempts} of 5. ${loginError.details.attempts_remaining || 0} attempt(s) remaining.`);
+      } else if (err.message === 'forbidden') {
+        alert("This account does not have Super Admin access.");
+      } else {
+        alert(err.message || "Failed to login");
+      }
+    } finally {
+      resetCaptchaChallenge();
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-forest dark:text-white">
+      {/* Header */}
+      <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-gray-200 dark:border-gray-800 px-4 md:px-6 py-2.5 md:py-3 bg-white/50 dark:bg-black/20 backdrop-blur-md sticky top-0 z-50">
+        <Link to="/" className="flex items-center gap-2 md:gap-4 text-forest dark:text-white">
+          <div className="flex justify-center">
+            <div className="bg-gradient-to-br from-primary/20 to-primary/10 p-1 md:p-2 rounded-full shadow-lg overflow-hidden">
+              <img src="/logo.png" alt="Greenlife Solar" className="w-10 h-10 md:w-16 md:h-16 object-cover rounded-full" />
+            </div>
+          </div>
+          <h2 className="text-sm md:text-lg font-bold leading-tight tracking-tight">Greenlife Solar Solutions LTD</h2>
+        </Link>
+        <div className="flex flex-1 justify-end gap-4 md:gap-8">
+          <Link to="/consultation" className="flex min-w-[72px] md:min-w-[84px] cursor-pointer items-center justify-center rounded-lg h-8 md:h-10 px-3 md:px-4 bg-primary text-forest text-xs md:text-sm font-bold transition-transform hover:scale-105 active:scale-95">
+            <span className="truncate">Help Desk</span>
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 md:py-12">
+        <div className="max-w-[480px] w-full">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-forest dark:text-white tracking-tight text-2xl md:text-[32px] font-bold leading-tight pb-1.5 md:pb-2">Super Admin Access</h1>
+            <p className="text-red-500 text-xs md:text-sm font-medium uppercase tracking-widest">Highly Secure Portal - Restricted Access</p>
+          </div>
+
+          <div className="bg-[#1a2e21] rounded-xl shadow-2xl p-5 md:p-8 border border-red-900/50">
+            <div className="@container mb-5 md:mb-8">
+              <div className="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-lg min-h-[100px] md:min-h-[140px]" style={{ backgroundImage: 'linear-gradient(to bottom, rgba(26, 46, 33, 0.2), rgba(26, 46, 33, 0.8)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBGkOfVvKAhxN13X_JGSnQn0dxpssdjdLWl-b4IGZkq9RV0chS1YZ2SOzsFLs_uyzznaneifz37OkRkfjGEAWvfHqMqkdKdmwdfAWPg7acrzW70ZOjqPX38ehvQJ2IE3hfX2PqHYp4lAVccGMuilXNW5LdqsUpg8jfJ-vt7AUWrINCqrKIr8ez79P6668G4Kh774_6l4TPodYsvaoE2yxrHljhr4aIQO9VFbfIbtjKSAtc7AOkLu9TSyJz5JHl5QqPqHPiVFKnb9Zc")' }}>
+                <div className="p-4">
+                  <span className="bg-red-500/20 text-red-500 text-xs font-bold px-2 py-1 rounded flex items-center gap-2 w-fit">
+                    <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                    SUPER ADMIN ONLY
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <form className="space-y-4 md:space-y-6" onSubmit={handleLogin}>
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-gray-300 text-xs md:text-sm font-medium flex items-center gap-2">
+                  <span className="material-symbols-outlined text-xs md:text-sm">person</span>
+                  Super Admin Email
+                </label>
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-input w-full rounded-lg text-white border border-[#2c4b36] bg-[#0d1b12] focus:ring-2 focus:ring-red-500 focus:border-transparent h-10 md:h-12 px-3 md:px-4 text-sm placeholder:text-gray-600 transition-all"
+                  placeholder="Enter authorized email"
+                  type="email"
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1.5 md:gap-2">
+                <label className="text-gray-300 text-xs md:text-sm font-medium flex items-center gap-2">
+                  <span className="material-symbols-outlined text-xs md:text-sm">lock</span>
+                  Password
+                </label>
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input w-full rounded-lg text-white border border-[#2c4b36] bg-[#0d1b12] focus:ring-2 focus:ring-red-500 focus:border-transparent h-10 md:h-12 px-3 md:px-4 text-sm placeholder:text-gray-600 transition-all"
+                  placeholder="••••••••"
+                  type="password"
+                  required
+                />
+              </div>
+
+              <div className="bg-[#0d1b12]/50 border-l-4 border-red-500 p-3 md:p-4 rounded-r-lg">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <span className="material-symbols-outlined text-red-500 text-[20px] md:text-[24px]">cell_tower</span>
+                  <div>
+                    <p className="text-white text-[10px] md:text-xs font-bold">Two-Factor Authentication</p>
+                    <p className="text-gray-400 text-[10px] md:text-[11px]">Prompt will be triggered upon credential verification.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <TurnstileWidget
+                  action="super_admin_login"
+                  className="min-h-[65px] w-full overflow-hidden rounded-lg"
+                  resetSignal={captchaResetSignal}
+                  theme="dark"
+                  onVerify={(token) => {
+                    setCaptchaToken(token);
+                    setCaptchaError(null);
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken('');
+                    setCaptchaError('Security check expired. Please try again.');
+                  }}
+                  onError={() => {
+                    setCaptchaToken('');
+                    setCaptchaError('Security check failed to load. Refresh the page and try again.');
+                  }}
+                />
+                {captchaError && (
+                  <p className="mt-2 text-xs font-semibold text-red-300">{captchaError}</p>
+                )}
+              </div>
+
+              <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 md:py-3 rounded-lg shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 text-sm md:text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed" type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                    <span>Authenticating...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Secure Login</span>
+                    <span className="material-symbols-outlined">login</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center justify-between text-xs pt-2">
+                <a className="text-gray-400 hover:text-red-400 underline decoration-gray-600" href="#">Trouble logging in?</a>
+                <span className="text-gray-500">v4.2.1-stable</span>
+              </div>
+            </form>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center gap-4 px-4 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-xs leading-relaxed max-w-[320px]">
+              Warning: This system is for the use of authorized Greenlife Solar Solutions LTD personnel only. All activities are monitored and logged.
+            </p>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-1 text-[#4c9a66]">
+                <span className="material-symbols-outlined text-[16px]">verified_user</span>
+                <span className="text-[10px] font-bold">256-BIT SSL</span>
+              </div>
+              <div className="flex items-center gap-1 text-[#4c9a66]">
+                <span className="material-symbols-outlined text-[16px]">security</span>
+                <span className="text-[10px] font-bold">SOC2 COMPLIANT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default SuperAdminLogin;

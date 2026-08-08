@@ -274,6 +274,219 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+app.post('/api/send-invoice', async (req, res) => {
+  try {
+    if (!isEmailConfigured) {
+      return res.status(503).json({ error: 'Email service is not configured' });
+    }
+
+    const { to, customerName, items, totalAmount, invoiceId, issueDate, dueDate } = req.body || {};
+
+    if (!to || !customerName || !items || !totalAmount || !invoiceId) {
+      return res.status(400).json({ error: 'Missing required invoice fields' });
+    }
+
+    const invoiceHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; color: #333;">
+        <div style="border-bottom: 2px solid #4CAF50; padding-bottom: 20px; margin-bottom: 20px; text-align: center;">
+          <h1 style="color: #4CAF50; margin: 0;">Greenlife Solar</h1>
+          <p style="margin: 5px 0 0 0; color: #666;">Official Invoice</p>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+          <div>
+            <h3 style="margin-top: 0;">Billed To:</h3>
+            <p style="margin: 0;"><strong>${customerName}</strong></p>
+            <p style="margin: 0;">${to}</p>
+          </div>
+          <div style="text-align: right;">
+            <p style="margin: 0;"><strong>Invoice Number:</strong> ${invoiceId}</p>
+            <p style="margin: 0;"><strong>Issue Date:</strong> ${issueDate}</p>
+            <p style="margin: 0;"><strong>Due Date:</strong> ${dueDate}</p>
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+          <thead>
+            <tr style="background-color: #f5f5f5; text-align: left;">
+              <th style="padding: 12px; border-bottom: 1px solid #ddd;">Description</th>
+              <th style="padding: 12px; border-bottom: 1px solid #ddd; text-align: center;">Qty</th>
+              <th style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right;">Unit Price</th>
+              <th style="padding: 12px; border-bottom: 1px solid #ddd; text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(item => `
+              <tr>
+                <td style="padding: 12px; border-bottom: 1px solid #eee;">${item.name}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">₦${Number(item.price).toLocaleString()}</td>
+                <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">₦${(Number(item.price) * Number(item.quantity)).toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" style="padding: 12px; text-align: right; font-weight: bold;">Grand Total:</td>
+              <td style="padding: 12px; text-align: right; font-weight: bold; color: #4CAF50; font-size: 1.2em;">₦${Number(totalAmount).toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; text-align: center;">
+          <p style="margin: 0; font-size: 0.9em;">Please remit payment by the due date. Thank you for your business!</p>
+          <p style="margin: 10px 0 0 0; font-size: 0.8em; color: #888;">If you have any questions, please reply to this email.</p>
+        </div>
+      </div>
+    `;
+
+    const emailPayload = {
+      from: RESEND_FROM_EMAIL,
+      to,
+      subject: `Invoice ${invoiceId} from Greenlife Solar`,
+      html: invoiceHtml,
+      tags: [{ name: 'type', value: 'invoice' }]
+    };
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify(emailPayload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to send invoice');
+
+    return res.json({ success: true, id: data.id });
+  } catch (error) {
+    console.error('Invoice error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Cart Reminder Job
+const supabaseUrl = process.env.SUPABASE_URL?.trim();
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+if (supabaseUrl && serviceRoleKey && isEmailConfigured) {
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  
+  // Run every 15 minutes
+  setInterval(async () => {
+    try {
+      console.log('🔄 Running cart reminder check...');
+      
+      // Get all cart_state records
+      const { data: carts, error } = await supabase
+        .from('greenlife_hub')
+        .select('id, user_id, metadata, profiles:user_id(email, full_name)')
+        .eq('type', 'cart_state');
+
+      if (error || !carts) return;
+
+      const now = new Date();
+      
+      for (const cart of carts) {
+        if (!cart.metadata?.items || cart.metadata.items.length === 0) continue;
+        if (!cart.profiles || !cart.profiles.email) continue;
+        
+        const lastUpdated = new Date(cart.metadata.last_updated || new Date());
+        const hoursSinceUpdate = (now.getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
+        
+        let remindersSent = cart.metadata.reminders_sent || 0;
+        
+        // Conditions: > 1 hour old, < 24 hours old, max 3 reminders, hasn't been reminded recently
+        if (hoursSinceUpdate >= 1 && hoursSinceUpdate < 24 && remindersSent < 3) {
+          
+          // Check if we sent one recently (within last 4 hours)
+          const lastReminderTime = cart.metadata.last_reminder_time ? new Date(cart.metadata.last_reminder_time) : null;
+          if (lastReminderTime) {
+             const hoursSinceLastReminder = (now.getTime() - lastReminderTime.getTime()) / (1000 * 60 * 60);
+             if (hoursSinceLastReminder < 4) continue; // Wait at least 4 hours between reminders
+          }
+
+          console.log(`📧 Sending cart reminder ${remindersSent + 1} to ${cart.profiles.email}`);
+          
+          const itemsHtml = cart.metadata.items.map(item => `
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
+              <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+              <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">₦${Number(item.price).toLocaleString()}</td>
+            </tr>
+          `).join('');
+
+          const total = cart.metadata.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+          const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #4CAF50; text-align: center;">You left something behind!</h2>
+              <p>Hi ${cart.profiles.full_name || 'there'},</p>
+              <p>We noticed you added some items to your cart but haven't completed your purchase yet. Your solar products are waiting for you!</p>
+              
+              <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead style="background-color: #f5f5f5;">
+                  <tr>
+                    <th style="padding: 10px; text-align: left;">Item</th>
+                    <th style="padding: 10px; text-align: center;">Qty</th>
+                    <th style="padding: 10px; text-align: right;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsHtml}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">Total:</td>
+                    <td style="padding: 10px; text-align: right; font-weight: bold; color: #4CAF50;">₦${total.toLocaleString()}</td>
+                  </tr>
+                </tfoot>
+              </table>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <a href="http://localhost:5173/checkout" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Return to Checkout</a>
+              </div>
+            </div>
+          `;
+
+          try {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${RESEND_API_KEY}`,
+              },
+              body: JSON.stringify({
+                from: RESEND_FROM_EMAIL,
+                to: cart.profiles.email,
+                subject: "Forget something? Your cart is waiting 🛒",
+                html: emailHtml,
+                tags: [{ name: 'type', value: 'cart_reminder' }]
+              }),
+            });
+
+            // Update cart metadata to track reminder
+            await supabase.from('greenlife_hub').update({
+              metadata: {
+                ...cart.metadata,
+                reminders_sent: remindersSent + 1,
+                last_reminder_time: new Date().toISOString()
+              }
+            }).eq('id', cart.id);
+
+          } catch (e) {
+            console.error("Failed to send cart reminder", e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error in cart reminder job', e);
+    }
+  }, 15 * 60 * 1000); // 15 mins
+}
+
 app.listen(PORT, HOST, () => {
   console.log(`Email API server running on http://${HOST}:${PORT}`);
 });

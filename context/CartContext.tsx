@@ -4,6 +4,7 @@ import { Product } from '../data/products';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { getPricedProduct } from '../utils/dealerPricing';
+import { supabase } from '../config/supabaseClient';
 
 export interface CartItem extends Product {
   quantity: number;
@@ -56,10 +57,30 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     prevUserIdRef.current = userId;
   }, [userId]);
 
-  // Save cart to localStorage whenever it changes (only for logged-in users)
+  // Save cart to localStorage and Supabase whenever it changes (only for logged-in users)
   useEffect(() => {
     if (storageKey && userId) {
       localStorage.setItem(storageKey, JSON.stringify(cartItems));
+      
+      // Sync to database for cart reminders
+      if (cartItems.length > 0) {
+        supabase.from('greenlife_hub').upsert({
+          type: 'cart_state',
+          user_id: userId,
+          metadata: {
+            items: cartItems,
+            last_updated: new Date().toISOString()
+          },
+          title: 'User Cart'
+        }, { onConflict: 'user_id,type' }).then(({ error }) => {
+          if (error && !error.message.includes('Could not find')) {
+            console.error('Failed to sync cart to db:', error);
+          }
+        });
+      } else {
+        // Clear from db if empty
+        supabase.from('greenlife_hub').delete().eq('user_id', userId).eq('type', 'cart_state').then();
+      }
     }
   }, [cartItems, storageKey, userId]);
 

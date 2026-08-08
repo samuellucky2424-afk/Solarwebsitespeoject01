@@ -6,6 +6,7 @@ import { Session, User } from '@supabase/supabase-js';
 interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isDealer: boolean;
   loading: boolean;
   roleResolved: boolean;
@@ -136,7 +137,7 @@ function shouldInvalidateRecoveredSession(session: Session) {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const dealerRoles = new Set(['installer', 'retailer']);
-const approvedRoles = new Set(['admin', 'installer', 'retailer']);
+const approvedRoles = new Set(['super_admin', 'admin', 'installer', 'retailer']);
 
 function normalizeDealerRole(value: unknown) {
   const role = String(value || '').toLowerCase();
@@ -349,7 +350,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    if (location.pathname.startsWith('/admin') && session && role !== 'admin') {
+    if (location.pathname.startsWith('/admin') && session && !['admin', 'super_admin'].includes(role || '')) {
       navigate('/dashboard');
     }
 
@@ -360,7 +361,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     isAuthenticated: !!session,
-    isAdmin: role === 'admin',
+    isAdmin: role === 'admin' || role === 'super_admin',
+    isSuperAdmin: role === 'super_admin',
     isDealer: role === 'installer' || role === 'retailer',
     loading,
     roleResolved,

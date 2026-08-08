@@ -130,7 +130,17 @@ const ProductDetail: React.FC = () => {
             </div>
 
             <div className="flex items-baseline gap-3">
-              <span className="text-2xl md:text-3xl font-bold text-primary-dark">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              {product.discountPrice && product.discountPrice < product.price ? (
+                <>
+                  <span className="text-2xl md:text-3xl font-bold text-primary-dark">₦{product.discountPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="text-lg font-bold text-slate-400 line-through">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  {product.discountEndDate && (
+                    <span className="text-xs text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Ends: {new Date(product.discountEndDate).toLocaleDateString()}</span>
+                  )}
+                </>
+              ) : (
+                <span className="text-2xl md:text-3xl font-bold text-primary-dark">₦{product.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              )}
             </div>
 
             <div className="text-sm md:text-base leading-relaxed opacity-80 space-y-2">
@@ -188,6 +198,20 @@ const ProductDetail: React.FC = () => {
                 <span className="material-symbols-outlined text-lg">request_quote</span>
                 Request Installation Quote
               </button>
+              <div className="flex gap-3 mt-2">
+                {product.datasheetUrl && (
+                  <a href={product.datasheetUrl} target="_blank" rel="noopener noreferrer" className="flex-1 border border-slate-200 dark:border-[#2a3a2c] text-slate-600 dark:text-slate-300 font-bold h-10 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-xs">
+                    <span className="material-symbols-outlined text-base">description</span>
+                    Datasheet
+                  </a>
+                )}
+                {product.videoLink && (
+                  <a href={product.videoLink} target="_blank" rel="noopener noreferrer" className="flex-1 bg-red-500/10 text-red-500 font-bold h-10 rounded-lg hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 text-xs">
+                    <span className="material-symbols-outlined text-base">play_circle</span>
+                    Watch Video
+                  </a>
+                )}
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-3 pt-2">
@@ -235,12 +259,12 @@ const ProductDetail: React.FC = () => {
               <h3 className="text-xl md:text-2xl font-bold">Key Features</h3>
               <div className="bg-[#e7f3e8] dark:bg-[#1a2e1c] p-4 md:p-5 rounded-xl border border-[#cbe4cf] dark:border-[#2a3a2c]">
                 <ul className="space-y-4">
-                  {[
+                  {(product.properties && product.properties.length > 0 ? product.properties : [
                     "Advanced cell technology for high efficiency",
                     "Excellent low light performance",
                     "High reliability and durability",
                     "Certified to withstand harsh environments"
-                  ].map((feat, i) => (
+                  ]).map((feat, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <span className="material-symbols-outlined text-primary text-sm mt-0.5">check_circle</span>
                       <span className="text-sm font-medium">{feat}</span>
