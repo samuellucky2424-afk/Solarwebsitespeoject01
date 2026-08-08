@@ -27,8 +27,8 @@ export const InvoiceLayout = ({
             {/* Middle Section (Addresses & Meta) */}
             <div className="px-12 py-6 flex justify-between items-start gap-8">
                 {/* Invoice & Delivery To */}
-                <div className="flex-1 flex gap-8">
-                    <div className="flex-1">
+                <div className="flex-1 flex flex-col gap-6">
+                    <div>
                         <div className="bg-[#059669] text-[#ffffff] text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
                         <h3 className="text-lg font-semibold text-[#111827] mb-2">{customerName || 'Customer Name'}</h3>
                         <div className="text-sm text-[#4b5563] space-y-1">
@@ -38,7 +38,7 @@ export const InvoiceLayout = ({
                         </div>
                     </div>
                     {deliveryAddress && (
-                        <div className="flex-1">
+                        <div>
                             <div className="bg-[#1f2937] text-[#ffffff] text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">DELIVER TO:</div>
                             <h3 className="text-lg font-semibold text-[#111827] mb-2">Shipping Address</h3>
                             <div className="text-sm text-[#4b5563] space-y-1">
