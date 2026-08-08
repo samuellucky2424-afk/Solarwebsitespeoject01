@@ -7,20 +7,20 @@ export const InvoiceLayout = ({
     items, terms, totalAmount
 }: any) => {
     return (
-        <div className="bg-white overflow-hidden text-gray-800 relative select-text w-[794px] h-[1123px] box-border">
+        <div className="bg-[#ffffff] overflow-hidden text-[#1f2937] relative select-text w-[794px] h-[1123px] box-border">
             {/* Header Section */}
             <div className="p-12 pb-8 flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-600 flex items-center justify-center rounded text-white text-xl font-bold rounded-tl-xl rounded-br-xl">
+                    <div className="w-10 h-10 bg-[#059669] flex items-center justify-center rounded text-[#ffffff] text-xl font-bold rounded-tl-xl rounded-br-xl">
                         <span className="material-symbols-outlined text-[20px]">solar_power</span>
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold uppercase text-gray-900 leading-tight tracking-wide">{companyName}</h1>
+                        <h1 className="text-xl font-bold uppercase text-[#111827] leading-tight tracking-wide">{companyName}</h1>
                     </div>
                 </div>
                 <div className="text-right">
-                    <h2 className="text-2xl font-semibold uppercase tracking-widest text-gray-900">INVOICE</h2>
-                    <div className="w-full h-0.5 bg-emerald-600 mt-2"></div>
+                    <h2 className="text-2xl font-semibold uppercase tracking-widest text-[#111827]">INVOICE</h2>
+                    <div className="w-full h-0.5 bg-[#059669] mt-2"></div>
                 </div>
             </div>
 
@@ -28,24 +28,24 @@ export const InvoiceLayout = ({
             <div className="px-12 py-6 flex justify-between items-start gap-12">
                 {/* Invoice To */}
                 <div className="flex-1">
-                    <div className="bg-emerald-600 text-white text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{customerName || 'Customer Name'}</h3>
-                    <div className="text-sm text-gray-600 space-y-1">
-                        <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-gray-400">A</span> {customerAddress || 'Customer Address'}</p>
-                        <p className="flex items-start gap-2"><span className="w-4 font-medium text-gray-400">W</span> {customerEmail || 'customer@email.com'}</p>
-                        <p className="flex items-start gap-2"><span className="w-4 font-medium text-gray-400">P</span> {customerPhone || 'Customer Phone'}</p>
+                    <div className="bg-[#059669] text-[#ffffff] text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
+                    <h3 className="text-lg font-semibold text-[#111827] mb-2">{customerName || 'Customer Name'}</h3>
+                    <div className="text-sm text-[#4b5563] space-y-1">
+                        <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-[#9ca3af]">A</span> {customerAddress || 'Customer Address'}</p>
+                        <p className="flex items-start gap-2"><span className="w-4 font-medium text-[#9ca3af]">W</span> {customerEmail || 'customer@email.com'}</p>
+                        <p className="flex items-start gap-2"><span className="w-4 font-medium text-[#9ca3af]">P</span> {customerPhone || 'Customer Phone'}</p>
                     </div>
                 </div>
 
                 {/* Meta Info */}
                 <div className="w-64 text-sm">
-                    <div className="grid grid-cols-2 gap-y-1 text-gray-600">
-                        <span>Invoice</span><span className="text-gray-900"># {invoiceId}</span>
-                        <span>Account</span><span className="text-gray-900"># {accountNo || 'N/A'}</span>
-                        <span>Tax ID</span><span className="text-gray-900"># {taxId || 'N/A'}</span>
+                    <div className="grid grid-cols-2 gap-y-1 text-[#4b5563]">
+                        <span>Invoice</span><span className="text-[#111827]"># {invoiceId}</span>
+                        <span>Account</span><span className="text-[#111827]"># {accountNo || 'N/A'}</span>
+                        <span>Tax ID</span><span className="text-[#111827]"># {taxId || 'N/A'}</span>
                         <div className="col-span-2 h-4"></div>
-                        <span>Date</span><span className="text-gray-900">: {new Date(issueDate).toLocaleDateString()}</span>
-                        <span>Due Date</span><span className="text-gray-900">: {new Date(dueDate).toLocaleDateString()}</span>
+                        <span>Date</span><span className="text-[#111827]">: {new Date(issueDate).toLocaleDateString()}</span>
+                        <span>Due Date</span><span className="text-[#111827]">: {new Date(dueDate).toLocaleDateString()}</span>
                     </div>
                 </div>
             </div>
@@ -54,7 +54,7 @@ export const InvoiceLayout = ({
             <div className="px-12 py-6">
                 <table className="w-full text-sm">
                     <thead>
-                        <tr className="bg-emerald-600 text-white text-left font-semibold text-[11px] uppercase tracking-wider">
+                        <tr className="bg-[#059669] text-[#ffffff] text-left font-semibold text-[11px] uppercase tracking-wider">
                             <th className="p-3 w-12 text-center">SL</th>
                             <th className="p-3">Description</th>
                             <th className="p-3 text-center">Unit</th>
@@ -65,16 +65,16 @@ export const InvoiceLayout = ({
                     </thead>
                     <tbody>
                         {items.map((item: any, idx: number) => (
-                            <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-100' : 'bg-gray-50'}>
-                                <td className="p-3 text-center text-gray-500 font-medium">{(idx + 1).toString().padStart(2, '0')}</td>
+                            <tr key={idx} className={idx % 2 === 0 ? 'bg-[#f3f4f6]' : 'bg-[#f9fafb]'}>
+                                <td className="p-3 text-center text-[#6b7280] font-medium">{(idx + 1).toString().padStart(2, '0')}</td>
                                 <td className="p-3">
-                                    <div className="font-semibold text-gray-900">{item.name || 'Item Name'}</div>
-                                    <div className="text-xs text-gray-500 mt-1 leading-relaxed">{item.description || 'Item description...'}</div>
+                                    <div className="font-semibold text-[#111827]">{item.name || 'Item Name'}</div>
+                                    <div className="text-xs text-[#6b7280] mt-1 leading-relaxed">{item.description || 'Item description...'}</div>
                                 </td>
-                                <td className="p-3 text-center text-gray-600">{item.unit || 'Pcs'}</td>
-                                <td className="p-3 text-center text-gray-600">{item.quantity}</td>
-                                <td className="p-3 text-right text-gray-600">₦{Number(item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                <td className="p-3 text-right font-medium text-gray-900">₦{(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td className="p-3 text-center text-[#4b5563]">{item.unit || 'Pcs'}</td>
+                                <td className="p-3 text-center text-[#4b5563]">{item.quantity}</td>
+                                <td className="p-3 text-right text-[#4b5563]">₦{Number(item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                                <td className="p-3 text-right font-medium text-[#111827]">₦{(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -86,25 +86,25 @@ export const InvoiceLayout = ({
                 {/* Notes */}
                 <div className="flex-1 pr-12">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="material-symbols-outlined text-gray-900 text-base">asterisk</span>
-                        <h4 className="font-semibold text-emerald-600 text-sm">Terms & Conditions/Notes:</h4>
+                        <span className="material-symbols-outlined text-[#111827] text-base">asterisk</span>
+                        <h4 className="font-semibold text-[#059669] text-sm">Terms & Conditions/Notes:</h4>
                     </div>
-                    <div className="text-xs text-gray-500 leading-relaxed whitespace-pre-line ml-6">
+                    <div className="text-xs text-[#6b7280] leading-relaxed whitespace-pre-line ml-6">
                         {terms}
                     </div>
                 </div>
                 
                 {/* Totals & Signature */}
                 <div className="w-64">
-                    <div className="bg-emerald-600 text-white flex justify-between items-center p-3 font-semibold mb-12 rounded">
+                    <div className="bg-[#059669] text-[#ffffff] flex justify-between items-center p-3 font-semibold mb-12 rounded">
                         <span>Total:</span>
                         <span className="text-lg tracking-wide">₦{totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
                     </div>
                     
-                    <div className="text-center mt-16 pt-2 border-t border-gray-900">
+                    <div className="text-center mt-16 pt-2 border-t border-[#111827]">
                         {/* Placeholder for cursive signature, using a script font or simple text for now */}
-                        <div className="font-[cursive] text-2xl mb-2 text-gray-800" style={{fontFamily: "'Brush Script MT', cursive"}}>Greenlife</div>
-                        <p className="text-xs text-gray-500">Signature of Invoice Holder</p>
+                        <div className="font-[cursive] text-2xl mb-2 text-[#1f2937]" style={{fontFamily: "'Brush Script MT', cursive"}}>Greenlife</div>
+                        <p className="text-xs text-[#6b7280]">Signature of Invoice Holder</p>
                     </div>
                 </div>
             </div>
@@ -120,17 +120,17 @@ export const InvoiceLayout = ({
                 </svg>
                 
                 {/* Contact Bar */}
-                <div className="relative z-20 flex justify-between items-center px-12 py-6 text-xs text-gray-800 bg-gray-100 bg-opacity-80 backdrop-blur-sm">
+                <div className="relative z-20 flex justify-between items-center px-12 py-6 text-xs text-[#1f2937] bg-[#f3f4f6] bg-opacity-80 backdrop-blur-sm">
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">location_on</span></div>
+                        <div className="w-6 h-6 bg-[#1f2937] text-[#ffffff] rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">location_on</span></div>
                         <span className="whitespace-pre-line">{companyAddress.replace('\n', ', ')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">language</span></div>
+                        <div className="w-6 h-6 bg-[#059669] text-[#ffffff] rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">language</span></div>
                         <span>{companyEmail}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">call</span></div>
+                        <div className="w-6 h-6 bg-[#1f2937] text-[#ffffff] rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">call</span></div>
                         <span>{companyPhone}</span>
                     </div>
                 </div>

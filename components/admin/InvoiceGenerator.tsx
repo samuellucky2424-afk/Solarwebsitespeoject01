@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import { productsData } from '../../data/products';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import { InvoiceLayout } from './InvoiceLayout';
 import InvoiceHistory from './InvoiceHistory';
 
@@ -78,14 +78,11 @@ const InvoiceGenerator: React.FC = () => {
 
             if (!captureRef.current) throw new Error('Capture area not found');
 
-            const canvas = await html2canvas(captureRef.current, {
-                scale: 2, // High resolution
-                useCORS: true,
-                logging: false,
+            const imageData = await toPng(captureRef.current, {
+                quality: 1,
+                pixelRatio: 2,
                 backgroundColor: '#ffffff'
             });
-
-            const imageData = canvas.toDataURL('image/png');
 
             const payload = {
                 sender: { companyName, companyAddress, companyEmail, companyPhone },
