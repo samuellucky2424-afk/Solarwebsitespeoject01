@@ -13,6 +13,7 @@ const AdminAffiliates: React.FC = () => {
 
   // New Rule Form State
   const [showRuleForm, setShowRuleForm] = useState(false);
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
   const [newRule, setNewRule] = useState({
     name: '',
     reward_type: 'cash',
@@ -62,9 +63,42 @@ const AdminAffiliates: React.FC = () => {
 
   const handleCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    await supabase.from('affiliate_reward_rules').insert([newRule]);
+    if (editingRuleId) {
+      await supabase.from('affiliate_reward_rules').update(newRule).eq('id', editingRuleId);
+    } else {
+      await supabase.from('affiliate_reward_rules').insert([newRule]);
+    }
     setShowRuleForm(false);
+    setEditingRuleId(null);
     fetchData();
+  };
+
+  const handleEditRule = (rule: any) => {
+    setNewRule(rule);
+    setEditingRuleId(rule.id);
+    setShowRuleForm(true);
+  };
+
+  const handleDeleteRule = async (id: string) => {
+    if (confirm('Are you sure you want to delete this rule?')) {
+      await supabase.from('affiliate_reward_rules').delete().eq('id', id);
+      fetchData();
+    }
+  };
+
+  const handleEditReward = async (reward: any) => {
+    const newAmount = prompt(`Enter new amount for this ${reward.reward_type} reward:`, reward.monetary_amount);
+    if (newAmount !== null && !isNaN(Number(newAmount))) {
+      await supabase.from('affiliate_rewards').update({ monetary_amount: Number(newAmount) }).eq('id', reward.id);
+      fetchData();
+    }
+  };
+
+  const handleDeleteReward = async (id: string) => {
+    if (confirm('Are you sure you want to delete this reward?')) {
+      await supabase.from('affiliate_rewards').delete().eq('id', id);
+      fetchData();
+    }
   };
 
   return (
@@ -134,14 +168,28 @@ const AdminAffiliates: React.FC = () => {
                               </span>
                             </td>
                             <td className="p-3">
-                              {r.status === 'Pending' && (
+                              <div className="flex gap-2">
+                                {r.status === 'Pending' && (
+                                  <button 
+                                    onClick={() => updateRewardStatus(r.id, 'Available')}
+                                    className="bg-blue-500 text-white px-3 py-1 rounded text-xs font-bold"
+                                  >
+                                    Approve
+                                  </button>
+                                )}
                                 <button 
-                                  onClick={() => updateRewardStatus(r.id, 'Available')}
-                                  className="bg-blue-500 text-white px-3 py-1 rounded text-xs font-bold"
+                                  onClick={() => handleEditReward(r)}
+                                  className="bg-orange-500 text-white px-3 py-1 rounded text-xs font-bold"
                                 >
-                                  Approve to Available
+                                  Edit
                                 </button>
-                              )}
+                                <button 
+                                  onClick={() => handleDeleteReward(r.id)}
+                                  className="bg-red-500 text-white px-3 py-1 rounded text-xs font-bold"
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -197,10 +245,16 @@ const AdminAffiliates: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold text-lg">Reward Rules</h3>
                   <button 
-                    onClick={() => setShowRuleForm(!showRuleForm)}
+                    onClick={() => {
+                      setNewRule({
+                        name: '', reward_type: 'cash', fixed_amount: 0, percentage_rate: 0, minimum_order_amount: 0, active: true
+                      });
+                      setEditingRuleId(null);
+                      setShowRuleForm(!showRuleForm);
+                    }}
                     className="bg-primary text-forest px-4 py-2 rounded-lg font-bold text-sm"
                   >
-                    + Add New Rule
+                    {showRuleForm ? 'Close Form' : '+ Add New Rule'}
                   </button>
                 </div>
 
@@ -243,6 +297,7 @@ const AdminAffiliates: React.FC = () => {
                         <th className="p-3">Type</th>
                         <th className="p-3">Reward Value</th>
                         <th className="p-3">Status</th>
+                        <th className="p-3">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#e7f3e8] dark:divide-white/5">
@@ -259,6 +314,10 @@ const AdminAffiliates: React.FC = () => {
                             }`}>
                               {r.active ? 'Active' : 'Inactive'}
                             </span>
+                          </td>
+                          <td className="p-3 flex gap-2">
+                            <button onClick={() => handleEditRule(r)} className="text-blue-500 hover:underline text-xs font-bold">Edit</button>
+                            <button onClick={() => handleDeleteRule(r.id)} className="text-red-500 hover:underline text-xs font-bold">Delete</button>
                           </td>
                         </tr>
                       ))}
