@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import { productsData } from '../../data/products';
+import html2canvas from 'html2canvas';
+import { InvoiceLayout } from './InvoiceLayout';
+import InvoiceHistory from './InvoiceHistory';
 
 const InvoiceGenerator: React.FC = () => {
+    const [view, setView] = useState<'generator' | 'history'>('generator');
     // Sender Details
     const [companyName, setCompanyName] = useState('Greenlife Solar Solutions LTD');
     const [companyAddress, setCompanyAddress] = useState('123 Solar Way, Tech District\nCity, State 12345');
@@ -61,19 +65,36 @@ const InvoiceGenerator: React.FC = () => {
 
     const totalAmount = items.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
 
+    const captureRef = useRef<HTMLDivElement>(null);
+
     const handleSendInvoice = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setToast(null);
 
         try {
+            // Wait for any state updates to flush to DOM
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            if (!captureRef.current) throw new Error('Capture area not found');
+
+            const canvas = await html2canvas(captureRef.current, {
+                scale: 2, // High resolution
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff'
+            });
+
+            const imageData = canvas.toDataURL('image/png');
+
             const payload = {
                 sender: { companyName, companyAddress, companyEmail, companyPhone },
                 receiver: { customerName, customerAddress, customerEmail, customerPhone },
                 meta: { invoiceId, accountNo, taxId, issueDate, dueDate },
                 items,
                 terms,
-                totalAmount
+                totalAmount,
+                imageData
             };
 
             const res = await fetch('/api/send-invoice', {
@@ -116,133 +137,14 @@ const InvoiceGenerator: React.FC = () => {
                     </div>
 
                     {/* A4 Invoice Preview */}
-                    <div className="bg-white shadow-2xl overflow-hidden aspect-[1/1.414] text-gray-800 relative select-text">
-                        {/* Header Section */}
-                        <div className="p-12 pb-8 flex justify-between items-start">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-emerald-600 flex items-center justify-center rounded text-white text-xl font-bold rounded-tl-xl rounded-br-xl">
-                                    <span className="material-symbols-outlined text-[20px]">solar_power</span>
-                                </div>
-                                <div>
-                                    <h1 className="text-xl font-bold uppercase text-gray-900 leading-tight tracking-wide">{companyName}</h1>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <h2 className="text-2xl font-semibold uppercase tracking-widest text-gray-900">INVOICE</h2>
-                                <div className="w-full h-0.5 bg-emerald-600 mt-2"></div>
-                            </div>
-                        </div>
-
-                        {/* Middle Section (Addresses & Meta) */}
-                        <div className="px-12 py-6 flex justify-between items-start gap-12">
-                            {/* Invoice To */}
-                            <div className="flex-1">
-                                <div className="bg-emerald-600 text-white text-[10px] font-semibold uppercase py-1 px-3 inline-block mb-3 tracking-wider">INVOICE TO:</div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">{customerName || 'Customer Name'}</h3>
-                                <div className="text-sm text-gray-600 space-y-1">
-                                    <p className="flex items-start gap-2 whitespace-pre-line"><span className="w-4 font-medium text-gray-400">A</span> {customerAddress || 'Customer Address'}</p>
-                                    <p className="flex items-start gap-2"><span className="w-4 font-medium text-gray-400">W</span> {customerEmail || 'customer@email.com'}</p>
-                                    <p className="flex items-start gap-2"><span className="w-4 font-medium text-gray-400">P</span> {customerPhone || 'Customer Phone'}</p>
-                                </div>
-                            </div>
-
-                            {/* Meta Info */}
-                            <div className="w-64 text-sm">
-                                <div className="grid grid-cols-2 gap-y-1 text-gray-600">
-                                    <span>Invoice</span><span className="text-gray-900"># {invoiceId}</span>
-                                    <span>Account</span><span className="text-gray-900"># {accountNo || 'N/A'}</span>
-                                    <span>Tax ID</span><span className="text-gray-900"># {taxId || 'N/A'}</span>
-                                    <div className="col-span-2 h-4"></div>
-                                    <span>Date</span><span className="text-gray-900">: {new Date(issueDate).toLocaleDateString()}</span>
-                                    <span>Due Date</span><span className="text-gray-900">: {new Date(dueDate).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Table Section */}
-                        <div className="px-12 py-6">
-                            <table className="w-full text-sm">
-                                <thead>
-                                    <tr className="bg-emerald-600 text-white text-left font-semibold text-[11px] uppercase tracking-wider">
-                                        <th className="p-3 w-12 text-center">SL</th>
-                                        <th className="p-3">Description</th>
-                                        <th className="p-3 text-center">Unit</th>
-                                        <th className="p-3 text-center">Amount</th>
-                                        <th className="p-3 text-right">Rate</th>
-                                        <th className="p-3 text-right">Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {items.map((item, idx) => (
-                                        <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-100' : 'bg-gray-50'}>
-                                            <td className="p-3 text-center text-gray-500 font-medium">{(idx + 1).toString().padStart(2, '0')}</td>
-                                            <td className="p-3">
-                                                <div className="font-semibold text-gray-900">{item.name || 'Item Name'}</div>
-                                                <div className="text-xs text-gray-500 mt-1 leading-relaxed">{item.description || 'Item description...'}</div>
-                                            </td>
-                                            <td className="p-3 text-center text-gray-600">{item.unit || 'Pcs'}</td>
-                                            <td className="p-3 text-center text-gray-600">{item.quantity}</td>
-                                            <td className="p-3 text-right text-gray-600">₦{Number(item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                            <td className="p-3 text-right font-medium text-gray-900">₦{(item.quantity * item.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        {/* Total & Signatures */}
-                        <div className="px-12 py-6 flex justify-between items-start">
-                            {/* Notes */}
-                            <div className="flex-1 pr-12">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="material-symbols-outlined text-gray-900 text-base">asterisk</span>
-                                    <h4 className="font-semibold text-emerald-600 text-sm">Terms & Conditions/Notes:</h4>
-                                </div>
-                                <div className="text-xs text-gray-500 leading-relaxed whitespace-pre-line ml-6">
-                                    {terms}
-                                </div>
-                            </div>
-                            
-                            {/* Totals & Signature */}
-                            <div className="w-64">
-                                <div className="bg-emerald-600 text-white flex justify-between items-center p-3 font-semibold mb-12 rounded">
-                                    <span>Total:</span>
-                                    <span className="text-lg tracking-wide">₦{totalAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                                </div>
-                                
-                                <div className="text-center mt-16 pt-2 border-t border-gray-900">
-                                    {/* Placeholder for cursive signature, using a script font or simple text for now */}
-                                    <div className="font-[cursive] text-2xl mb-2 text-gray-800" style={{fontFamily: "'Brush Script MT', cursive"}}>Greenlife</div>
-                                    <p className="text-xs text-gray-500">Signature of Invoice Holder</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer Graphic & Contacts */}
-                        <div className="absolute bottom-0 left-0 right-0 h-48 overflow-hidden flex flex-col justify-end pointer-events-none">
-                            {/* Wavy Shapes */}
-                            <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full z-0 translate-y-24 scale-y-150">
-                                <path fill="#1a1a1a" fillOpacity="1" d="M0,224L60,202.7C120,181,240,139,360,138.7C480,139,600,181,720,202.7C840,224,960,224,1080,213.3C1200,203,1320,181,1380,170.7L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
-                            </svg>
-                            <svg viewBox="0 0 1440 320" className="absolute bottom-0 w-full z-10 translate-y-16">
-                                <path fill="#059669" fillOpacity="1" d="M0,96L48,112C96,128,192,160,288,186.7C384,213,480,235,576,213.3C672,192,768,128,864,117.3C960,107,1056,149,1152,154.7C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-                            </svg>
-                            
-                            {/* Contact Bar */}
-                            <div className="relative z-20 flex justify-between items-center px-12 py-6 text-xs text-gray-800 bg-gray-100 bg-opacity-80 backdrop-blur-sm">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">location_on</span></div>
-                                    <span className="whitespace-pre-line">{companyAddress.replace('\n', ', ')}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">language</span></div>
-                                    <span>{companyEmail}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-gray-800 text-white rounded-full flex items-center justify-center"><span className="material-symbols-outlined text-[14px]">call</span></div>
-                                    <span>{companyPhone}</span>
-                                </div>
-                            </div>
+                    <div className="bg-white shadow-2xl overflow-hidden aspect-[1/1.414] text-gray-800 relative select-text w-full max-w-[794px] mx-auto overflow-y-auto max-h-[80vh]">
+                        <div style={{ transform: 'scale(1)', transformOrigin: 'top left', width: '794px' }}>
+                            <InvoiceLayout 
+                                companyName={companyName} companyAddress={companyAddress} companyEmail={companyEmail} companyPhone={companyPhone}
+                                customerName={customerName} customerAddress={customerAddress} customerEmail={customerEmail} customerPhone={customerPhone}
+                                invoiceId={invoiceId} accountNo={accountNo} taxId={taxId} issueDate={issueDate} dueDate={dueDate}
+                                items={items} terms={terms} totalAmount={totalAmount}
+                            />
                         </div>
                     </div>
                 </div>
@@ -250,12 +152,42 @@ const InvoiceGenerator: React.FC = () => {
         );
     }
 
+    if (view === 'history') {
+        return (
+            <div className="bg-white dark:bg-[#050a06] min-h-screen p-4">
+                <div className="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-800 pb-2">
+                    <button 
+                        onClick={() => setView('generator')}
+                        className="px-4 py-2 font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                        Create Invoice
+                    </button>
+                    <button 
+                        className="px-4 py-2 font-bold text-primary border-b-2 border-primary"
+                    >
+                        Invoice History
+                    </button>
+                </div>
+                <InvoiceHistory />
+            </div>
+        );
+    }
+
     return (
         <div className="bg-white dark:bg-[#152a17] rounded-2xl border border-[#cfe7d1] dark:border-[#2a3d2c] shadow-sm p-6 md:p-8 mt-8">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Invoice Editor</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in the details accurately to match the professional template.</p>
+            <div className="flex justify-between items-center mb-8 border-b border-gray-200 dark:border-gray-800 pb-4">
+                <div className="flex gap-4">
+                    <button 
+                        className="px-4 py-2 font-bold text-primary border-b-2 border-primary"
+                    >
+                        Create Invoice
+                    </button>
+                    <button 
+                        onClick={() => setView('history')}
+                        className="px-4 py-2 font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                        Invoice History
+                    </button>
                 </div>
                 <button onClick={() => setShowPreview(true)} className="px-4 py-2 bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 font-semibold rounded-lg hover:bg-emerald-600/20 transition-all flex items-center gap-2">
                     <span className="material-symbols-outlined">visibility</span> Preview Invoice
@@ -464,6 +396,18 @@ const InvoiceGenerator: React.FC = () => {
                     </div>
                 </div>
             </form>
+            
+            {/* Hidden component for capturing image */}
+            <div style={{ position: 'fixed', top: -9999, left: -9999, pointerEvents: 'none' }}>
+                <div ref={captureRef} style={{ width: '794px' }}>
+                    <InvoiceLayout 
+                        companyName={companyName} companyAddress={companyAddress} companyEmail={companyEmail} companyPhone={companyPhone}
+                        customerName={customerName} customerAddress={customerAddress} customerEmail={customerEmail} customerPhone={customerPhone}
+                        invoiceId={invoiceId} accountNo={accountNo} taxId={taxId} issueDate={issueDate} dueDate={dueDate}
+                        items={items} terms={terms} totalAmount={totalAmount}
+                    />
+                </div>
+            </div>
         </div>
     );
 };

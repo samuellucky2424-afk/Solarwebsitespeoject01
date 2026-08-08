@@ -47,119 +47,114 @@ export default async function handler(req: any, res: any) {
     }
     
     const requestBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { sender, receiver, meta, items, terms, totalAmount } = requestBody;
+    const { sender, receiver, meta, items, terms, totalAmount, imageData } = requestBody;
     
     if (!receiver || !receiver.customerEmail) {
         return res.status(400).json({ error: 'Missing receiver email' });
     }
+
+    if (!imageData) {
+        return res.status(400).json({ error: 'Missing invoice image data' });
+    }
     
     const resendApiKey = process.env.RESEND_API_KEY?.trim();
-    // Default fallback to greenlifesolarsolution.com if not specified in env
     const resendFromEmail = process.env.RESEND_FROM_EMAIL?.trim() || 'invoices@greenlifesolarsolution.com';
 
     if (!resendApiKey) {
         return res.status(500).json({ error: 'Email service not configured' });
     }
+
+    // 1. Process Image and Upload to Supabase Storage
+    const supabaseUrl = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').trim();
+    const anonKey = String(process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '').trim();
+    const authHeader = String(req.headers.authorization || '').trim();
+
+    const supabase = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    let imageUrl = null;
+    const base64Data = imageData.split(',')[1];
+    const buffer = Buffer.from(base64Data, 'base64');
+    const fileName = `invoice_${meta?.invoiceId}_${Date.now()}.png`;
+
+    try {
+        const { data: uploadData, error: uploadError } = await supabase
+            .storage
+            .from('invoices')
+            .upload(fileName, buffer, {
+                contentType: 'image/png',
+                upsert: false
+            });
+
+        if (!uploadError && uploadData) {
+            imageUrl = supabase.storage.from('invoices').getPublicUrl(fileName).data.publicUrl;
+        }
+    } catch (err) {
+        console.warn('Failed to upload invoice image to storage:', err);
+    }
+
+    // 2. Insert Record into Invoices Table
+    try {
+        await supabase
+            .from('invoices')
+            .insert({
+                invoice_number: meta?.invoiceId || '',
+                customer_name: receiver?.customerName || '',
+                customer_email: receiver?.customerEmail || '',
+                total_amount: totalAmount || 0,
+                issue_date: meta?.issueDate || new Date().toISOString(),
+                due_date: meta?.dueDate || new Date().toISOString(),
+                image_url: imageUrl,
+                meta: meta,
+                items: items
+            });
+    } catch (err) {
+        console.warn('Failed to insert invoice record:', err);
+    }
     
+    // 3. Send Email via Resend
     const html = `
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
-        <title>Invoice ${meta?.invoiceId || 'Invoice'}</title>
+        <title>Invoice from ${sender?.companyName || 'Greenlife Solar Solutions'}</title>
     </head>
-    <body style="font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #374151; background-color: #f9fafb; padding: 20px; line-height: 1.5; font-size: 14px;">
-        <div style="max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #059669; padding-bottom: 20px;">
-                <div>
-                    <img src="https://greenlifesolarsolution.com/logo.png" alt="Greenlife Solar Solutions" style="width: 140px; height: auto;">
-                </div>
-                <div style="text-align: right; font-size: 13px; color: #6b7280;">
-                    <div style="font-size: 18px; font-weight: 600; color: #059669; margin-bottom: 5px;">${sender?.companyName || 'Greenlife Solar Solutions'}</div>
-                    <div>${sender?.companyAddress?.replace(/\n/g, '<br>') || 'Nigeria'}</div>
-                    <div>${sender?.companyEmail || 'info@greenlifesolarsolution.com'}</div>
-                    <div>${sender?.companyPhone || ''}</div>
-                </div>
+    <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; background-color: #f9fafb; padding: 20px;">
+        <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+            <img src="https://greenlifesolarsolution.com/logo.png" alt="Logo" style="width: 140px; margin-bottom: 20px;">
+            <h2 style="color: #059669; font-size: 24px; margin-bottom: 10px;">Thank You For Your Business!</h2>
+            <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin-bottom: 30px;">
+                Dear ${receiver?.customerName || 'Valued Customer'},<br><br>
+                We sincerely appreciate you choosing ${sender?.companyName || 'Greenlife Solar Solutions'}. 
+                Please find your official invoice <strong>#${meta?.invoiceId || ''}</strong> attached to this email.
+            </p>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin-bottom: 30px;">
+                <p style="margin: 0; font-weight: 600; color: #111827;">Amount Due: ₦${totalAmount?.toLocaleString(undefined, {minimumFractionDigits: 2}) || 0}</p>
+                <p style="margin: 5px 0 0 0; font-size: 14px; color: #6b7280;">Due by: ${meta?.dueDate || ''}</p>
             </div>
             
-            <table style="width: 100%; margin-bottom: 40px;" border="0" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="width: 50%; vertical-align: top;">
-                        <h3 style="color: #059669; text-transform: uppercase; font-size: 12px; font-weight: 600; margin-bottom: 10px; letter-spacing: 0.5px;">Bill To</h3>
-                        <p style="margin: 3px 0; font-weight: 600; color: #111827;">${receiver?.customerName || ''}</p>
-                        <p style="margin: 3px 0; color: #4b5563;">${receiver?.customerAddress?.replace(/\n/g, '<br>') || ''}</p>
-                        <p style="margin: 3px 0; color: #4b5563;">${receiver?.customerEmail || ''}</p>
-                        <p style="margin: 3px 0; color: #4b5563;">${receiver?.customerPhone || ''}</p>
-                    </td>
-                    <td style="width: 50%; vertical-align: top; text-align: right;">
-                        <div style="font-size: 24px; font-weight: 500; letter-spacing: 1px; margin-bottom: 15px; color: #111827;">INVOICE</div>
-                        <table style="display: inline-block; text-align: right; border-collapse: collapse; font-size: 13px;">
-                            <tr><th style="padding: 4px 15px; color: #6b7280; font-weight: normal; text-align: right;">Invoice #</th><td style="padding: 4px 15px; font-weight: 500; color: #111827;">${meta?.invoiceId || ''}</td></tr>
-                            <tr><th style="padding: 4px 15px; color: #6b7280; font-weight: normal; text-align: right;">Date</th><td style="padding: 4px 15px; font-weight: 500; color: #111827;">${meta?.issueDate || ''}</td></tr>
-                            <tr><th style="padding: 4px 15px; color: #6b7280; font-weight: normal; text-align: right;">Due Date</th><td style="padding: 4px 15px; font-weight: 500; color: #111827;">${meta?.dueDate || ''}</td></tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 13px;">
-                <thead>
-                    <tr>
-                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: left; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Item Description</th>
-                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: center; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Qty</th>
-                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: right; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Price</th>
-                        <th style="background-color: #059669; color: white; padding: 10px 15px; text-align: right; text-transform: uppercase; font-size: 11px; font-weight: 600; letter-spacing: 0.5px;">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${items?.map((item: any) => `
-                    <tr>
-                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb;">
-                            <div style="font-weight: 500; color: #111827;">${item.name}</div>
-                            ${item.description ? `<div style="color: #6b7280; font-size: 12px; margin-top: 4px;">${item.description}</div>` : ''}
-                        </td>
-                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; text-align: center; color: #4b5563;">${item.quantity}</td>
-                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #4b5563;">₦${item.price?.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                        <td style="padding: 12px 15px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: 500; color: #111827;">₦${item.total?.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
-                    </tr>
-                    `).join('') || ''}
-                </tbody>
-            </table>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
-                <tr>
-                    <td style="width: 50%; vertical-align: top; padding-right: 20px;">
-                        ${terms ? `
-                        <div style="color: #6b7280; font-size: 12px;">
-                            <strong style="color: #059669; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">Terms & Conditions</strong><br>
-                            <div style="margin-top: 6px; line-height: 1.6;">${terms.replace(/\n/g, '<br>')}</div>
-                        </div>
-                        ` : ''}
-                    </td>
-                    <td style="width: 50%; vertical-align: top; text-align: right;">
-                        <table style="display: inline-block; width: 250px; text-align: right; border-collapse: collapse;">
-                            <tr>
-                                <td style="padding: 12px 15px; text-align: left; font-size: 16px; font-weight: 600; color: #111827; border-top: 2px solid #e5e7eb;">Amount Due:</td>
-                                <td style="padding: 12px 15px; text-align: right; font-size: 18px; font-weight: 600; color: #059669; border-top: 2px solid #e5e7eb;">₦${totalAmount?.toLocaleString(undefined, {minimumFractionDigits: 2}) || 0}</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-            
-            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 12px; text-align: center;">
-                <p>Thank you for choosing Greenlife Solar Solutions!</p>
-            </div>
+            <p style="font-size: 14px; color: #9ca3af; margin-bottom: 0;">
+                If you have any questions, please contact us at ${sender?.companyEmail || 'info@greenlifesolarsolution.com'}.
+            </p>
         </div>
     </body>
     </html>
     `;
 
-    const emailPayload = {
+    const emailPayload: any = {
       from: resendFromEmail,
       to: receiver.customerEmail,
-      subject: `Invoice ${meta?.invoiceId || ''} from Greenlife Solar Solutions`,
+      subject: `Invoice ${meta?.invoiceId || ''} from ${sender?.companyName || 'Greenlife Solar Solutions'}`,
       html: html,
+      attachments: [
+        {
+            filename: `Invoice_${meta?.invoiceId || 'Document'}.png`,
+            content: base64Data
+        }
+      ]
     };
 
     const response = await fetch('https://api.resend.com/emails', {
