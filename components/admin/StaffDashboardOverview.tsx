@@ -35,7 +35,7 @@ const StaffDashboardOverview: React.FC<StaffDashboardOverviewProps> = ({
 
   // Low stock products count
   const lowStockItems = useMemo(() => {
-    return inventory.filter(p => p.badge === 'Low Stock' || p.badge === 'Out of Stock' || (p.stock !== null && p.stock <= 5));
+    return inventory.filter(p => p.badge === 'Low Stock' || p.badge === 'Out of Stock' || (typeof p.stock === 'number' && p.stock <= 5));
   }, [inventory]);
 
   // Pending Quote & Service Requests
