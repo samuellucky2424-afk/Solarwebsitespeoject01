@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Toast } from '../../components/SharedComponents';
 import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminOverview from '../../components/admin/AdminOverview';
+import StaffDashboardOverview from '../../components/admin/StaffDashboardOverview';
 import ProductManagement from '../../components/admin/ProductManagement';
 import PackageManagement from '../../components/admin/PackageManagement';
 import GalleryManagement from '../../components/admin/GalleryManagement';
@@ -28,13 +29,22 @@ const AdminDashboard: React.FC = () => {
    const [mobileNavOpen, setMobileNavOpen] = useState(false);
    const [focusPackageId, setFocusPackageId] = useState<string | null>(null);
 
+   // Staff permitted views
+   const isViewPermitted = (view: AdminView) => {
+      if (isSuperAdmin) return true;
+      const staffAllowed: AdminView[] = ['overview', 'products', 'packages', 'gallery', 'invoices', 'requests', 'orders'];
+      return staffAllowed.includes(view);
+   };
+
+   const currentView = isViewPermitted(activeView) ? activeView : 'overview';
+
    return (
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-display flex h-screen w-screen overflow-hidden transition-colors duration-200">
          {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
 
          {/* Sidebar - hidden on mobile, visible on md+ */}
          <div className="hidden md:flex">
-            <AdminSidebar activeView={activeView} setActiveView={setActiveView} />
+            <AdminSidebar activeView={currentView} setActiveView={setActiveView} />
          </div>
 
          {/* Mobile sidebar drawer */}
@@ -44,7 +54,7 @@ const AdminDashboard: React.FC = () => {
                <div className="absolute left-0 top-0 h-full w-80 max-w-[90vw]">
                   <div className="h-full shadow-2xl">
                      <AdminSidebar
-                        activeView={activeView}
+                        activeView={currentView}
                         setActiveView={(v) => {
                            setActiveView(v);
                            setMobileNavOpen(false);
@@ -69,35 +79,51 @@ const AdminDashboard: React.FC = () => {
                      <span className="material-symbols-outlined text-xl">menu</span>
                   </button>
                   <div>
-                     <h2 className="text-lg md:text-xl font-bold capitalize text-gray-900 dark:text-white">{activeView.replace('-', ' ')}</h2>
+                     <h2 className="text-lg md:text-xl font-bold capitalize text-gray-900 dark:text-white">
+                        {currentView === 'overview'
+                           ? (isSuperAdmin ? 'Super Admin Overview' : 'Staff Dashboard')
+                           : currentView.replace('-', ' ')}
+                     </h2>
                   </div>
                </div>
                <div className="flex items-center gap-4">
                   <div className="hidden sm:flex flex-col items-end">
-                     <span className="text-sm font-bold leading-none text-gray-900 dark:text-white">Administrator</span>
-                     <span className="text-xs text-green-600 font-medium">System Active</span>
+                     <span className="text-sm font-bold leading-none text-gray-900 dark:text-white">
+                        {isSuperAdmin ? 'Super Administrator' : 'Staff Member'}
+                     </span>
+                     <span className="text-xs text-emerald-600 font-medium">
+                        {isSuperAdmin ? 'Master Control Active' : 'Operations Active'}
+                     </span>
                   </div>
                   <div className="size-8 md:size-10 rounded-full bg-slate-800 dark:bg-slate-700 flex items-center justify-center text-white font-bold text-sm">
-                     <span className="material-symbols-outlined text-sm">admin_panel_settings</span>
+                     <span className="material-symbols-outlined text-sm">
+                        {isSuperAdmin ? 'admin_panel_settings' : 'badge'}
+                     </span>
                   </div>
                </div>
             </header>
 
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scroll-smooth">
-               {activeView === 'overview' && (isSuperAdmin ? <SuperAdminDashboard /> : <AdminOverview />)}
-               {activeView === 'users' && <UserManagement />}
-               {activeView === 'dealer-verifications' && <DealerVerificationManagement />}
-               {activeView === 'orders' && <OrderManagement />}
-               {activeView === 'affiliates' && <AdminAffiliates />}
-               {activeView === 'products' && <ProductManagement />}
-               {activeView === 'packages' && (
+               {currentView === 'overview' && (
+                  isSuperAdmin ? (
+                     <SuperAdminDashboard />
+                  ) : (
+                     <StaffDashboardOverview onNavigate={setActiveView} />
+                  )
+               )}
+               {currentView === 'users' && isSuperAdmin && <UserManagement />}
+               {currentView === 'dealer-verifications' && isSuperAdmin && <DealerVerificationManagement />}
+               {currentView === 'orders' && <OrderManagement />}
+               {currentView === 'affiliates' && isSuperAdmin && <AdminAffiliates />}
+               {currentView === 'products' && <ProductManagement />}
+               {currentView === 'packages' && (
                   <PackageManagement
                      focusPackageId={focusPackageId}
                      onFocusHandled={() => setFocusPackageId(null)}
                   />
                )}
-               {activeView === 'gallery' && <GalleryManagement />}
-               {activeView === 'requests' && (
+               {currentView === 'gallery' && <GalleryManagement />}
+               {currentView === 'requests' && (
                   <RequestsManagement
                      onOpenPackage={(packageId) => {
                         setFocusPackageId(packageId);
@@ -105,10 +131,10 @@ const AdminDashboard: React.FC = () => {
                      }}
                   />
                )}
-               {activeView === 'invoices' && <InvoiceGenerator />}
-               {activeView === 'analytics' && <AnalyticsInsights />}
-               {activeView === 'settings' && (isSuperAdmin ? <SuperAdminSettings /> : <SettingsPanel />)}
-               {activeView === 'live-chat' && <AdminLiveChat />}
+               {currentView === 'invoices' && <InvoiceGenerator />}
+               {currentView === 'analytics' && isSuperAdmin && <AnalyticsInsights />}
+               {currentView === 'settings' && isSuperAdmin && <SuperAdminSettings />}
+               {currentView === 'live-chat' && isSuperAdmin && <AdminLiveChat />}
             </main>
          </div>
       </div>

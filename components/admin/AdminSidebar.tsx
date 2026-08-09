@@ -14,7 +14,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
     const [isCatalogOpen, setIsCatalogOpen] = useState(true);
 
     const handleLogout = async () => {
-        if (window.confirm("Sign out of Admin Dashboard?")) {
+        if (window.confirm("Sign out of Dashboard?")) {
             await signOut();
         }
     };
@@ -38,14 +38,18 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     </div>
                     <div className="flex flex-col">
                         <h1 className="text-white text-base font-bold leading-tight tracking-wide">GREENLIFE</h1>
-                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mt-0.5">Admin Portal</p>
+                        <p className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest mt-0.5">
+                            {isSuperAdmin ? 'Super Admin Portal' : 'Staff Portal'}
+                        </p>
                     </div>
                 </Link>
             </div>
 
             {/* Navigation */}
             <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
-                <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Main Menu</div>
+                <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    {isSuperAdmin ? 'Master Menu' : 'Staff Operations'}
+                </div>
                 
                 <button onClick={() => setActiveView('overview')} className={navItemClass('overview')}>
                     <span className="material-symbols-outlined text-xl">dashboard</span>
@@ -59,10 +63,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     </button>
                 )}
 
-                <button onClick={() => setActiveView('dealer-verifications')} className={navItemClass('dealer-verifications')}>
-                    <span className="material-symbols-outlined text-xl">verified_user</span>
-                    <span>Dealer Reviews</span>
-                </button>
+                {isSuperAdmin && (
+                    <button onClick={() => setActiveView('dealer-verifications')} className={navItemClass('dealer-verifications')}>
+                        <span className="material-symbols-outlined text-xl">verified_user</span>
+                        <span>Dealer Reviews</span>
+                    </button>
+                )}
 
                 <button onClick={() => setActiveView('orders')} className={navItemClass('orders')}>
                     <span className="material-symbols-outlined text-xl">local_shipping</span>
@@ -74,11 +80,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     <span>Invoices</span>
                 </button>
 
-                <button onClick={() => setActiveView('affiliates')} className={navItemClass('affiliates')}>
-                    <span className="material-symbols-outlined text-xl">volunteer_activism</span>
-                    <span>Affiliates</span>
-                </button>
+                {isSuperAdmin && (
+                    <button onClick={() => setActiveView('affiliates')} className={navItemClass('affiliates')}>
+                        <span className="material-symbols-outlined text-xl">volunteer_activism</span>
+                        <span>Affiliates</span>
+                    </button>
+                )}
 
+                {/* Catalog & Assets */}
                 <div className="mt-6 mb-2 px-3 pt-4 border-t border-slate-800 flex justify-between items-center cursor-pointer group" onClick={() => setIsCatalogOpen(!isCatalogOpen)}>
                     <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-300 transition-colors">Catalog & Assets</div>
                     <span className={`material-symbols-outlined text-slate-500 text-sm transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`}>expand_more</span>
@@ -101,17 +110,22 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                     </div>
                 )}
 
-                <div className="mt-6 mb-2 px-3 pt-4 border-t border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-500">Support & Settings</div>
+                {/* Support & Quotes */}
+                <div className="mt-6 mb-2 px-3 pt-4 border-t border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    {isSuperAdmin ? 'Support & System' : 'Customer Service'}
+                </div>
 
                 <button onClick={() => setActiveView('requests')} className={navItemClass('requests')}>
-                    <span className="material-symbols-outlined text-xl">assignment</span>
-                    <span>Requests</span>
+                    <span className="material-symbols-outlined text-xl">request_quote</span>
+                    <span>Requests & Quotes</span>
                 </button>
 
-                <button onClick={() => setActiveView('live-chat')} className={navItemClass('live-chat')}>
-                    <span className="material-symbols-outlined text-xl">chat</span>
-                    <span>Live Chat</span>
-                </button>
+                {isSuperAdmin && (
+                    <button onClick={() => setActiveView('live-chat')} className={navItemClass('live-chat')}>
+                        <span className="material-symbols-outlined text-xl">chat</span>
+                        <span>Live Chat</span>
+                    </button>
+                )}
 
                 {isSuperAdmin && (
                     <button onClick={() => setActiveView('analytics')} className={navItemClass('analytics')}>

@@ -7,6 +7,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  isStaff: boolean;
   isDealer: boolean;
   loading: boolean;
   roleResolved: boolean;
@@ -137,7 +138,7 @@ function shouldInvalidateRecoveredSession(session: Session) {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const dealerRoles = new Set(['installer', 'retailer']);
-const approvedRoles = new Set(['super_admin', 'admin', 'installer', 'retailer']);
+const approvedRoles = new Set(['super_admin', 'admin', 'staff', 'installer', 'retailer']);
 
 function normalizeDealerRole(value: unknown) {
   const role = String(value || '').toLowerCase();
@@ -350,7 +351,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
-    if (location.pathname.startsWith('/admin') && session && !['admin', 'super_admin'].includes(role || '')) {
+    if (location.pathname.startsWith('/admin') && session && !['admin', 'super_admin', 'staff'].includes(role || '')) {
       navigate('/dashboard');
     }
 
@@ -361,8 +362,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     isAuthenticated: !!session,
-    isAdmin: role === 'admin' || role === 'super_admin',
+    isAdmin: role === 'admin' || role === 'super_admin' || role === 'staff',
     isSuperAdmin: role === 'super_admin',
+    isStaff: role === 'staff' || role === 'admin',
     isDealer: role === 'installer' || role === 'retailer',
     loading,
     roleResolved,
