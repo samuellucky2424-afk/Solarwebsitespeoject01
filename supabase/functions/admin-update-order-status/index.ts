@@ -58,7 +58,7 @@ serve(async (req: Request) => {
       .eq("id", authData.user.id)
       .single();
 
-    if (!profile || (profile.role !== "admin" && profile.role !== "super_admin")) {
+    if (!profile || (profile.role !== "admin" && profile.role !== "super_admin" && profile.role !== "staff")) {
       throw new Error("forbidden");
     }
 
