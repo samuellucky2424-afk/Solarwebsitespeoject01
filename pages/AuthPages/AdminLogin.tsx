@@ -57,7 +57,8 @@ const AdminLogin: React.FC = () => {
         throw new Error('Could not verify admin privileges.');
       }
 
-      if (!profile || profile.role !== 'admin' || profile.suspended) {
+      const allowedRoles = ['admin', 'staff'];
+      if (!profile || !allowedRoles.includes(profile.role) || profile.suspended) {
         await getSupabase().auth.signOut();
         throw new Error('forbidden');
       }
@@ -77,6 +78,7 @@ const AdminLogin: React.FC = () => {
         }
       }
 
+      // Route based on role: staff goes to staff dashboard, admins go to admin dashboard
       navigate('/admin/dashboard');
     } catch (err: any) {
       // Ignore AbortError - it's just HMR
