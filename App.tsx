@@ -6,7 +6,7 @@ import { AdminProvider } from './context/AdminContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AffiliateProvider } from './context/AffiliateContext';
 import { CartDrawer, FloatingCartButton } from './components/SharedComponents';
-import LiveChatWidget from './components/LiveChatWidget';
+
 import UserDashboard from './pages/UserPages/UserDashboard';
 
 // Lazy load components
@@ -213,7 +213,7 @@ const App: React.FC = () => {
               </Suspense>
               <CartDrawer />
               <FloatingCartButton />
-              <LiveChatWidget />
+
             </CartProvider>
             </AffiliateProvider>
           </GalleryProvider>
