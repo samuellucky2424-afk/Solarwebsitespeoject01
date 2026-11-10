@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getSupabase, loadConfig } from '../../config/supabaseClient';
+import TurnstileWidget from '../../src/lib/TurnstileWidget';
 
 const PRODUCTION_ORIGIN = 'https://www.greenlifesolarsolution.com';
 
@@ -18,9 +19,17 @@ const ForgotPassword: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaResetSignal, setCaptchaResetSignal] = useState(0);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
+    if (!captchaToken) {
+      setError('Please complete the security check before requesting a reset link.');
+      return;
+    }
     setLoading(true);
     setMessage(null);
     setError(null);
@@ -36,6 +45,7 @@ const ForgotPassword: React.FC = () => {
 
       const { error: resetError } = await getSupabase().auth.resetPasswordForEmail(trimmedEmail, {
         redirectTo: getResetRedirectUrl(),
+        captchaToken,
       });
 
       if (resetError) throw resetError;
@@ -44,6 +54,10 @@ const ForgotPassword: React.FC = () => {
     } catch (err: any) {
       setError(err.message || 'Could not send reset link. Please try again.');
     } finally {
+      // Turnstile tokens are single-use, including after failed requests.
+      setCaptchaToken('');
+      setCaptchaError(null);
+      setCaptchaResetSignal(signal => signal + 1);
       setLoading(false);
     }
   };
@@ -97,10 +111,33 @@ const ForgotPassword: React.FC = () => {
               />
             </div>
 
+            <div>
+              <TurnstileWidget
+                action="password_reset"
+                className="min-h-[65px] w-full overflow-hidden rounded-lg"
+                resetSignal={captchaResetSignal}
+                onVerify={(token) => {
+                  setCaptchaToken(token);
+                  setCaptchaError(null);
+                }}
+                onExpire={() => {
+                  setCaptchaToken('');
+                  setCaptchaError('Security check expired. Please complete it again.');
+                }}
+                onError={() => {
+                  setCaptchaToken('');
+                  setCaptchaError('Security check could not load. Refresh the page and try again.');
+                }}
+              />
+              {captchaError && (
+                <p role="alert" className="mt-2 text-xs font-semibold text-red-600 dark:text-red-300">{captchaError}</p>
+              )}
+            </div>
+
             <button
               className="w-full bg-primary hover:bg-opacity-90 text-forest font-black h-14 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60"
               type="submit"
-              disabled={loading || !email.trim()}
+              disabled={loading || !email.trim() || !captchaToken}
             >
               {loading ? (
                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
