@@ -9,6 +9,17 @@ import { submitDealerVerificationSignup } from '../../src/lib/dealerVerification
 import { applySecureLoginSession, securePasswordLogin, type SecureLoginError } from '../../src/lib/secureLogin';
 import TurnstileWidget from '../../src/lib/TurnstileWidget';
 
+function getPostLoginPath(state: unknown): string {
+  if (!state || typeof state !== 'object' || !('from' in state)) {
+    return '/dashboard';
+  }
+
+  const from = state.from;
+  return typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') && from !== '/'
+    ? from
+    : '/dashboard';
+}
+
 const UserLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,7 +61,7 @@ const UserLogin: React.FC = () => {
         navigate('/admin/dashboard', { replace: true });
       } else {
         console.log('✅ User authenticated, redirecting to dashboard...');
-        const from = location.state?.from || '/dashboard';
+        const from = getPostLoginPath(location.state);
         navigate(from, { replace: true });
       }
     }
@@ -284,7 +295,7 @@ const UserLogin: React.FC = () => {
       persistAuthPreference(rememberMe);
 
       if (data.session) {
-        const from = location.state?.from || '/dashboard';
+        const from = getPostLoginPath(location.state);
         navigate(from, { replace: true });
       }
     } catch (err: any) {
