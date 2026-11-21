@@ -6,17 +6,16 @@ import { Toast } from '../../components/SharedComponents';
 
 const DashboardShop: React.FC = () => {
     const navigate = useNavigate();
-    const { inventory } = useAdmin();
+    const { inventory, categories } = useAdmin();
     const { addToCart } = useCart();
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("All");
     const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-    const BASE_CATEGORIES = [
-        'Solar Panels', 'Inverters', 'Batteries', 'Solar Kits',
-        'Power Banks', 'Fans', 'Accessories', 'Solar Lights',
-    ];
-    const categories = ["All", ...Array.from(new Set([...BASE_CATEGORIES, ...inventory.map(p => p.category).filter(Boolean)]))];
+    const categoryNames = ["All", ...Array.from(new Set([
+        ...categories.map(c => c.name),
+        ...inventory.map(p => p.category).filter(Boolean)
+    ]))];
 
     const filteredProducts = useMemo(() => {
         return inventory.filter(p => {
@@ -49,7 +48,7 @@ const DashboardShop: React.FC = () => {
                         onChange={(e) => setCategoryFilter(e.target.value)}
                         className="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm focus:ring-1 focus:ring-primary outline-none"
                     >
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        {categoryNames.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <input
                         type="text"

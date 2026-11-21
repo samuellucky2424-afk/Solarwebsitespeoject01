@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates' | 'invoices';
+type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'categories' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates' | 'invoices';
 
 interface AdminSidebarProps {
     activeView: AdminView;
@@ -98,6 +98,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ activeView, setActiveView }
                         <button onClick={() => setActiveView('products')} className={navItemClass('products')}>
                             <span className="material-symbols-outlined text-xl">inventory_2</span>
                             <span>Products</span>
+                        </button>
+                        <button onClick={() => setActiveView('categories')} className={navItemClass('categories')}>
+                            <span className="material-symbols-outlined text-xl">category</span>
+                            <span>Categories</span>
                         </button>
                         <button onClick={() => setActiveView('packages')} className={navItemClass('packages')}>
                             <span className="material-symbols-outlined text-xl">package_2</span>

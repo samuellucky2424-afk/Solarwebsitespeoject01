@@ -4,6 +4,7 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminOverview from '../../components/admin/AdminOverview';
 import StaffDashboardOverview from '../../components/admin/StaffDashboardOverview';
 import ProductManagement from '../../components/admin/ProductManagement';
+import CategoryManagement from '../../components/admin/CategoryManagement';
 import PackageManagement from '../../components/admin/PackageManagement';
 import GalleryManagement from '../../components/admin/GalleryManagement';
 import RequestsManagement from '../../components/admin/RequestsManagement';
@@ -20,7 +21,7 @@ import InvoiceGenerator from '../../components/admin/InvoiceGenerator';
 import { useAuth } from '../../context/AuthContext';
 
 // Define View Type (matching AdminSidebar)
-type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates' | 'invoices';
+type AdminView = 'overview' | 'users' | 'dealer-verifications' | 'orders' | 'products' | 'categories' | 'packages' | 'requests' | 'gallery' | 'analytics' | 'settings' | 'live-chat' | 'affiliates' | 'invoices';
 
 const AdminDashboard: React.FC = () => {
    const { isSuperAdmin } = useAuth();
@@ -32,7 +33,7 @@ const AdminDashboard: React.FC = () => {
    // Staff permitted views
    const isViewPermitted = (view: AdminView) => {
       if (isSuperAdmin) return true;
-      const staffAllowed: AdminView[] = ['overview', 'products', 'packages', 'gallery', 'invoices', 'requests', 'orders'];
+      const staffAllowed: AdminView[] = ['overview', 'products', 'categories', 'packages', 'gallery', 'invoices', 'requests', 'orders'];
       return staffAllowed.includes(view);
    };
 
@@ -116,6 +117,7 @@ const AdminDashboard: React.FC = () => {
                {currentView === 'orders' && <OrderManagement />}
                {currentView === 'affiliates' && isSuperAdmin && <AdminAffiliates />}
                {currentView === 'products' && <ProductManagement />}
+               {currentView === 'categories' && <CategoryManagement />}
                {currentView === 'packages' && (
                   <PackageManagement
                      focusPackageId={focusPackageId}

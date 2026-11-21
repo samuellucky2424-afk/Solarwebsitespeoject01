@@ -1,3 +1,5 @@
+export type ProductType = 'general' | 'itel' | 'deye';
+
 export interface Product {
   id: string | number;
   name: string;
@@ -13,6 +15,7 @@ export interface Product {
   badge?: string;
   category: string;
   brand: string;
+  productType?: ProductType;
   description?: string;
   stockStatus?: string;
   stock?: number | null;

@@ -47,7 +47,14 @@ export interface GalleryImage {
   images?: string[];
 }
 
-import { Product } from '../data/products';
+import { Product, ProductType } from '../data/products';
+
+export interface ProductCategory {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt?: string;
+}
 
 export interface SolarPackage {
   id: string;
@@ -121,6 +128,10 @@ export interface DashboardStats {
 
 interface AdminContextType {
   inventory: Product[];
+  categories: ProductCategory[];
+  addCategory: (name: string, description?: string) => Promise<boolean>;
+  updateCategory: (id: string, name: string, description?: string) => Promise<boolean>;
+  deleteCategory: (id: string) => Promise<boolean>;
   requests: ServiceRequest[];
   packages: SolarPackage[];
   packagesLoading: boolean;
@@ -336,6 +347,19 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [gallery, setGallery] = useState<GalleryImage[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
+
+  // Default categories used as fallback when DB has none yet
+  const DEFAULT_CATEGORIES: ProductCategory[] = [
+    { id: 'cat-default-1', name: 'Solar Panels', description: 'Solar panel products' },
+    { id: 'cat-default-2', name: 'Inverters', description: 'Inverter products' },
+    { id: 'cat-default-3', name: 'Batteries', description: 'Battery storage products' },
+    { id: 'cat-default-4', name: 'Solar Kits', description: 'Complete solar kits' },
+    { id: 'cat-default-5', name: 'Power Banks', description: 'Portable power banks' },
+    { id: 'cat-default-6', name: 'Fans', description: 'Solar-powered fans' },
+    { id: 'cat-default-7', name: 'Accessories', description: 'Solar accessories' },
+    { id: 'cat-default-8', name: 'Solar Lights', description: 'Solar lighting products' },
+  ];
 
   const stripLegacyDemoPackages = (items: SolarPackage[]) =>
     items.filter((pkg) => !LEGACY_DEMO_PACKAGE_IDS.has(String(pkg.id)));
@@ -348,6 +372,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     setRequests(DEMO_REQUESTS);
     setGallery(DEMO_GALLERY);
     setAllUsers([DEMO_USER]);
+    setCategories(DEFAULT_CATEGORIES);
   };
 
   // --- Real-time Data Fetching ---
@@ -412,6 +437,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         );
         const mappedRequests = data.filter((i: any) => i.type === 'request').map(mapToRequest);
         const mappedGallery = data.filter((i: any) => i.type === 'gallery').map(mapToGallery);
+        const mappedCategories = data.filter((i: any) => i.type === 'product_category').map(mapToCategory);
         const mappedUsers = data.filter((i: any) => i.type === 'user_profile').map(mapToUserProfile);
         const mappedInstallers = data.filter((i: any) => i.type === 'installer').map(mapToUserProfile);
 
@@ -419,6 +445,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         setPackages(mappedPackages);
         setRequests(mappedRequests);
         setGallery(mappedGallery);
+        setCategories(mappedCategories.length > 0 ? mappedCategories : DEFAULT_CATEGORIES);
         setAllUsers(mappedUsers);
         setInstallers(mappedInstallers);
       }
@@ -568,6 +595,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         efficiency: product.eff,
         spec: product.spec,
         badge: product.badge,
+        productType: product.productType || 'general',
         reviews: product.reviews || 0,
         rating: product.rating || 5.0,
         stock: product.stock ?? null,
@@ -610,6 +638,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         efficiency: nextProduct.eff,
         spec: nextProduct.spec,
         badge: nextProduct.badge,
+        productType: nextProduct.productType || 'general',
         reviews: nextProduct.reviews || 0,
         rating: nextProduct.rating || 5.0,
         stock: nextProduct.stock ?? null,
@@ -1009,6 +1038,94 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     setNotifications((prev: Notification[]) => prev.map((n: Notification) => (n.id === id ? { ...n, read: true } : n)));
   };
 
+  // --- Category CRUD ---
+  const addCategory = async (name: string, description?: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return false;
+
+    // Check for duplicate (case-insensitive)
+    const exists = categories.some(c => c.name.toLowerCase() === trimmedName.toLowerCase());
+    if (exists) {
+      console.warn('Category already exists:', trimmedName);
+      return false;
+    }
+
+    if (!getIsSupabaseConfigured()) {
+      const newCat: ProductCategory = {
+        id: `cat-${Date.now()}`,
+        name: trimmedName,
+        description: description?.trim() || '',
+        createdAt: new Date().toISOString(),
+      };
+      setCategories(prev => [...prev, newCat]);
+      return true;
+    }
+
+    const { error } = await supabase.from('greenlife_hub').insert([{
+      type: 'product_category',
+      name: trimmedName,
+      description: description?.trim() || '',
+    }]);
+
+    if (!error) {
+      if (activeUser) addNotification(activeUser.id, 'Category', `Category "${trimmedName}" created.`, 'success');
+      fetchData();
+      return true;
+    } else {
+      console.error('Error adding category:', error);
+      return false;
+    }
+  };
+
+  const updateCategory = async (id: string, name: string, description?: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return false;
+
+    if (!getIsSupabaseConfigured()) {
+      setCategories(prev => prev.map(c => c.id === id ? { ...c, name: trimmedName, description: description?.trim() || c.description } : c));
+      return true;
+    }
+
+    const { error } = await supabase.from('greenlife_hub').update({
+      name: trimmedName,
+      description: description?.trim() || '',
+    }).eq('id', id);
+
+    if (!error) {
+      if (activeUser) addNotification(activeUser.id, 'Category', `Category updated to "${trimmedName}".`, 'success');
+      fetchData();
+      return true;
+    } else {
+      console.error('Error updating category:', error);
+      return false;
+    }
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (!getIsSupabaseConfigured()) {
+      setCategories(prev => prev.filter(c => c.id !== id));
+      return true;
+    }
+
+    const { error } = await supabase.from('greenlife_hub').delete().eq('id', id);
+
+    if (!error) {
+      if (activeUser) addNotification(activeUser.id, 'Category', 'Category deleted.', 'info');
+      fetchData();
+      return true;
+    } else {
+      console.error('Error deleting category:', error);
+      return false;
+    }
+  };
+
+  const mapToCategory = (item: any): ProductCategory => ({
+    id: item.id,
+    name: item.name || item.title || 'Unnamed',
+    description: item.description || '',
+    createdAt: item.created_at ? new Date(item.created_at).toISOString() : undefined,
+  });
+
   // --- Mappers ---
   const mapToProduct = (item: any, dealerPrice?: any): Product => {
     const normalPrice = Number(item.price || 0);
@@ -1030,6 +1147,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       img: item.image_url,
       category: item.category,
       brand: item.metadata?.brand || '',
+      productType: (item.metadata?.productType as ProductType) || 'general',
       series: item.metadata?.series || '',
       badge: item.metadata?.badge || '',
       stockStatus: item.status || 'In Stock',
@@ -1169,10 +1287,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AdminContext.Provider value={{
-      inventory, requests, packages, packagesLoading, stats, activeUser: activeUser as UserProfile, referrals, notifications, gallery,
+      inventory, categories, requests, packages, packagesLoading, stats, activeUser: activeUser as UserProfile, referrals, notifications, gallery,
       // @ts-ignore
       allUsers, installers,
       addProduct, updateProduct, deleteProduct,
+      addCategory, updateCategory, deleteCategory,
       updateRequestStatus, deleteRequest, addRequest,
       addPackage, deletePackage,
       updateUserSystem, registerUser, approveReferral, markNotificationRead, updateUserProfile,

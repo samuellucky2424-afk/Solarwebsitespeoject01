@@ -4,10 +4,45 @@ import { PublicHeader, PublicFooter, Toast } from '../../components/SharedCompon
 import { useAdmin } from '../../context/AdminContext'; // Use AdminContext instead of static data
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { Product } from '../../data/products';
+import { Product, ProductType } from '../../data/products';
 import { getPricedProduct, getProductDisplayPrice } from '../../utils/dealerPricing';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+
+// --- Brand Card Configuration ---
+const PRODUCT_TYPE_CARDS: {
+  type: ProductType;
+  label: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+}[] = [
+  {
+    type: 'general',
+    label: 'General Products',
+    icon: 'inventory_2',
+    color: 'text-emerald-700',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-400',
+  },
+  {
+    type: 'itel',
+    label: 'Itel Products',
+    icon: 'solar_power',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-400',
+  },
+  {
+    type: 'deye',
+    label: 'Deye Products',
+    icon: 'bolt',
+    color: 'text-orange-700',
+    bgColor: 'bg-orange-50',
+    borderColor: 'border-orange-400',
+  },
+];
 
 const ProductCatalog: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -15,7 +50,8 @@ const ProductCatalog: React.FC = () => {
   const categoryParam = searchParams.get('category');
 
   // --- State Management ---
-  const { inventory } = useAdmin(); // Get dynamic inventory
+  const { inventory, categories } = useAdmin(); // Get dynamic inventory and categories
+  const [selectedProductType, setSelectedProductType] = useState<ProductType | 'all'>('all');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceMax, setPriceMax] = useState<number>(5000000); // Increased max price for solar items
@@ -73,6 +109,7 @@ const ProductCatalog: React.FC = () => {
   };
 
   const handleReset = () => {
+    setSelectedProductType('all');
     setSelectedCategories([]);
     setSelectedBrands([]);
     setPriceMax(5000000);
@@ -85,6 +122,8 @@ const ProductCatalog: React.FC = () => {
   // --- Derived Data Logic ---
   const filteredProducts = useMemo(() => {
     return inventory.filter(product => {
+      // Filter by product type (brand card selection)
+      const matchProductType = selectedProductType === 'all' || (product.productType || 'general') === selectedProductType;
       const matchCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
       const matchBrand = selectedBrands.length === 0 || selectedBrands.includes(product.brand);
       const matchPrice = getProductDisplayPrice(product, role) <= priceMax;
@@ -96,9 +135,9 @@ const ProductCatalog: React.FC = () => {
       // Filter out Out of Stock items
       const isInStock = product.badge !== 'Out of Stock';
 
-      return matchCategory && matchBrand && matchPrice && matchSearch && matchFeatured && isInStock;
+      return matchProductType && matchCategory && matchBrand && matchPrice && matchSearch && matchFeatured && isInStock;
     });
-  }, [inventory, selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly, role]);
+  }, [inventory, selectedProductType, selectedCategories, selectedBrands, priceMax, searchQuery, featuredOnly, role]);
 
   const sortedProducts = useMemo(() => {
     const products = [...filteredProducts];
@@ -120,22 +159,12 @@ const ProductCatalog: React.FC = () => {
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
 
   // Derive unique brands/categories from inventory for filters.
-  // Always include the full base catalog list so admin's complete category set
-  // appears on the public storefront even when no products exist in a category yet.
-  const BASE_CATEGORIES = [
-    'Solar Panels',
-    'Inverters',
-    'Batteries',
-    'Solar Kits',
-    'Power Banks',
-    'Fans',
-    'Accessories',
-    'Solar Lights',
-  ];
+  // Use admin-managed categories from context, merged with any found in inventory.
   const uniqueCategories = useMemo(() => {
+    const fromContext = categories.map(c => c.name);
     const fromInventory = inventory.map(p => p.category).filter(Boolean);
-    return Array.from(new Set([...BASE_CATEGORIES, ...fromInventory]));
-  }, [inventory]);
+    return Array.from(new Set([...fromContext, ...fromInventory]));
+  }, [categories, inventory]);
   const uniqueBrands = useMemo(() => Array.from(new Set(inventory.map(p => p.brand).filter(Boolean))), [inventory]);
 
 
@@ -174,6 +203,38 @@ const ProductCatalog: React.FC = () => {
           <Link to="/" className="text-primary-dark hover:underline">Home</Link>
           <span className="material-symbols-outlined text-xs text-slate-400">chevron_right</span>
           <span className="text-slate-500 dark:text-slate-400">Solar Product Catalog</span>
+        </div>
+
+        {/* Brand Category Cards - General / Itel / Deye */}
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
+          {/* All Products card */}
+          <div
+            onClick={() => { setSelectedProductType('all'); setCurrentPage(1); }}
+            className={`cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition-all hover:shadow-md ${selectedProductType === 'all' ? 'border-primary bg-primary/10' : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/5'}`}
+            style={{ width: '100px', height: '60px' }}
+          >
+            <span className={`material-symbols-outlined text-lg ${selectedProductType === 'all' ? 'text-primary-dark' : 'text-slate-400'}`}>apps</span>
+            <span className={`text-[9px] font-bold leading-tight text-center mt-0.5 ${selectedProductType === 'all' ? 'text-primary-dark' : 'text-slate-500 dark:text-slate-400'}`}>All Products</span>
+          </div>
+          {PRODUCT_TYPE_CARDS.map(card => (
+            <div
+              key={card.type}
+              onClick={() => { setSelectedProductType(card.type); setCurrentPage(1); }}
+              className={`cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition-all hover:shadow-md ${
+                selectedProductType === card.type
+                  ? `${card.borderColor} ${card.bgColor}`
+                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/5'
+              }`}
+              style={{ width: '100px', height: '60px' }}
+            >
+              <span className={`material-symbols-outlined text-lg ${
+                selectedProductType === card.type ? card.color : 'text-slate-400'
+              }`}>{card.icon}</span>
+              <span className={`text-[9px] font-bold leading-tight text-center mt-0.5 ${
+                selectedProductType === card.type ? card.color : 'text-slate-500 dark:text-slate-400'
+              }`}>{card.label}</span>
+            </div>
+          ))}
         </div>
 
         {/* Mobile Filter Toggle */}
@@ -288,7 +349,12 @@ const ProductCatalog: React.FC = () => {
             {/* Grid Controls */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div>
-                <h1 className="text-xl font-bold text-forest dark:text-white">Solar Products</h1>
+                <h1 className="text-xl font-bold text-forest dark:text-white">
+                  {selectedProductType === 'all' ? 'Solar Products' :
+                   selectedProductType === 'general' ? 'General Products' :
+                   selectedProductType === 'itel' ? 'Itel Products' :
+                   'Deye Products'}
+                </h1>
                 <p className="text-slate-500 text-xs">
                   Showing {paginatedProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}-{Math.min(currentPage * itemsPerPage, sortedProducts.length)} of {sortedProducts.length} products
                 </p>

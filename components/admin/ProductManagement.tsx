@@ -1,11 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { useAdmin } from '../../context/AdminContext';
-import { Product } from '../../data/products';
+import { Product, ProductType } from '../../data/products';
 import { uploadImage } from '../../config/supabaseClient';
 import { Toast } from '../../components/SharedComponents';
 
+const PRODUCT_TYPE_OPTIONS: { value: ProductType; label: string; icon: string }[] = [
+    { value: 'general', label: 'General Products', icon: 'inventory_2' },
+    { value: 'itel', label: 'Itel Products', icon: 'solar_power' },
+    { value: 'deye', label: 'Deye Products', icon: 'bolt' },
+];
+
 const ProductManagement: React.FC = () => {
-    const { inventory, addProduct, updateProduct, deleteProduct } = useAdmin();
+    const { inventory, categories, addProduct, updateProduct, deleteProduct } = useAdmin();
 
     // UI State
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +27,7 @@ const ProductManagement: React.FC = () => {
 
     // Form State
     const [formData, setFormData] = useState<Partial<Product>>({
-        name: '', series: '', price: 0, installerPrice: null, retailerPrice: null, stock: null, category: 'Solar Panels', brand: '', spec: '', eff: '', img: '', badge: 'In Stock', description: '', datasheetUrl: '', videoLink: '', discountPrice: 0, discountEndDate: '', properties: []
+        name: '', series: '', price: 0, installerPrice: null, retailerPrice: null, stock: null, category: 'Solar Panels', brand: '', productType: 'general', spec: '', eff: '', img: '', badge: 'In Stock', description: '', datasheetUrl: '', videoLink: '', discountPrice: 0, discountEndDate: '', properties: []
     });
 
     // Derived Data
@@ -34,22 +40,12 @@ const ProductManagement: React.FC = () => {
         });
     }, [inventory, searchTerm, filterCategory]);
 
-    const BASE_CATEGORIES = [
-        'Solar Panels',
-        'Inverters',
-        'Batteries',
-        'Solar Kits',
-        'Power Banks',
-        'Fans',
-        'Accessories',
-        'Solar Lights'
-    ];
-
-    // Unique Categories for Filters
-    const uniqueCategories = useMemo(() => {
-        const cats = new Set(inventory.map(p => p.category));
-        return [...BASE_CATEGORIES, ...Array.from(cats)].filter((v, i, a) => a.indexOf(v) === i);
-    }, [inventory]);
+    // Dynamic Categories from context (admin-managed)
+    const categoryNames = useMemo(() => {
+        const fromContext = categories.map(c => c.name);
+        const fromInventory = inventory.map(p => p.category).filter(Boolean);
+        return Array.from(new Set([...fromContext, ...fromInventory]));
+    }, [categories, inventory]);
 
     // Handlers
     const handleOpenModal = (product?: Product) => {
@@ -68,8 +64,9 @@ const ProductManagement: React.FC = () => {
                 installerPrice: null,
                 retailerPrice: null,
                 stock: null,
-                category: BASE_CATEGORIES[0],
+                category: categoryNames[0] || 'Solar Panels',
                 brand: '',
+                productType: 'general',
                 spec: '',
                 eff: '',
                 img: '',
@@ -151,6 +148,7 @@ const ProductManagement: React.FC = () => {
                 img: coverImage,
                 images: finalImages.length ? finalImages : [coverImage],
                 brand: formData.brand || 'GreenLife',
+                productType: formData.productType || 'general',
                 eff: formData.eff || 'N/A',
                 spec: formData.spec || 'Standard',
                 description: formData.description || '',
@@ -205,7 +203,7 @@ const ProductManagement: React.FC = () => {
                             className="px-4 py-2 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 transition-all outline-none"
                         >
                             <option value="All">All Categories</option>
-                            {uniqueCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            {categoryNames.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                         </select>
                         <button
                             onClick={() => handleOpenModal()}
@@ -221,6 +219,7 @@ const ProductManagement: React.FC = () => {
                             <tr>
                                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Product Info</th>
                                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Category</th>
+                                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Type</th>
                                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Unit Price</th>
                                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52]">Status</th>
                                 <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c9a52] text-right">Actions</th>
@@ -243,6 +242,11 @@ const ProductManagement: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4"><span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold rounded whitespace-nowrap">{item.category}</span></td>
+                                        <td className="px-6 py-4"><span className={`px-2 py-1 text-[10px] font-bold rounded whitespace-nowrap ${
+                                            item.productType === 'itel' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
+                                            item.productType === 'deye' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                        }`}>{(item.productType || 'general').charAt(0).toUpperCase() + (item.productType || 'general').slice(1)}</span></td>
                                         <td className="px-6 py-4"><p className="text-sm font-bold">₦{item.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p></td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold ${item.badge === 'Low Stock' ? 'bg-amber-100 text-amber-700' : 'bg-primary/20 text-primary'}`}>
@@ -259,7 +263,7 @@ const ProductManagement: React.FC = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No products found matching your search.</td>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No products found matching your search.</td>
                                 </tr>
                             )}
                         </tbody>
@@ -293,14 +297,39 @@ const ProductManagement: React.FC = () => {
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold uppercase text-slate-500">Category</label>
                                     <select
-                                        value={formData.category ?? BASE_CATEGORIES[0]}
+                                        value={formData.category ?? categoryNames[0] ?? 'Solar Panels'}
                                         onChange={e => setFormData({ ...formData, category: e.target.value })}
                                         className="w-full px-4 py-3 rounded-lg bg-slate-50 dark:bg-black/20 border border-slate-200 dark:border-white/10 outline-none focus:ring-2 focus:ring-primary appearance-none"
                                     >
-                                        {BASE_CATEGORIES.map(cat => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
+                                        {categoryNames.length > 0 ? (
+                                            categoryNames.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))
+                                        ) : (
+                                            <option value="Solar Panels">Solar Panels (default)</option>
+                                        )}
                                     </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase text-slate-500">Product Type (Brand Card)</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {PRODUCT_TYPE_OPTIONS.map(opt => (
+                                            <button
+                                                key={opt.value}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, productType: opt.value })}
+                                                className={`flex flex-col items-center gap-1 px-2 py-3 rounded-lg border-2 transition-all ${
+                                                    (formData.productType || 'general') === opt.value
+                                                        ? 'border-primary bg-primary/10 text-primary-dark'
+                                                        : 'border-slate-200 dark:border-white/10 text-slate-500 hover:border-slate-300'
+                                                }`}
+                                            >
+                                                <span className="material-symbols-outlined text-xl">{opt.icon}</span>
+                                                <span className="text-[10px] font-bold text-center leading-tight">{opt.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
