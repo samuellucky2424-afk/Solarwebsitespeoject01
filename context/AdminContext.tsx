@@ -315,6 +315,19 @@ const DEMO_GALLERY: GalleryImage[] = [
   }
 ];
 
+const DEMO_INVENTORY: Product[] = [
+  { id: 'DEMO-P-01', name: 'Solar Panel 400W Mono', series: 'SP-400M', price: 85000, normalPrice: 85000, installerPrice: 78000, retailerPrice: 82500, eff: '21%', spec: 'Mono PERC', img: '/images/solar_panels.png', badge: 'In Stock', category: 'Solar Panels', brand: 'GreenLife', productType: 'general', description: 'Full-cell mono crystalline panel with 25-year output warranty.', stock: 40, reviews: 24, rating: 4.8, images: ['/images/solar_panels.png'] },
+  { id: 'DEMO-P-02', name: 'Solar Panel 550W Half-Cut', series: 'SP-550H', price: 112000, normalPrice: 112000, installerPrice: 102000, retailerPrice: 108000, eff: '22.5%', spec: 'Half-cut N-Type', img: '/images/solar_panels.png', badge: 'In Stock', category: 'Solar Panels', brand: 'GreenLife', productType: 'general', description: 'Half-cut cell design for lower resistive loss in hot climates.', stock: 35, reviews: 18, rating: 4.9, images: ['/images/solar_panels.png'] },
+  { id: 'DEMO-P-03', name: 'Solar Kit 1.5KW Complete', series: 'SK-15', price: 485000, normalPrice: 485000, installerPrice: 445000, retailerPrice: 469000, eff: '1.5KW', spec: 'Turnkey installation kit', img: '/images/inverter.png', badge: 'In Stock', category: 'Solar Kits', brand: 'GreenLife', productType: 'general', description: 'Complete home kit: panels, hybrid inverter, lithium battery and mounting hardware.', stock: 12, reviews: 31, rating: 4.7, images: ['/images/inverter.png'] },
+  { id: 'DEMO-P-04', name: 'Solar Street Light 100W', series: 'SL-100', price: 78000, normalPrice: 78000, installerPrice: 71000, retailerPrice: 75000, eff: '100W', spec: 'All-in-one street light', img: '/images/battery.png', badge: 'Low Stock', category: 'Solar Lights', brand: 'GreenLife', productType: 'general', description: 'All-in-one solar street light with motion sensor and 5-hour autonomy.', stock: 6, reviews: 15, rating: 4.6, images: ['/images/battery.png'] },
+  { id: 'DEMO-P-05', name: 'Itel Inverter 3.6KW Hybrid', series: 'IT-3.6K', price: 320000, normalPrice: 320000, installerPrice: 295000, retailerPrice: 308000, eff: '3.6KW', spec: 'Hybrid MPPT', img: '/images/inverter.png', badge: 'In Stock', category: 'Inverters', brand: 'Itel', productType: 'itel', description: 'Hybrid inverter with dual MPPT tracking and lithium battery support.', stock: 22, reviews: 27, rating: 4.8, images: ['/images/inverter.png'] },
+  { id: 'DEMO-P-06', name: 'Itel Battery 100AH LFP', series: 'IT-100L', price: 285000, normalPrice: 285000, installerPrice: 262000, retailerPrice: 275000, eff: '5.12KWH', spec: 'LiFePO4 wall mount', img: '/images/battery.png', badge: 'In Stock', category: 'Batteries', brand: 'Itel', productType: 'itel', description: 'Wall-mounted lithium iron phosphate battery rated for 6000 cycles.', stock: 18, reviews: 19, rating: 4.7, images: ['/images/battery.png'] },
+  { id: 'DEMO-P-07', name: 'Itel Panel 450W N-Type', series: 'IT-450N', price: 98000, normalPrice: 98000, installerPrice: 90000, retailerPrice: 95000, eff: '23%', spec: 'N-Type mono', img: '/images/solar_panels.png', badge: 'In Stock', category: 'Solar Panels', brand: 'Itel', productType: 'itel', description: 'N-Type monocrystalline panel with anti-LID and PID resistance.', stock: 30, reviews: 12, rating: 4.8, images: ['/images/solar_panels.png'] },
+  { id: 'DEMO-P-08', name: 'Deye Inverter 5KW Hybrid', series: 'DY-5KH', price: 495000, normalPrice: 495000, installerPrice: 458000, retailerPrice: 479000, eff: '5KW', spec: 'Hybrid three-phase', img: '/images/inverter.png', badge: 'In Stock', category: 'Inverters', brand: 'Deye', productType: 'deye', description: 'Three-phase hybrid inverter with smart energy management and backup output.', stock: 14, reviews: 22, rating: 4.9, images: ['/images/inverter.png'] },
+  { id: 'DEMO-P-09', name: 'Deye Battery 5KWh HV', series: 'DY-5HV', price: 720000, normalPrice: 720000, installerPrice: 665000, retailerPrice: 698000, eff: '5KWH', spec: 'High voltage modular', img: '/images/battery.png', badge: 'In Stock', category: 'Batteries', brand: 'Deye', productType: 'deye', description: 'Modular high-voltage lithium battery stack expandable up to 40kWh.', stock: 8, reviews: 16, rating: 4.9, images: ['/images/battery.png'] },
+  { id: 'DEMO-P-10', name: 'Deye Smart MPPT 200A', series: 'DY-M200', price: 265000, normalPrice: 265000, installerPrice: 244000, retailerPrice: 256000, eff: '200A', spec: 'MPPT charge controller', img: '/images/inverter.png', badge: 'Low Stock', category: 'Inverters', brand: 'Deye', productType: 'deye', description: 'Smart MPPT charge controller with per-PV-port optimisation.', stock: 5, reviews: 11, rating: 4.7, images: ['/images/inverter.png'] },
+];
+
 const normalizePackageAppliances = (value: unknown): string[] => {
   if (Array.isArray(value)) {
     return value
@@ -368,6 +381,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     setUsingDemoData(true);
     setEnableRealtime(false);
     setActiveUser(DEMO_USER);
+    setInventory(DEMO_INVENTORY);
     setPackages(DEMO_PACKAGES);
     setRequests(DEMO_REQUESTS);
     setGallery(DEMO_GALLERY);
@@ -441,7 +455,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const mappedUsers = data.filter((i: any) => i.type === 'user_profile').map(mapToUserProfile);
         const mappedInstallers = data.filter((i: any) => i.type === 'installer').map(mapToUserProfile);
 
-        setInventory(mappedInventory);
+        setInventory(mappedInventory.length > 0 ? mappedInventory : DEMO_INVENTORY);
         setPackages(mappedPackages);
         setRequests(mappedRequests);
         setGallery(mappedGallery);
