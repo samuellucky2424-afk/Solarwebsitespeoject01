@@ -4,10 +4,10 @@ import { Product, ProductType } from '../../data/products';
 import { uploadImage } from '../../config/supabaseClient';
 import { Toast } from '../../components/SharedComponents';
 
-const PRODUCT_TYPE_OPTIONS: { value: ProductType; label: string; icon: string }[] = [
-    { value: 'general', label: 'General Products', icon: 'inventory_2' },
-    { value: 'itel', label: 'Itel Products', icon: 'solar_power' },
-    { value: 'deye', label: 'Deye Products', icon: 'bolt' },
+const PRODUCT_TYPE_OPTIONS: { value: ProductType; label: string; logo: string; logoFit: 'contain' | 'cover'; logoPosition: string; logoScale: number; surface: string; strip: string }[] = [
+    { value: 'general', label: 'General Products', logo: '/images/brand-general-mark.png', logoFit: 'cover', logoPosition: '50% 42%', logoScale: 1, surface: 'bg-[#00383e]', strip: 'bg-[#00383e] text-white' },
+    { value: 'itel', label: 'Itel Products', logo: '/images/brand-itel-mark.png', logoFit: 'contain', logoPosition: '50% 42%', logoScale: 0.8, surface: 'bg-white', strip: 'bg-[#fde8f0] text-[#a50053]' },
+    { value: 'deye', label: 'Deye Products', logo: '/images/brand-deye-mark.png', logoFit: 'contain', logoPosition: '50% 42%', logoScale: 0.66, surface: 'bg-white', strip: 'bg-[#e8e8f5] text-[#2b2873]' },
 ];
 
 const ProductManagement: React.FC = () => {
@@ -319,14 +319,32 @@ const ProductManagement: React.FC = () => {
                                                 key={opt.value}
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, productType: opt.value })}
-                                                className={`flex flex-col items-center gap-1 px-2 py-3 rounded-lg border-2 transition-all ${
+                                                className={`relative overflow-hidden rounded-lg border-2 transition-all ${
                                                     (formData.productType || 'general') === opt.value
-                                                        ? 'border-primary bg-primary/10 text-primary-dark'
-                                                        : 'border-slate-200 dark:border-white/10 text-slate-500 hover:border-slate-300'
+                                                        ? 'border-primary shadow-md'
+                                                        : 'border-slate-200 dark:border-white/10 hover:border-slate-300'
                                                 }`}
+                                                style={{ height: '60px' }}
                                             >
-                                                <span className="material-symbols-outlined text-xl">{opt.icon}</span>
-                                                <span className="text-[10px] font-bold text-center leading-tight">{opt.label}</span>
+                                                <div className={`absolute inset-0 ${opt.surface}`}></div>
+                                                <img
+                                                    src={opt.logo}
+                                                    alt={opt.label}
+                                                    loading="lazy"
+                                                    className={`absolute inset-0 pointer-events-none ${opt.logoFit === 'cover' ? 'w-full h-full' : 'm-auto max-w-full max-h-full'}`}
+                                                    style={opt.logoFit === 'cover'
+                                                        ? { objectFit: 'cover', objectPosition: opt.logoPosition }
+                                                        : {
+                                                            width: `${opt.logoScale * 100}%`,
+                                                            height: 'auto',
+                                                            maxHeight: `${opt.logoScale * 100}%`,
+                                                            objectFit: 'contain',
+                                                        }}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-transparent pointer-events-none"></div>
+                                                <span className={`absolute bottom-0 left-0 right-0 text-[9px] font-bold text-center leading-tight py-1 ${opt.strip}`}>
+                                                    {opt.label}
+                                                </span>
                                             </button>
                                         ))}
                                     </div>

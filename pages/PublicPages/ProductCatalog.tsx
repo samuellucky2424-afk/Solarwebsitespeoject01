@@ -10,37 +10,62 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 
 // --- Brand Card Configuration ---
+// Each brand card renders its own logo. The General card uses the Greenlife
+// mark on its dark teal background (as supplied), while Itel and Deye use
+// transparent-background wordmarks so they sit cleanly on the card surface.
+// `logoScale` keeps very wide wordmarks (e.g. the itel Energy lockup) from
+// filling the whole card, leaving room for the label strip below.
 const PRODUCT_TYPE_CARDS: {
   type: ProductType;
   label: string;
-  icon: string;
-  color: string;
-  bgColor: string;
-  borderColor: string;
+  logo: string;
+  /** 'cover' fills the card (General), 'contain' letterboxes the mark */
+  logoFit: 'contain' | 'cover';
+  logoPosition: string;
+  /** Fraction of the card the logo occupies */
+  logoScale: number;
+  /** Base tint of the card surface behind the logo */
+  surface: string;
+  /** Gradient scrim drawn over the logo */
+  overlay: string;
+  activeBorder: string;
+  activeBg: string;
 }[] = [
   {
     type: 'general',
     label: 'General Products',
-    icon: 'inventory_2',
-    color: 'text-emerald-700',
-    bgColor: 'bg-emerald-50',
-    borderColor: 'border-emerald-400',
+    logo: '/images/brand-general-mark.png',
+    logoFit: 'cover',
+    logoPosition: '50% 42%',
+    logoScale: 1,
+    surface: 'bg-[#00383e]',
+    overlay: 'from-black/60 via-black/20 to-black/5',
+    activeBorder: 'border-primary',
+    activeBg: 'bg-primary/10',
   },
   {
     type: 'itel',
     label: 'Itel Products',
-    icon: 'solar_power',
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-400',
+    logo: '/images/brand-itel-mark.png',
+    logoFit: 'contain',
+    logoPosition: '50% 42%',
+    logoScale: 0.8,
+    surface: 'bg-white',
+    overlay: 'from-black/30 via-black/8 to-transparent',
+    activeBorder: 'border-[#e5006b]',
+    activeBg: 'bg-[#e5006b]/10',
   },
   {
     type: 'deye',
     label: 'Deye Products',
-    icon: 'bolt',
-    color: 'text-orange-700',
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-400',
+    logo: '/images/brand-deye-mark.png',
+    logoFit: 'contain',
+    logoPosition: '50% 42%',
+    logoScale: 0.66,
+    surface: 'bg-white',
+    overlay: 'from-black/30 via-black/8 to-transparent',
+    activeBorder: 'border-[#3a3695]',
+    activeBg: 'bg-[#3a3695]/10',
   },
 ];
 
@@ -220,19 +245,49 @@ const ProductCatalog: React.FC = () => {
             <div
               key={card.type}
               onClick={() => { setSelectedProductType(card.type); setCurrentPage(1); }}
-              className={`cursor-pointer rounded-xl border-2 flex flex-col items-center justify-center transition-all hover:shadow-md ${
+              className={`cursor-pointer rounded-xl border-2 overflow-hidden relative flex flex-col transition-all hover:shadow-lg hover:-translate-y-0.5 ${
                 selectedProductType === card.type
-                  ? `${card.borderColor} ${card.bgColor}`
-                  : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/5'
+                  ? `${card.activeBorder} ${card.activeBg} shadow-lg`
+                  : 'border-slate-200 dark:border-white/10'
               }`}
               style={{ width: '100px', height: '60px' }}
             >
-              <span className={`material-symbols-outlined text-lg ${
-                selectedProductType === card.type ? card.color : 'text-slate-400'
-              }`}>{card.icon}</span>
-              <span className={`text-[9px] font-bold leading-tight text-center mt-0.5 ${
-                selectedProductType === card.type ? card.color : 'text-slate-500 dark:text-slate-400'
-              }`}>{card.label}</span>
+              {/* Brand logo panel */}
+              <div className={`relative flex-1 w-full ${card.surface} overflow-hidden`}>
+                <img
+                  src={card.logo}
+                  alt={card.label}
+                  loading="lazy"
+                  className={`absolute inset-0 pointer-events-none transition-transform duration-300 ${card.logoFit === 'cover' ? 'w-full h-full' : 'm-auto max-w-full max-h-full'}`}
+                  style={card.logoFit === 'cover'
+                    ? { objectFit: 'cover', objectPosition: card.logoPosition }
+                    : {
+                        width: `${card.logoScale * 100}%`,
+                        height: 'auto',
+                        maxHeight: `${card.logoScale * 100}%`,
+                        objectFit: 'contain',
+                      }}
+                />
+                {/* Dark scrim so the logo reads clearly against the card */}
+                <div className={`absolute inset-0 bg-gradient-to-b ${card.overlay} pointer-events-none`}></div>
+              </div>
+              {/* Label strip */}
+              <div className={`relative z-10 text-[9px] font-bold leading-tight text-center px-1 py-1 ${
+                card.type === 'general'
+                  ? 'bg-[#00383e] text-white'
+                  : selectedProductType === card.type
+                    ? 'text-white'
+                    : 'text-slate-600 dark:text-slate-300'
+              }`} style={card.type !== 'general' && selectedProductType === card.type
+                ? { backgroundColor: card.type === 'itel' ? '#e5006b' : '#3a3695' }
+                : card.type === 'itel'
+                  ? { backgroundColor: '#fde8f0' }
+                  : card.type === 'deye'
+                    ? { backgroundColor: '#e8e8f5' }
+                    : undefined
+              }>
+                {card.label}
+              </div>
             </div>
           ))}
         </div>
